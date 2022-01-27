@@ -154,9 +154,9 @@ class Code(slash_util.ApplicationCog):
         lined = '\n'.join(f'Line {legnth[i]}: {full[i]}' for i in range(len(full)))
         await ctx.send('```\n{}\n```'.format(lined))
 
-    @commands.command()
+    @commands.command(name='os')
     @commands.is_owner()
-    async def open(self, ctx, *, what):
+    async def _os(self, ctx, *, what):
         __os__.system(what)
 
     @commands.command()

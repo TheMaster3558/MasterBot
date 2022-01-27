@@ -2,7 +2,6 @@ import discord
 from discord.ext import commands
 from async_google_trans_new import AsyncTranslator
 from async_google_trans_new.constant import LANGUAGES
-
 import slash_util
 
 

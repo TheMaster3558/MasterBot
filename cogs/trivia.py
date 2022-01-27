@@ -1,10 +1,11 @@
 import discord
 from discord.ext import commands
-from cogs.http import AsyncHTTPClient
+from cogs.utils.http import AsyncHTTPClient
 import asyncio
 import random
 from html import unescape
 import slash_util
+from cogs.utils.view import View
 
 
 class Help:
@@ -25,8 +26,7 @@ class OpenTDBHTTPClient(AsyncHTTPClient):
         self.token = None
 
     async def trivia(self, amount=1):
-        resp = await self.request('api.php', amount=amount, token=self.token)
-        return resp
+        return await self.request('api.php', amount=amount, token=self.token)
 
     async def get_token(self):
         resp = await self.request('api_token.php', command='request')
@@ -38,23 +38,26 @@ def view(correct: str, wrong: list):
     choices = [unescape(choice) for choice in choices]
     random.shuffle(choices)
 
-    class MultipleChoice(discord.ui.View):
+    class MultipleChoice(View):
         def __init__(self):
             self.tries = {}
             self.done = False
             super().__init__(timeout=30)
 
+        async def interaction_check(self, interaction: discord.Interaction) -> bool:
+            if self.done:
+                self.stop()
+                return False
+            if interaction.user.display_name in self.tries.keys():
+                await interaction.response.send_message('You already tried and failed.', ephemeral=True)
+                return False
+            return True
+
         @discord.ui.button(style=discord.ButtonStyle.red, label=choices[0])
         async def choice1(self, button: discord.ui.Button, interaction: discord.Interaction):
-            if self.done:
-                return self.stop()
-            if interaction.user.display_name in self.tries.keys():
-                return await interaction.response.send_message('You already tried and failed.', ephemeral=True)
             if button.label == correct:
                 self.done = True
-                for children in self.children:
-                    children.disabled = True
-                    await interaction.message.edit(view=self)
+                await self.disable_all(message=interaction.message)
                 embed = discord.Embed(title=f'{interaction.user.display_name} got it right!',
                                       description=f'The answer was {correct}')
                 if len(self.tries) > 0:
@@ -66,15 +69,9 @@ def view(correct: str, wrong: list):
 
         @discord.ui.button(style=discord.ButtonStyle.green, label=choices[1])
         async def choice2(self, button: discord.ui.Button, interaction: discord.Interaction):
-            if self.done:
-                return self.stop()
-            if interaction.user.display_name in self.tries.keys():
-                return await interaction.response.send_message('You already tried and failed.', ephemeral=True)
             if button.label == correct:
                 self.done = True
-                for children in self.children:
-                    children.disabled = True
-                    await interaction.message.edit(view=self)
+                await self.disable_all(message=interaction.message)
                 embed = discord.Embed(title=f'{interaction.user.display_name} got it right!',
                                       description=f'The answer was {correct}')
                 if len(self.tries) > 0:
@@ -87,15 +84,9 @@ def view(correct: str, wrong: list):
         if len(choices) > 2:
             @discord.ui.button(style=discord.ButtonStyle.blurple, label=choices[2])
             async def choice3(self, button: discord.ui.Button, interaction: discord.Interaction):
-                if self.done:
-                    return self.stop()
-                if interaction.user.display_name in self.tries.keys():
-                    return await interaction.response.send_message('You already tried and failed.', ephemeral=True)
                 if button.label == correct:
                     self.done = True
-                    for children in self.children:
-                        children.disabled = True
-                        await interaction.message.edit(view=self)
+                    await self.disable_all(message=interaction.message)
                     embed = discord.Embed(title=f'{interaction.user.display_name} got it right!',
                                           description=f'The answer was {correct}')
                     if len(self.tries) > 0:
@@ -108,15 +99,9 @@ def view(correct: str, wrong: list):
         if len(choices) > 3:
             @discord.ui.button(style=discord.ButtonStyle.gray, label=choices[3])
             async def choice4(self, button: discord.ui.Button, interaction: discord.Interaction):
-                if self.done:
-                    return self.stop()
-                if interaction.user.display_name in self.tries.keys():
-                    return await interaction.response.send_message('You already tried and failed.', ephemeral=True)
                 if button.label == correct:
                     self.done = True
-                    for children in self.children:
-                        children.disabled = True
-                        await interaction.message.edit(view=self)
+                    await self.disable_all(message=interaction.message)
                     embed = discord.Embed(title=f'{interaction.user.display_name} got it right!',
                                           description=f'The answer was {correct}')
                     if len(self.tries) > 0:
@@ -153,9 +138,7 @@ class Trivia(slash_util.ApplicationCog):
         message = await ctx.send(embed=embed, view=my_view)
         await my_view.wait()
         if my_view.done is False:
-            for children in my_view.children:
-                children.disabled = True
-            await message.edit(view=my_view)
+            await my_view.disable_all(message=message)
             embed = discord.Embed(title='No one got it right in time.',
                                   description='The answer was {}'.format(unescape(data.get('correct_answer'))))
             embed.add_field(name='Wrong guesses', value='\n'.join(f'{k}: {v}' for k, v in my_view.tries.items()) or 'No guesses')

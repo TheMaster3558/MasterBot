@@ -22,7 +22,7 @@ class HelpAndInfo(slash_util.ApplicationCog):
     async def ping(self, ctx):
         await ctx.send(f'Pong! `{str(round(self.bot.latency * 1000))}ms`')
 
-    @slash_util.slash_command(name='ping', description='Get the bots latency')
+    @slash_util.slash_command(name='ping', description='Pong!')
     async def _ping(self, ctx):
         await self.ping(ctx)
 

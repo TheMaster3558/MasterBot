@@ -1,12 +1,11 @@
 import discord
 from discord.ext import commands
 from typing import Optional, Union
-import datetime
 import slash_util
 import aiohttp
 import asyncio
 from motor import motor_asyncio
-from pymongo.errors import OperationFailure
+from pymongo.errors import DuplicateKeyError, OperationFailure
 import re
 import datetime
 
@@ -128,7 +127,7 @@ class Moderation(slash_util.ApplicationCog):
                 return await ctx.send(error)
         else:
             if not ctx.command.has_error_handler():
-                raise type(error)(error)
+                raise error
 
     @commands.command()
     @commands.has_permissions(administrator=True)
@@ -145,7 +144,7 @@ class Moderation(slash_util.ApplicationCog):
                 return await ctx.send("I can't send message in that channel. =(")
             try:
                 await self.log.insert_one({'_id': str(ctx.guild.id), 'channel': str(channel.id)})
-            except OperationFailure:
+            except DuplicateKeyError:
                 await self.log.update_one({'_id': str(ctx.guild.id)}, {'$set': {'channel': str(channel.id)}})
             await ctx.send(f'Log message will be sent in {channel.mention}')
 
@@ -196,6 +195,8 @@ class Moderation(slash_util.ApplicationCog):
         if ctx.guild.roles.index(ctx.author.top_role) <= ctx.guild.roles.index(member.top_role):
             return await ctx.send(
                 "I can't let you do that. Your top role is lower or equal to theirs in the hierarchy.")
+        if delete_after < 1 or delete_after > 7:
+            return await ctx.send('Delete After Days must be from 1-7')
         await member.ban(reason=reason, delete_message_days=delete_after)
         await ctx.send(f'{member} got banned.')
         log = await self.log.find_one({'_id': str(ctx.guild.id)})
@@ -327,6 +328,8 @@ class Moderation(slash_util.ApplicationCog):
 
     @commands.command()
     @commands.guild_only()
+    @commands.has_permissions(moderatate_members=True)
+    @commands.bot_has_permissions(moderatate_members=True)
     async def timeout(self, ctx, member: discord.Member, minutes: int, *, reason: str = None):
         if ctx.guild.roles.index(ctx.author.top_role) <= ctx.guild.roles.index(member.top_role):
             return await ctx.send(
@@ -346,7 +349,7 @@ class Moderation(slash_util.ApplicationCog):
     @slash_util.slash_command(name='timeout', description='Put a user on timeout!')
     @slash_util.describe(member='The member', minutes='The time', reason='Optional reason')
     async def _timeout(self, ctx: slash_util.Context, member: discord.Member, minutes: int, reason: str = None):
-        if ctx.author.guild_permissions.administrator:
+        if ctx.author.guild_permissions.moderatate_members:
             return await self.timeout(ctx, member, minutes, reason)
         await ctx.send("You can't use this")
 
