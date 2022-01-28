@@ -11,7 +11,7 @@ import discord, discord.channel, discord.http, discord.state
 from discord.ext import commands
 from discord.utils import MISSING
 
-from typing import Coroutine, TypeVar, Union, get_args, get_origin, overload, Generic, TYPE_CHECKING
+from typing import Coroutine, TypeVar, Union, get_args, get_origin, overload, Generic, TYPE_CHECKING, List, Tuple
 
 BotT = TypeVar("BotT", bound='Bot')
 CtxT = TypeVar("CtxT", bound='Context')
@@ -235,6 +235,8 @@ class Bot(commands.Bot):
         if not self.application_id:
             raise RuntimeError("sync_commands must be called after `run`, `start` or `login`")
 
+        routes: List[Tuple] = []
+
         for cog in self.cogs.values():
             if not isinstance(cog, ApplicationCog):
                 continue
@@ -250,9 +252,11 @@ class Bot(commands.Bot):
                 body = cmd._build_command_payload()
 
                 route = discord.http.Route('POST', route)
-                await asyncio.sleep(delay)
-                await self.http.request(route, json=body)
-        print('Done syncing slash commands.')
+                routes.append((route, body))
+        for route, body in routes:
+            await asyncio.sleep(delay)
+            await self.http.request(route, json=body)
+        print('Done syncing slash commands. Slash commands can be used now.')
 
 
 class Context(Generic[BotT, CogT]):

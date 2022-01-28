@@ -2,11 +2,12 @@ import discord
 from discord.ext import commands
 import slash_util
 
-from datetime import datetime
+from time import perf_counter
 import logging
 
 
 __version__ = '1.0.0a'
+
 
 # logging
 logger = logging.getLogger('discord')
@@ -14,6 +15,7 @@ logger.setLevel(logging.DEBUG)
 handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w')
 handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
 logger.addHandler(handler)
+
 
 # two tokens for my two bots
 TOKEN1 = 'OTI0MDM1ODc4ODk1MTEyMjUz.YcYteQ.JFJ5PrKgDX8lvQE-p5bQWKGFBBs'
@@ -28,7 +30,7 @@ bot = slash_util.Bot(command_prefix=commands.when_mentioned_or('!'),
                      activity=discord.Game(f'version {__version__}'),
                      strip_after_prefix=True)
 bot.__version__ = __version__
-bot.start_time = datetime.now()
+bot.start_time = perf_counter()
 
 cogs = ['cogs.reaction_roles',
         'cogs.moderation',
@@ -36,7 +38,9 @@ cogs = ['cogs.reaction_roles',
         'cogs.translate',
         'cogs.trivia',
         'cogs.help_info',
-        'cogs.clash_royale']
+        'cogs.clash_royale',
+        'cogs.jokes']
+
 
 if __name__ == '__main__':
     for cog in cogs:
@@ -50,8 +54,8 @@ async def on_ready():
 
 @bot.listen('on_ready')
 async def time():
-    bot.on_ready_time = datetime.now()
-    print('Time taken to ready up: ', bot.on_ready_time - bot.start_time)
+    bot.on_ready_time = perf_counter()
+    print('Time taken to ready up:', round(bot.on_ready_time - bot.start_time, 1), 'seconds')
 
 
 @bot.command()

@@ -6,7 +6,24 @@ import slash_util
 import asyncio
 from motor import motor_asyncio
 from pymongo.errors import DuplicateKeyError
-from typing import Optional
+from typing import Optional, Union
+
+
+class Help:
+    def __init__(self, prefix):
+        self.prefix = prefix
+
+    def joke_help(self):
+        message = f'`{self.prefix}joke [categories]`: Get a joke! Categories are optional. Separate with a space (Slash Commands use select menu). Categories: `Any`, `Misc`,`Programming`, `Dark`, `Pun`, `Spooky`, `Christmas`\n'
+        return message
+
+    def blacklist_help(self):
+        message = f'`{self.prefix}blacklist [flags]`: Arguments: `nsfw`, `religious`, `political`, `sexist`, `racist`, `explicit`\nExample: `{self.prefix}blacklist nsfw: true racist: false`'
+        return message
+
+    def full_help(self):
+        help_list = [self.joke_help(), self.blacklist_help()]
+        return '\n'.join(help_list)
 
 
 class BlacklistView(View):
@@ -17,7 +34,8 @@ class BlacklistView(View):
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if interaction.user != self.author:
-            await interaction.response.send_message("You can't accept or decline. Only the message author can.", ephemeral=True)
+            await interaction.response.send_message("You can't accept or decline. Only the message author can.",
+                                                    ephemeral=True)
             return False
         return True
 
@@ -35,10 +53,9 @@ class BlacklistView(View):
 
 
 class CategorySelect(discord.ui.Select):
-    def __init__(self, author, cls):
-        self.cls = cls
+    def __init__(self, author, view):
+        self._view = view
         self.author = author
-        self.option = None
         options = [
             discord.SelectOption(label='Any'),
             discord.SelectOption(label='Misc'),
@@ -57,7 +74,10 @@ class CategorySelect(discord.ui.Select):
         if interaction.user != self.author:
             return await interaction.response.send_message("Only the person that used the command can use this.",
                                                            ephemeral=True)
-        self.cls.stop()
+        for child in self._view.children:
+            child.disabled = True
+        await interaction.message.edit(view=self._view)
+        self._view.stop()
 
 
 class CategoryView(discord.ui.View):
@@ -73,6 +93,12 @@ class BlacklistFlags(commands.FlagConverter):
     sexist: Optional[str] = None
     racist: Optional[str] = None
     explicit: Optional[str] = None
+
+
+class SlashFlagObject:
+    def __init__(self, **options):
+        for k, v in options.items():
+            setattr(self, k, v)
 
 
 class JokeAPIHTTPClient(AsyncHTTPClient):
@@ -92,12 +118,15 @@ class Jokes(slash_util.ApplicationCog):
     def __init__(self, bot):
         super().__init__(bot)
         self.http = JokeAPIHTTPClient()
+        print('Connecting to mongodb... (Jokes cog)')
         self.client = motor_asyncio.AsyncIOMotorClient(
             'mongodb+srv://chawkk:Xboxone87@masterbotcluster.ezbjl.mongodb.net/test')
         self.client = self.client['jokes']['blacklist']
+        print('Connected.')
         self.blacklist = {}
         self.update_db.start()
-        self.default_options = {'nsfw': True, 'religious': True, 'political': True, 'sexist': True, 'racist': True, 'explicit': True}
+        self.default_options = {'nsfw': True, 'religious': True, 'political': True, 'sexist': True, 'racist': True,
+                                'explicit': True}
         self.used_jokes = [12345]  # 12345 is so the while loop starts
         self.categories = ["any", "misc", "programming", "dark", "pun", "spooky", "christmas"]
         print('Jokes cog loaded')
@@ -182,9 +211,9 @@ class Jokes(slash_util.ApplicationCog):
             return await ctx.send("You didn't select anything =(")
         await self.joke(ctx, *categories)
 
-    @commands.command()
+    @commands.command(name='blacklist')
     @commands.has_permissions(administrator=True)
-    async def blacklist(self, ctx, *, flags: BlacklistFlags):
+    async def _blacklist(self, ctx, *, flags: Union[BlacklistFlags, SlashFlagObject]):
         for k, v in vars(flags).items():
             if v is None:
                 guild = self.blacklist.get(str(ctx.guild.id))
@@ -211,37 +240,44 @@ class Jokes(slash_util.ApplicationCog):
         secondary = False
         if options.get('nsfw') is True:
             await asyncio.sleep(1)
-            nsfw_embed = discord.Embed(title='By having NSFW jokes turned on, you agree that all users are mature enough to handle them')
+            nsfw_embed = discord.Embed(
+                title='By having NSFW jokes turned on, you agree that all users are mature enough to handle them')
             await msg.reply(embed=nsfw_embed)
             secondary = True
         if options.get('religious') is True:
             await asyncio.sleep(1)
-            religious_embed = discord.Embed(title='By having Religious jokes turned on, you agree that users may take offense from some jokes')
+            religious_embed = discord.Embed(
+                title='By having Religious jokes turned on, you agree that users may take offense from some jokes')
             await msg.reply(embed=religious_embed)
             secondary = True
         if options.get('political') is True:
             await asyncio.sleep(1)
-            political_embed = discord.Embed(title='By having Political jokes turned on, you agree that users may have conflicting political views and may take offense')
+            political_embed = discord.Embed(
+                title='By having Political jokes turned on, you agree that users may have conflicting political views and may take offense')
             await msg.reply(embed=political_embed)
             secondary = True
         if options.get('sexist') is True:
             await asyncio.sleep(1)
-            sexist_embed = discord.Embed(title='By having Sexist jokes turned on, you agree that users may take offense from some jokes')
+            sexist_embed = discord.Embed(
+                title='By having Sexist jokes turned on, you agree that users may take offense from some jokes')
             await ctx.send(embed=sexist_embed)
             secondary = True
         if options.get('racist') is True:
             await asyncio.sleep(1)
-            racist_embed = discord.Embed(title='By having Racist jokes turned on, you agree that users may take offense from some jokes')
+            racist_embed = discord.Embed(
+                title='By having Racist jokes turned on, you agree that users may take offense from some jokes')
             await msg.reply(embed=racist_embed)
             secondary = True
         if options.get('explicit') is True:
             await asyncio.sleep(1)
-            explicit_embed = discord.Embed(title='By having Explicit turned on, you agree that all users are mature enough to handle them')
+            explicit_embed = discord.Embed(
+                title='By having Explicit turned on, you agree that all users are mature enough to handle them')
             await msg.reply(embed=explicit_embed)
             secondary = True
         if secondary is True:
             await asyncio.sleep(1)
-            alert_bed = discord.Embed(title='We are not responsible for any jokes that make any users or goups, feel discomfort or feel offended.')
+            alert_bed = discord.Embed(
+                title='We are not responsible for any jokes that make any users or goups, feel discomfort or feel offended.')
             await ctx.send(embed=alert_bed)
         await view.wait()
         if view.choice is None:
@@ -253,12 +289,38 @@ class Jokes(slash_util.ApplicationCog):
             await msg.reply(embed=discord.Embed(title='New settings cancelled.'))
         self.blacklist[str(ctx.guild.id)] = options
 
-    @joke.error
+    @_blacklist.error
     async def error(self, ctx, error):
         if isinstance(error, commands.MissingPermissions):
             await ctx.send("You need administrator perms to run this!!")
         else:
             raise error
+
+    @slash_util.slash_command(name='blacklist', description='Turn off some possible jokes.')
+    @slash_util.describe(nsfw='NSFW jokes',
+                         religious='Religious jokes',
+                         political='Political jokes',
+                         sexist='Sexist jokes',
+                         racist='Racist jokes',
+                         explicit='Explicit jokes')
+    async def __blacklist(self,
+                          ctx: slash_util.Context,
+                          nsfw: str = None,
+                          religious: str = None,
+                          political: str = None,
+                          sexist: str = None,
+                          racist: str = None,
+                          explicit: str = None):
+
+        if not ctx.author.guild_permissions.administrator:
+            return await ctx.send('You need admin perms to run this!!')
+        flags = SlashFlagObject(nsfw=nsfw,
+                                religious=religious,
+                                political=political,
+                                sexist=sexist,
+                                racist=racist,
+                                explicit=explicit)
+        await self._blacklist(ctx, flags=flags)
 
 
 def setup(bot: commands.Bot):
