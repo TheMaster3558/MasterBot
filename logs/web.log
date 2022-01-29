@@ -1,0 +1,2 @@
+2022-01-29 14:10:41,635:INFO:web.web_dashboard: POST request to /guilds has returned with status 200
+2022-01-29 14:10:41,835:INFO:web.web_dashboard: POST request to /commands has returned with status 200
