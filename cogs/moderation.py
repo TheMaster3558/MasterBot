@@ -97,7 +97,7 @@ async def timeout_user(member: discord.Member, until, bot: commands.Bot, *, reas
 
 
 class Moderation(slash_util.ApplicationCog):
-    """Will be changed to cache instead of db call"""
+    """Will be changed to cache instead of db call in beta"""
     def __init__(self, bot):
         super().__init__(bot)
         print('Connecting to mongodb... (Moderation Cog)')
@@ -160,7 +160,7 @@ class Moderation(slash_util.ApplicationCog):
     @commands.has_permissions(kick_members=True)
     @commands.bot_has_permissions(kick_members=True)
     async def kick(self, ctx, member: discord.Member, *, reason=None):
-        if ctx.guild.roles.index(ctx.author.top_role) <= ctx.guild.roles.index(member.top_role):
+        if ctx.author.top_role.position <= member.top_role.position:
             return await ctx.send(
                 "I can't let you do that. Your top role is lower or equal to theirs in the hierarchy.")
         await member.kick(reason=reason)
@@ -193,7 +193,7 @@ class Moderation(slash_util.ApplicationCog):
     @commands.has_permissions(ban_members=True)
     @commands.bot_has_permissions(ban_members=True)
     async def ban(self, ctx, member: discord.Member, delete_after: Optional[int] = 1, *, reason=None):
-        if ctx.guild.roles.index(ctx.author.top_role) <= ctx.guild.roles.index(member.top_role):
+        if ctx.author.top_role.position <= member.top_role.position:
             return await ctx.send(
                 "I can't let you do that. Your top role is lower or equal to theirs in the hierarchy.")
         if delete_after < 1 or delete_after > 7:
@@ -224,7 +224,7 @@ class Moderation(slash_util.ApplicationCog):
     @commands.bot_has_permissions(ban_members=True)
     async def massban(self, ctx, members: commands.Greedy[discord.Member], *, reason=None):
         for member in members:
-            if ctx.guild.roles.index(ctx.author.top_role) <= ctx.guild.roles.index(member.top_role):
+            if ctx.author.top_role.position <= member.top_role.position:
                 return await ctx.send(
                     f"I can't let you ban {member}. Your top role is lower or equal to theirs in the hierarchy.")
         embed = discord.Embed(title='This may take a while',
@@ -256,7 +256,7 @@ class Moderation(slash_util.ApplicationCog):
     @commands.has_permissions(ban_members=True)
     @commands.bot_has_permissions(ban_members=True)
     async def softban(self, ctx, member: discord.Member, *, reason=None):
-        if ctx.guild.roles.index(ctx.author.top_role) <= ctx.guild.roles.index(member.top_role):
+        if ctx.author.top_role.position <= member.top_role.position:
             return await ctx.send(
                 "I can't let you do that. Your top role is lower or equal to theirs in the hierarchy.")
         await member.ban(reason=reason)
@@ -285,6 +285,7 @@ class Moderation(slash_util.ApplicationCog):
     @commands.has_permissions(ban_members=True)
     @commands.bot_has_permissions(ban_members=True)
     async def unban(self, ctx, user: discord.User, *, reason=None):
+        await ctx.guild.unban(user, reason=reason)
         log = await self.log.find_one({'_id': str(ctx.guild.id)})
         if log:
             channel = self.bot.get_channel(int(log.get('channel')))
@@ -333,7 +334,7 @@ class Moderation(slash_util.ApplicationCog):
     @commands.has_permissions(moderatate_members=True)
     @commands.bot_has_permissions(moderatate_members=True)
     async def timeout(self, ctx, member: discord.Member, minutes: int, *, reason: str = None):
-        if ctx.guild.roles.index(ctx.author.top_role) <= ctx.guild.roles.index(member.top_role):
+        if ctx.author.top_role.position <= member.top_role.position:
             return await ctx.send(
                 "I can't let you do that. Your top role is lower or equal to theirs in the hierarchy.")
         if minutes > 40320:
@@ -375,10 +376,10 @@ class Moderation(slash_util.ApplicationCog):
     @commands.has_permissions(manage_roles=True)
     async def addrole(self, ctx, member: discord.Member, roles: commands.Greedy[discord.Role], *, reason=None):
         for role in roles:
-            if ctx.guild.roles.index(role) >= ctx.guild.roles.index(ctx.guild.me.top_role):
+            if role.position >= ctx.guild.me.top_role.position:
                 embed = discord.Embed(title='The role(s) must be below my top role =|')
                 return await ctx.send(embed=embed)
-            if ctx.guild.roles.index(role) >= ctx.guild.roles.index(ctx.author.top_role):
+            if ctx.author.top_role.position <= role.position:
                 embed = discord.Embed(title='The role(s) must be below ur role')
                 return await ctx.send(embed=embed, delete_after=10)
         await member.add_roles(*roles, reason=reason)
@@ -407,10 +408,10 @@ class Moderation(slash_util.ApplicationCog):
     @commands.has_permissions(manage_roles=True)
     async def removerole(self, ctx, member: discord.Member, roles: commands.Greedy[discord.Role], *, reason=None):
         for role in roles:
-            if ctx.guild.roles.index(role) > ctx.guild.roles.index(ctx.guild.me.top_role):
+            if role.position >= ctx.guild.me.top_role.position:
                 embed = discord.Embed(title='The role(s) must be below my top role =|')
                 return await ctx.send(embed=embed)
-            if ctx.guild.roles.index(role) >= ctx.guild.roles.index(ctx.author.top_role):
+            if ctx.author.top_role.position <= role.position:
                 embed = discord.Embed(title='The role(s) must be below ur role')
                 return await ctx.send(embed=embed, delete_after=10)
         await member.add_roles(*roles, reason=reason)
@@ -444,7 +445,7 @@ class Moderation(slash_util.ApplicationCog):
         channels = channels or [ctx.channel]
         roles = roles or [ctx.guild.default_role]
         for role in roles:
-            if ctx.guild.roles.index(role) > ctx.guild.roles.index(ctx.guild.me.top_role):
+            if role.position >= ctx.guild.me.top_role:
                 embed = discord.Embed(title='The role(s) must be below my top role =|')
                 return await ctx.send(embed=embed, delete_after=10)
         for role in roles:
@@ -483,7 +484,7 @@ class Moderation(slash_util.ApplicationCog):
         channels = channels or [ctx.channel]
         roles = roles or [ctx.guild.default_role]
         for role in roles:
-            if ctx.guild.roles.index(role) > ctx.guild.roles.index(ctx.guild.me.top_role):
+            if role.position >= ctx.guild.me.top_role:
                 embed = discord.Embed(title='The role(s) must be below my top role =|')
                 return await ctx.send(embed=embed, delete_after=10)
         for role in roles:
