@@ -4,10 +4,11 @@ import re
 import slash_util
 from motor import motor_asyncio
 from pymongo.errors import DuplicateKeyError
+import codecs
 
 
 class Auto(slash_util.ApplicationCog):
-    defaults = ['email', 'phone', 'token']
+    default_names = ['email', 'phone', 'token']
     default_options = {'email': False, 'phone': False, 'token': True}
 
     def __init__(self, bot):
@@ -26,6 +27,16 @@ class Auto(slash_util.ApplicationCog):
         self.update_mongo.start()
         print('Auto cog loaded')
 
+    @commands.Cog.listener()
+    async def on_guild_join(self, guild):
+        if str(guild.id) not in self.options:
+            self.options[str(guild.id)] = self.default_options
+
+    @commands.Cog.listener()
+    async def on_guild_remove(self, guild):
+        if str(guild.id) in self.options:
+            del self.options[str(guild.id)]
+
     async def fetch_data(self):
         for guild in self.bot.guilds:
             data = await self.db.find_one({'_id': str(guild.id)})
@@ -37,10 +48,11 @@ class Auto(slash_util.ApplicationCog):
                     self.options[str(guild.id)][option] = self.default_options.get(option)
             else:
                 self.options[str(guild.id)] = self.default_options
+            self.custom[str(guild.id)] = {}
+        print(self.custom)
 
     @tasks.loop(seconds=10)
     async def update_mongo(self):
-        print(self.options)
         for k, v in self.options.items():
             payload = {'_id': k, 'options': v}
             try:
@@ -66,7 +78,7 @@ class Auto(slash_util.ApplicationCog):
         if len(options) == 0:
             return await ctx.send('Give something.')
         for option in options:
-            if option in self.defaults:
+            if option in self.default_names:
                 self.options[str(ctx.guild.id)][option] = False
         await ctx.send(f'The following have been disabled: {", ".join(options)}')
 
@@ -75,31 +87,57 @@ class Auto(slash_util.ApplicationCog):
         if len(options) == 0:
             return await ctx.send('Give something.')
         for option in options:
-            if option in self.defaults:
+            if option in self.default_names:
                 self.options[str(ctx.guild.id)][option] = True
         await ctx.send(f'The following have been enabled: {", ".join(options)}')
-        print(self.options)
 
-    @commands.Cog.listener('on_message')
-    async def delete_message(self, message: discord.Message):
-        result = None
+    @commands.command()
+    async def custom(self, ctx, name, regex):
+        if name in self.default_names:
+            return await ctx.send("You can't use that name.")
+        regex = codecs.decode(regex, 'unicode_escape')
+        self.custom[str(ctx.guild.id)][name] = regex
+
+    async def check_delete(self, message: discord.Message):
+        if message.channel.permissions_for(message.guild.me).manage_messages and message.author.top_role.position <= message.guild.me.top_role.position:
+            await message.delete()
+
+    async def search_message(self, message: discord.Message):
+        content = message.content
         skip = [k for k, v in self.options[str(message.guild.id)].items() if v is False]
         for k, v in self.defaults.items():
             if k in skip:
                 continue
-            if v.search(message.content):
-                await message.delete()
-                result = k
+            if v.search(content):
+                await self.check_delete(message)
+                return k
+        guild_extras = self.custom[str(message.guild.id)]
+        for k, v in guild_extras.items():
+            if re.search(v, content):
+                await self.check_delete(message)
+                return k
+        return None
+
+    @commands.Cog.listener('on_message')
+    async def delete_message(self, message: discord.Message):
+        if 'custom' in message.content:
+            return
+        if message.author.top_role.position >= message.guild.me.top_role.position:
+            return
+        if message.author.guild_permissions.administrator:
+            return
+        result = await self.search_message(message)
         if result is None:
             return
         log = await self.log.find_one({'_id': str(message.guild.id)})
         if log:
             channel = self.bot.get_channel(int(log.get('channel')))
-            embed = discord.Embed(title='Message deleted',
+            embed = discord.Embed(title='Suspicious message',
                                   timestamp=message.created_at)
             embed.add_field(name='Author', value=message.author.mention)
             embed.add_field(name='Reason', value=f'Possible {result}')
             embed.add_field(name='Content', value=message.content)
+            embed.set_footer(text='Message may have been deleted by me')
             await channel.send(embed=embed)
 
 
