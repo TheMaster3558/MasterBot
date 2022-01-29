@@ -97,6 +97,7 @@ async def timeout_user(member: discord.Member, until, bot: commands.Bot, *, reas
 
 
 class Moderation(slash_util.ApplicationCog):
+    """Will be changed to cache instead of db call"""
     def __init__(self, bot):
         super().__init__(bot)
         print('Connecting to mongodb... (Moderation Cog)')
@@ -171,7 +172,7 @@ class Moderation(slash_util.ApplicationCog):
             await ctx.send(embed=embed)
         log = await self.log.find_one({'_id': str(ctx.guild.id)})
         if log:
-            channel = self.bot.get_channel(log.get('channel'))
+            channel = self.bot.get_channel(int(log.get('channel')))
             embed = discord.Embed(title=f'{member} was kicked by {ctx.author}',
                                   description=reason or 'Reason not provided',
                                   timestamp=ctx.message.created_at)
@@ -201,7 +202,7 @@ class Moderation(slash_util.ApplicationCog):
         await ctx.send(f'{member} got banned.')
         log = await self.log.find_one({'_id': str(ctx.guild.id)})
         if log:
-            channel = self.bot.get_channel(log.get('channel'))
+            channel = self.bot.get_channel(int(log.get('channel')))
             embed = discord.Embed(title=f'{member} was banned by {ctx.author}',
                                   description=reason or 'Reason not provided',
                                   timestamp=ctx.message.created_at)
@@ -235,7 +236,7 @@ class Moderation(slash_util.ApplicationCog):
         await ctx.reply('The members got banned =)')
         log = await self.log.find_one({'_id': str(ctx.guild.id)})
         if log:
-            channel = self.bot.get_channel(log.get('channel'))
+            channel = self.bot.get_channel(int(log.get('channel')))
             embed = discord.Embed(title=f'The following members were banned by {ctx.author}',
                                   description='{0}\n{1}'.format('\n'.join(members), reason or 'Reason not provided'))
             await channel.send(embed=embed)
@@ -263,7 +264,7 @@ class Moderation(slash_util.ApplicationCog):
         await ctx.send('Ok done.')
         log = await self.log.find_one({'_id': str(ctx.guild.id)})
         if log:
-            channel = self.bot.get_channel(log.get('channel'))
+            channel = self.bot.get_channel(int(log.get('channel')))
             embed = discord.Embed(title=f'{member} was softbanned by {ctx.author}',
                                   description=reason or 'Reason not provided',
                                   timestamp=ctx.message.created_at)
@@ -286,7 +287,7 @@ class Moderation(slash_util.ApplicationCog):
     async def unban(self, ctx, user: discord.User, *, reason=None):
         log = await self.log.find_one({'_id': str(ctx.guild.id)})
         if log:
-            channel = self.bot.get_channel(log.get('channel'))
+            channel = self.bot.get_channel(int(log.get('channel')))
             embed = discord.Embed(title=f'{user} was unbanned by {ctx.author}',
                                   description=reason or 'Reason not provided',
                                   timestamp=ctx.message.created_at)
@@ -308,8 +309,9 @@ class Moderation(slash_util.ApplicationCog):
     @commands.bot_has_permissions(ban_members=True)
     async def hackban(self, ctx, user: discord.User, *, reason=None):
         await ctx.guild.ban(user, reason=reason)
-        if str(ctx.guild.id) in self.log.keys():
-            channel = self.bot.get_channel(self.log[str(ctx.guild.id)])
+        log = await self.log.find_one({'_id': str(ctx.guild.id)})
+        if log:
+            channel = self.bot.get_channel(int(log.get('channel')))
             embed = discord.Embed(title=f'{user} was hackbanned by {ctx.author}',
                                   description=reason or 'Reason not provided',
                                   timestamp=ctx.message.created_at)
@@ -340,7 +342,7 @@ class Moderation(slash_util.ApplicationCog):
         await ctx.send(f"{member} got a timeout! I'll let them back in {minutes} minutes.")
         log = await self.log.find_one({'_id': str(ctx.guild.id)})
         if log:
-            channel = self.bot.get_channel(log.get('channel'))
+            channel = self.bot.get_channel(int(log.get('channel')))
             embed = discord.Embed(title=f'{member} was put on timeout by {ctx.author}',
                                   description=reason or 'Reason not provided',
                                   timestamp=ctx.message.created_at)
@@ -383,7 +385,7 @@ class Moderation(slash_util.ApplicationCog):
         await ctx.send('{} added to {}!'.format(','.join([role.name for role in roles]), member))
         log = await self.log.find_one({'_id': str(ctx.guild.id)})
         if log:
-            channel = self.bot.get_channel(log.get('channel'))
+            channel = self.bot.get_channel(int(log.get('channel')))
             embed = discord.Embed(
                 title='{} added {} to {}'.format(ctx.author, ', '.join([role.name for role in roles]), member),
                 description=reason or 'Reason not provided',
@@ -416,7 +418,7 @@ class Moderation(slash_util.ApplicationCog):
         await ctx.send('{} removed from {} =('.format(', '.join([role.mention for role in roles]), member))
         log = await self.log.find_one({'_id': str(ctx.guild.id)})
         if log:
-            channel = self.bot.get_channel(log.get('channel'))
+            channel = self.bot.get_channel(int(log.get('channel')))
             embed = discord.Embed(
                 title='{} removed {} from {}'.format(ctx.author, ', '.join([role for role in roles]), member),
                 description=reason or 'Reason not provided',
@@ -457,7 +459,7 @@ class Moderation(slash_util.ApplicationCog):
         await ctx.send(embed=embed)
         log = await self.log.find_one({'_id': str(ctx.guild.id)})
         if log:
-            channel = self.bot.get_channel(log.get('channel'))
+            channel = self.bot.get_channel(int(log.get('channel')))
             await channel.send(embed=embed)
 
     @lock.error
@@ -496,7 +498,7 @@ class Moderation(slash_util.ApplicationCog):
         await ctx.send(embed=embed)
         log = await self.log.find_one({'_id': str(ctx.guild.id)})
         if log:
-            channel = self.bot.get_channel(log.get('channel'))
+            channel = self.bot.get_channel(int(log.get('channel')))
             await channel.send(embed=embed)
 
     @unlock.error
@@ -529,7 +531,7 @@ class Moderation(slash_util.ApplicationCog):
             await ctx.send(f'Messages deleted from {arg.name} {arg.__class__.__name__}')
         log = await self.log.find_one({'_id': str(ctx.guild.id)})
         if log:
-            channel = self.bot.get_channel(log.get('channel'))
+            channel = self.bot.get_channel(int(log.get('channel')))
             embed = discord.Embed(title=f'{ctx.author} cleared messages some messages',
                                   description=arg.mention)
             await channel.send(embed=embed)
