@@ -18,13 +18,15 @@ class Auto(slash_util.ApplicationCog):
             'phone': re.compile('\(?\d{3}\)?-\d{3}-\d{4}'),
             'token': re.compile('[A-Za-z\d]{23}\.[\w-]{6}\.[\w-]{27}')
         }
+        print('Connected to mongodb... (Auto)')
         self.mongo_client = motor_asyncio.AsyncIOMotorClient(
             'mongodb+srv://chawkk:Xboxone87@masterbotcluster.ezbjl.mongodb.net/test')
         self.db = self.mongo_client['auto']['options']
+        self.log = self.bot.cogs.get('Moderation').log
+        print('Connected.')
+        self.update_mongo.start()
         self.options = {}
         self.custom = {}
-        self.log = self.bot.cogs.get('Moderation').log
-        self.update_mongo.start()
         print('Auto cog loaded')
 
     @commands.Cog.listener()
@@ -36,6 +38,14 @@ class Auto(slash_util.ApplicationCog):
     async def on_guild_remove(self, guild):
         if str(guild.id) in self.options:
             del self.options[str(guild.id)]
+
+    @commands.Cog.listener()
+    async def on_error(self, ctx: commands.Context, error):
+        if isinstance(error, commands.MissingPermissions):
+            return
+        else:
+            if not ctx.command.has_error_handler():
+                raise error
 
     async def fetch_data(self):
         for guild in self.bot.guilds:
@@ -49,7 +59,6 @@ class Auto(slash_util.ApplicationCog):
             else:
                 self.options[str(guild.id)] = self.default_options
             self.custom[str(guild.id)] = {}
-        print(self.custom)
 
     @tasks.loop(seconds=10)
     async def update_mongo(self):
@@ -70,10 +79,12 @@ class Auto(slash_util.ApplicationCog):
         await self.update_mongo()
 
     @commands.group()
+    @commands.has_permissions(administrator=True)
     async def auto(self, ctx):
-        pass
+        await ctx.send('`auto` categories are `disable` and `enable`')
 
     @auto.command()
+    @commands.has_permissions(administrator=True)
     async def disable(self, ctx, *options):
         if len(options) == 0:
             return await ctx.send('Give something.')
@@ -83,6 +94,7 @@ class Auto(slash_util.ApplicationCog):
         await ctx.send(f'The following have been disabled: {", ".join(options)}')
 
     @auto.command()
+    @commands.has_permissions(administrator=True)
     async def enable(self, ctx, *options):
         if len(options) == 0:
             return await ctx.send('Give something.')
@@ -92,11 +104,43 @@ class Auto(slash_util.ApplicationCog):
         await ctx.send(f'The following have been enabled: {", ".join(options)}')
 
     @commands.command()
+    @commands.has_permissions(administrator=True)
     async def custom(self, ctx, name, regex):
         if name in self.default_names:
             return await ctx.send("You can't use that name.")
         regex = codecs.decode(regex, 'unicode_escape')
         self.custom[str(ctx.guild.id)][name] = regex
+
+    @custom.error
+    async def error(self, ctx, error):
+        if isinstance(error, commands.MissingRequiredArgument):
+            if ctx.prefix == '!':
+                prefix = '!'
+            else:
+                prefix = f'@{self.bot.name}'
+            await ctx.send(f'Bad format. `{prefix}custom <name> <regex>`')
+        else:
+            raise error
+
+    @commands.command()
+    @commands.has_permissions(administrator=True)
+    async def delete(self, ctx, name):
+        guild_options = self.custom[str(ctx.guild.id)]
+        if name not in guild_options:
+            await ctx.send(f'Customs are {", ".join(guild_options.keys())}')
+        del guild_options[name]
+        await ctx.send('Ok. Done.')
+
+    @delete.error
+    async def error(self, ctx, error):
+        if isinstance(error, commands.MissingRequiredArgument):
+            if ctx.prefix == '!':
+                prefix = '!'
+            else:
+                prefix = f'@{self.bot.name}'
+            await ctx.send(f'Bad format. `{prefix}delete <name>`')
+        else:
+            raise error
 
     async def check_delete(self, message: discord.Message):
         if message.channel.permissions_for(message.guild.me).manage_messages and message.author.top_role.position <= message.guild.me.top_role.position:
