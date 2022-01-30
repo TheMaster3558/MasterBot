@@ -8,9 +8,11 @@ from cogs.code import Help as CHelp
 from cogs.translate import Help as THelp
 from cogs.trivia import Help as TrHelp
 from cogs.clash_royale import Help as CRHelp
+from cogs.jokes import Help as JHelp
 
 import sys
 from async_google_trans_new import __version__ as agtn_version
+import aiohttp
 
 
 class HelpAndInfo(slash_util.ApplicationCog):
@@ -33,8 +35,9 @@ class HelpAndInfo(slash_util.ApplicationCog):
                                                   f'[Python {sys.version.split(" ")[0]}](https://www.python.org)\n'
                                                   f'[discord.py {discord.__version__}](https://github.com/Rapptz/discord.py)\n'
                                                   f'[async-google-trans-new {agtn_version}](https://github.com/Theelx/async-google-trans-new)\n'
+                                                  f'[aiohttp {aiohttp.__version__}](https://docs.aiohttp.org/en/stable/)'
                                                   f'Platform {sys.platform}')
-        embed.add_field(name='Stats', value=f'Servers {len(self.bot.guilds)}\nUsers {len(set(self.bot.users))}')
+        embed.add_field(name='Stats', value=f'Servers: {len(self.bot.guilds)}\nUsers: {len(set(self.bot.users))}')
         await ctx.send(embed=embed)
 
     @slash_util.slash_command(name='info', description='Get info about the bot')
@@ -102,9 +105,19 @@ class HelpAndInfo(slash_util.ApplicationCog):
         prefix = self.bot.command_prefix(self.bot, ctx.message)[2]
         h = CRHelp(prefix)
         help_message = h.full_help()
-        embed = discord.Embed(title='Clash Royale help',
+        embed = discord.Embed(title='Clash Royale Help',
                               description=help_message)
-        embed.set_footer(text='This bot uses developer.clashroyale.com to do this')
+        embed.set_footer(text='This bot uses the Clash Royale API to do this. Learn more at developer.clashroyale.com')
+        await ctx.send(embed=embed)
+
+    @_help.command()
+    async def jokes(self, ctx):
+        prefix = self.bot.command_prefix(self.bot, ctx.message)[2]
+        h = JHelp(prefix)
+        help_message = h.full_help()
+        embed = discord.Embed(title='Jokes Help',
+                              description=help_message)
+        embed.set_footer(text='This bot uses jokeapi.dev to do this')
         await ctx.send(embed=embed)
 
 
