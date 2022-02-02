@@ -4,6 +4,7 @@ import slash_util
 
 from time import perf_counter
 import logging
+import requests
 
 
 __version__ = '1.0.0a'
@@ -12,7 +13,7 @@ __version__ = '1.0.0a'
 # logging
 logger = logging.getLogger('discord')
 logger.setLevel(logging.DEBUG)
-handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w')
+handler = logging.FileHandler(filename='logs/discord.log', encoding='utf-8', mode='w')
 handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
 logger.addHandler(handler)
 
@@ -32,6 +33,7 @@ bot = slash_util.Bot(command_prefix=commands.when_mentioned_or('!'),
 bot.__version__ = __version__
 bot.start_time = perf_counter()
 
+
 cogs = ['cogs.reaction_roles',
         'cogs.moderation',
         'cogs.code',
@@ -39,8 +41,9 @@ cogs = ['cogs.reaction_roles',
         'cogs.trivia',
         'cogs.help_info',
         'cogs.clash_royale',
-        'cogs.jokes']
-
+        'cogs.jokes',
+        'cogs.auto',
+        'cogs.webhook']
 
 if __name__ == '__main__':
     for cog in cogs:
@@ -56,11 +59,6 @@ async def on_ready():
 async def time():
     bot.on_ready_time = perf_counter()
     print('Time taken to ready up:', round(bot.on_ready_time - bot.start_time, 1), 'seconds')
-
-
-@bot.command()
-async def version(ctx):
-    await ctx.send(bot.__version__)
 
 
 bot.run(TOKEN1)

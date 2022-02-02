@@ -7,6 +7,25 @@ from pymongo.errors import DuplicateKeyError
 import codecs
 
 
+class Help:
+    def __init__(self, prefix):
+        self.prefix = prefix
+
+    def auto_help(self):
+        message = f'`{self.prefix}auto enable <options>`: Turn on and off some of the builtin delete regex. They are email, phone, and token. All are disabled by default but token\n' \
+        f'`{self.prefix}auto disable <options>`: Disable some of the default delete regex\n'
+        return message
+
+    def custom_help(self):
+        message = f'`{self.prefix}custom <name> <regex>`: Create a new regex to delete. Name it to identify\n' \
+        f'`{self.prefix}cdelete <name>`: Delete one of the customs with the name'
+        return message
+
+    def full_help(self):
+        help_list = [self.auto_help(), self.custom_help()]
+        return '\n'.join(help_list)
+
+
 class Auto(slash_util.ApplicationCog):
     default_names = ['email', 'phone', 'token']
     default_options = {'email': False, 'phone': False, 'token': True}
@@ -18,7 +37,7 @@ class Auto(slash_util.ApplicationCog):
             'phone': re.compile('\(?\d{3}\)?-\d{3}-\d{4}'),
             'token': re.compile('[A-Za-z\d]{23}\.[\w-]{6}\.[\w-]{27}')
         }
-        print('Connected to mongodb... (Auto)')
+        print('Connected to mongodb... (Auto cog)')
         self.mongo_client = motor_asyncio.AsyncIOMotorClient(
             'mongodb+srv://chawkk:Xboxone87@masterbotcluster.ezbjl.mongodb.net/test')
         self.db = self.mongo_client['auto']['options']
@@ -40,7 +59,9 @@ class Auto(slash_util.ApplicationCog):
             del self.options[str(guild.id)]
 
     @commands.Cog.listener()
-    async def on_error(self, ctx: commands.Context, error):
+    async def on_command_error(self, ctx: commands.Context, error):
+        if ctx.command.cog != self:
+            return
         if isinstance(error, commands.MissingPermissions):
             return
         else:
@@ -81,7 +102,7 @@ class Auto(slash_util.ApplicationCog):
     @commands.group()
     @commands.has_permissions(administrator=True)
     async def auto(self, ctx):
-        await ctx.send('`auto` categories are `disable` and `enable`')
+        await ctx.send('`auto` categories are `disable` and `enable` and `custom`')
 
     @auto.command()
     @commands.has_permissions(administrator=True)
@@ -105,7 +126,7 @@ class Auto(slash_util.ApplicationCog):
 
     @commands.command()
     @commands.has_permissions(administrator=True)
-    async def custom(self, ctx, name, regex):
+    async def custom(self, ctx, name, *, regex):
         if name in self.default_names:
             return await ctx.send("You can't use that name.")
         regex = codecs.decode(regex, 'unicode_escape')
@@ -124,14 +145,14 @@ class Auto(slash_util.ApplicationCog):
 
     @commands.command()
     @commands.has_permissions(administrator=True)
-    async def delete(self, ctx, name):
+    async def cdelete(self, ctx, *, name):
         guild_options = self.custom[str(ctx.guild.id)]
         if name not in guild_options:
-            await ctx.send(f'Customs are {", ".join(guild_options.keys())}')
+            await ctx.send(f'Customs are {", ".join(guild_options.keys())} not {name}')
         del guild_options[name]
         await ctx.send('Ok. Done.')
 
-    @delete.error
+    @cdelete.error
     async def error(self, ctx, error):
         if isinstance(error, commands.MissingRequiredArgument):
             if ctx.prefix == '!':
@@ -164,6 +185,10 @@ class Auto(slash_util.ApplicationCog):
 
     @commands.Cog.listener('on_message')
     async def delete_message(self, message: discord.Message):
+        if not isinstance(message.author, discord.Member):
+            return
+        if not message.guild:
+            return
         if 'custom' in message.content:
             return
         if message.author.top_role.position >= message.guild.me.top_role.position:

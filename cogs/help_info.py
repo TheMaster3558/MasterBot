@@ -9,6 +9,7 @@ from cogs.translate import Help as THelp
 from cogs.trivia import Help as TrHelp
 from cogs.clash_royale import Help as CRHelp
 from cogs.jokes import Help as JHelp
+from cogs.auto import Help as AHelp
 
 import sys
 from async_google_trans_new import __version__ as agtn_version
@@ -49,13 +50,13 @@ class HelpAndInfo(slash_util.ApplicationCog):
         if ctx.invoked_subcommand is None:
             embed = discord.Embed(title=f'{self.bot.user.name} Help Menu')
             embed.add_field(name='Categories',
-                            value='`reactions`\n`moderation`\n`welcome`\n`code`\n`translation`\n`trivia`\n`cr`(Clash Royale)')
-            embed.add_field(name='Info', value=f'`{self.bot.command_prefix(self.bot, ctx.message)[2]}info`')
+                            value='`reactions`\n`moderation`\n`welcome`\n`code`\n`translation`\n`trivia`\n`cr`(Clash Royale)\n`jokes`\n`auto`')
+            embed.add_field(name='Info', value=f'`{(await self.bot.get_prefix(ctx.message))[2]}info`')
             await ctx.send(embed=embed)
 
     @_help.command()
     async def reactions(self, ctx):
-        prefix = self.bot.command_prefix(self.bot, ctx.message)[2]
+        prefix = (await self.bot.get_prefix(ctx.message))[2]
         h = RRHelp(prefix)
         help_message = h.full_help()
         embed = discord.Embed(title='Reaction Role Help',
@@ -64,7 +65,7 @@ class HelpAndInfo(slash_util.ApplicationCog):
 
     @_help.command()
     async def moderation(self, ctx):
-        prefix = self.bot.command_prefix(self.bot, ctx.message)[2]
+        prefix = (await self.bot.get_prefix(ctx.message))[2]
         h = MHelp(prefix)
         help_message = h.full_help()
         embed = discord.Embed(title='Moderation Help',
@@ -73,7 +74,7 @@ class HelpAndInfo(slash_util.ApplicationCog):
 
     @_help.command()
     async def code(self, ctx):
-        prefix = self.bot.command_prefix(self.bot, ctx.message)[2]
+        prefix = (await self.bot.get_prefix(ctx.message))[2]
         h = CHelp(prefix)
         help_message = h.full_help()
         embed = discord.Embed(title='Code Help',
@@ -82,7 +83,7 @@ class HelpAndInfo(slash_util.ApplicationCog):
 
     @_help.command()
     async def translate(self, ctx):
-        prefix = self.bot.command_prefix(self.bot, ctx.message)[2]
+        prefix = (await self.bot.get_prefix(ctx.message))[2]
         h = THelp(prefix)
         help_message = h.full_help()
         embed = discord.Embed(title='Translate Help',
@@ -92,7 +93,7 @@ class HelpAndInfo(slash_util.ApplicationCog):
 
     @_help.command()
     async def trivia(self, ctx):
-        prefix = self.bot.command_prefix(self.bot, ctx.message)[2]
+        prefix = (await self.bot.get_prefix(ctx.message))[2]
         h = TrHelp(prefix)
         help_message = h.full_help()
         embed = discord.Embed(title='Trivia Help',
@@ -102,7 +103,7 @@ class HelpAndInfo(slash_util.ApplicationCog):
 
     @_help.command()
     async def cr(self, ctx):
-        prefix = self.bot.command_prefix(self.bot, ctx.message)[2]
+        prefix = (await self.bot.get_prefix(ctx.message))[2]
         h = CRHelp(prefix)
         help_message = h.full_help()
         embed = discord.Embed(title='Clash Royale Help',
@@ -112,12 +113,21 @@ class HelpAndInfo(slash_util.ApplicationCog):
 
     @_help.command()
     async def jokes(self, ctx):
-        prefix = self.bot.command_prefix(self.bot, ctx.message)[2]
+        prefix = (await self.bot.get_prefix(ctx.message))[2]
         h = JHelp(prefix)
         help_message = h.full_help()
         embed = discord.Embed(title='Jokes Help',
                               description=help_message)
         embed.set_footer(text='This bot uses jokeapi.dev to do this')
+        await ctx.send(embed=embed)
+
+    @_help.command()
+    async def auto(self, ctx):
+        prefix = (await self.bot.get_prefix(ctx.message))[2]
+        h = AHelp(prefix)
+        help_message = h.full_help()
+        embed = discord.Embed(title='Auto Help',
+                              description=help_message)
         await ctx.send(embed=embed)
 
 
