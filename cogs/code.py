@@ -90,7 +90,7 @@ class Code(slash_util.ApplicationCog):
     @_eval.error
     async def error(self, ctx, error):
         if isinstance(error, commands.CommandOnCooldown):
-            await ctx.send('Patience. Wait {:.1f}'.format(error.retry_after))
+            await ctx.send('Patience. Wait {:.1f} seconds'.format(error.retry_after))
         else:
             await ctx.send('Command raised an exception\n```{}```'.format(error))
 
