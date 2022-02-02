@@ -3,6 +3,7 @@ from discord.ext import commands
 from async_google_trans_new import AsyncTranslator
 from async_google_trans_new.constant import LANGUAGES
 import slash_util
+import traceback
 
 
 class Help:
@@ -35,6 +36,9 @@ class Translator(slash_util.ApplicationCog):
 
     @commands.Cog.listener()
     async def on_command_error(self, ctx, error):
+        if ctx.command is None:
+            traceback.print_exception(error)
+            return
         if ctx.command.cog != self:
             return
         if isinstance(error, commands.CommandOnCooldown):
