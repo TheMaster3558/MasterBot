@@ -117,6 +117,8 @@ class Moderation(slash_util.ApplicationCog):
 
     @commands.Cog.listener()
     async def on_command_error(self, ctx, error):
+        if ctx.command is None:
+            return
         if ctx.command.cog != self:
             return
         if isinstance(error, commands.errors.MissingPermissions):

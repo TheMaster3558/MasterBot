@@ -50,7 +50,7 @@ class HelpAndInfo(slash_util.ApplicationCog):
         if ctx.invoked_subcommand is None:
             embed = discord.Embed(title=f'{self.bot.user.name} Help Menu')
             embed.add_field(name='Categories',
-                            value='`reactions`\n`moderation`\n`welcome`\n`code`\n`translation`\n`trivia`\n`cr`(Clash Royale)\n`jokes`\n`auto`')
+                            value='`reactions`\n`moderation`\n`code`\n`translation`\n`trivia`\n`cr`(Clash Royale)\n`jokes`')
             embed.add_field(name='Info', value=f'`{(await self.bot.get_prefix(ctx.message))[2]}info`')
             await ctx.send(embed=embed)
 

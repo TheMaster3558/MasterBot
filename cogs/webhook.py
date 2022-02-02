@@ -29,6 +29,8 @@ class Webhooks(commands.Cog):
 
     @commands.Cog.listener()
     async def on_command_error(self, ctx, error):
+        if ctx.command is None:
+            return
         if ctx.command.cog != self:
             return
         if isinstance(error, commands.BotMissingPermissions):
@@ -36,6 +38,8 @@ class Webhooks(commands.Cog):
                 embed = discord.Embed(title='I need `manage_webhooks` permissions.',
                                         description='Tell someone to give it to me')
                 await ctx.send(embed=embed)
+        if isinstance(error, commands.NoPrivateMessage):
+            await ctx.send('Try this in a server.')
 
     async def fetch_webhooks(self):
         for guild in self.bot.guilds:
@@ -135,6 +139,13 @@ class Webhooks(commands.Cog):
                            username=data['name'],
                            avatar_url=data['avatar'])
         await ctx.message.delete()
+
+    @commands.command()
+    @commands.guild_only()
+    async def delete(self, ctx):
+        if not self.users[ctx.guild.id].get(str(ctx.author.id)):
+            return await ctx.send("You don't even have one...")
+        del self.users[ctx.guild.id][str(ctx.author.id)]
 
 
 def setup(bot):

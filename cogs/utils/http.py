@@ -1,6 +1,5 @@
 import requests
 import aiohttp
-import asyncio
 
 
 class AsyncHTTPClient:

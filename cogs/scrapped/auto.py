@@ -60,6 +60,8 @@ class Auto(slash_util.ApplicationCog):
 
     @commands.Cog.listener()
     async def on_command_error(self, ctx: commands.Context, error):
+        if ctx.command is None:
+            return
         if ctx.command.cog != self:
             return
         if isinstance(error, commands.MissingPermissions):
@@ -150,6 +152,7 @@ class Auto(slash_util.ApplicationCog):
         if name not in guild_options:
             await ctx.send(f'Customs are {", ".join(guild_options.keys())} not {name}')
         del guild_options[name]
+        await self.db.delete_many()
         await ctx.send('Ok. Done.')
 
     @cdelete.error
