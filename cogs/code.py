@@ -48,12 +48,11 @@ class Code(slash_util.ApplicationCog):
     async def _eval(self, ctx, *, arg: str):
         """
         This command will need lots of working on.
+        Maybe will switch to SnekBox soon
         """
         if '__' in arg or 'os' in arg or 'bot' in arg:
             return
-        dup = list(arg)
-        dup.reverse()
-        if arg.startswith('```') and ''.join(dup).startswith('```'):
+        if arg.startswith('```') and arg.endswith('```'):
             arg = list(arg)
             del arg[0]
             del arg[0]
@@ -62,7 +61,7 @@ class Code(slash_util.ApplicationCog):
             del arg[-1]
             del arg[-1]
             arg = ''.join(arg)
-        elif arg.startswith('```py') and ''.join(dup).startswith('```'):
+        elif arg.startswith('```py') and arg.endswith('```'):
             arg = list(arg)
             del arg[0]
             del arg[0]
@@ -72,18 +71,24 @@ class Code(slash_util.ApplicationCog):
             del arg[-1]
             del arg[-1]
             arg = ''.join(arg)
-        elif arg.startswith('`') and ''.join(dup).startswith('`'):
+        elif arg.startswith('`') and arg.endswith('`'):
             arg = list(arg)
             del arg[0]
             del arg[-1]
             arg = ''.join(arg)
         res = exec(arg, {'math': math, 'random': random, 're': re})
         if inspect.isawaitable(res):
-            sendable = str(await res)
+            try:
+                sendable = str(await res)
+            except Exception as exc:
+                sendable = 'Error\n{}'.format(exc)
             if len(sendable) > 0:
                 await ctx.send('```py\n{}\n```'.format(sendable))
         else:
-            sendable = str(res)
+            try:
+                sendable = str(res)
+            except Exception as exc:
+                sendable = 'Error\n{}'.format(exc)
             if len(sendable) > 0:
                 await ctx.send('```py\n{}\n```'.format(sendable))
 
