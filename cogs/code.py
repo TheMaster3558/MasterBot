@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 import inspect
-from typing import Optional
+from typing import Optional, Union
 import random
 import math
 import re
@@ -96,7 +96,7 @@ class Code(slash_util.ApplicationCog):
 
     @commands.command()
     async def canrun(self, ctx, user: Optional[discord.Member], *, acommand):
-        command: commands.Command = self.bot.all_commands.get(acommand)
+        command: Union[commands.Command, commands.Group] = self.bot.all_commands.get(acommand)
         if command is None:
             embed = discord.Embed(title=f'Command `{acommand}` not found.')
             return await ctx.send(embed=embed)
