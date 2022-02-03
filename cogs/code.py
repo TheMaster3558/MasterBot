@@ -168,6 +168,25 @@ class Code(slash_util.ApplicationCog):
         await self.bot.close()
         __sys__.exit()
 
+    @commands.command()
+    @commands.is_owner()
+    async def reload(self, ctx, *exts):
+        for ext in exts:
+            self.bot.reload_extension(ext)
+        print(f'Extensions reloaded: {", ".join(exts)}')
+
+    @commands.command()
+    @commands.is_owner()
+    async def restart(self, ctx):
+        """Nearly a full restart. Just without restarting the connection."""
+        await ctx.send('Ok!')
+        try:
+            for ext in self.bot.extensions:
+                self.bot.reload_extension(ext)
+            self.bot.clear()
+        except Exception as exc:
+            await ctx.send(f'An Error!?\n```\n{exc}\n```')
+
 
 def setup(bot: commands.Bot):
     bot.add_cog(Code(bot))
