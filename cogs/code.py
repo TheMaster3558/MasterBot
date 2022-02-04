@@ -8,6 +8,7 @@ import re
 import os as __os__  # to keep eval command safe
 import sys as __sys__
 import slash_util
+from bot import MasterBot
 
 
 class Help:
@@ -39,7 +40,7 @@ class Code(slash_util.ApplicationCog):
     """
     Many of the commands are owner only
     """
-    def __init__(self, bot: commands.Bot):
+    def __init__(self, bot: MasterBot):
         super().__init__(bot)
         print('Code cog loaded')
 
@@ -181,9 +182,7 @@ class Code(slash_util.ApplicationCog):
         """Nearly a full restart. Just without restarting the connection."""
         await ctx.send('Ok!')
         try:
-            for ext in self.bot.extensions:
-                self.bot.reload_extension(ext)
-            self.bot.clear()
+            self.bot.restart()
         except Exception as exc:
             await ctx.send(f'An Error!?\n```\n{exc}\n```')
 

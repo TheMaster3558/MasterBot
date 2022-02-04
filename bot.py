@@ -4,6 +4,7 @@ from discord.ext import commands
 from time import perf_counter
 from typing import Literal, Optional
 
+
 intents = discord.Intents.default()
 intents.members = True
 
@@ -47,4 +48,12 @@ class MasterBot(slash_util.Bot):
             self.current_token = self.TOKEN1
         elif token == 2:
             self.current_token = self.TOKEN2
+        else:
+            raise ValueError('`token` arg must be `1` or `2`')
         super().run(self.current_token)
+
+    def restart(self):
+        """Reloads all extensions and clears the cache"""
+        for ext in self.extensions:
+            self.reload_extension(ext)
+        self.clear()
