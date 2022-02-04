@@ -323,5 +323,5 @@ class ReactionRoles(commands.Cog):
             await ctx.send(embed=embed)
 
 
-def setup(bot: commands.Bot):
+def setup(bot: MasterBot):
     bot.add_cog(ReactionRoles(bot))

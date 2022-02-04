@@ -284,5 +284,5 @@ class ClashRoyale(slash_util.ApplicationCog):
         await self._clan.func(self, ctx, clan.get('tag'))
 
 
-def setup(bot: commands.Bot):
+def setup(bot: MasterBot):
     bot.add_cog(ClashRoyale(bot))

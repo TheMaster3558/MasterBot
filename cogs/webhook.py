@@ -149,7 +149,7 @@ class Webhooks(commands.Cog):
         del self.users[ctx.guild.id][str(ctx.author.id)]
 
 
-def setup(bot):
+def setup(bot: MasterBot):
     bot.add_cog(Webhooks(bot))
 
 

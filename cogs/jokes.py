@@ -324,5 +324,5 @@ class Jokes(slash_util.ApplicationCog):
         await self._blacklist(ctx, flags=flags)
 
 
-def setup(bot: commands.Bot):
+def setup(bot: MasterBot):
     bot.add_cog(Jokes(bot))

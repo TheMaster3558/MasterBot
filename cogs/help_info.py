@@ -131,5 +131,5 @@ class HelpAndInfo(slash_util.ApplicationCog):
         await ctx.send(embed=embed)
 
 
-def setup(bot: commands.Bot):
+def setup(bot: MasterBot):
     bot.add_cog(HelpAndInfo(bot))

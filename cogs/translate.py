@@ -113,5 +113,5 @@ class Translator(slash_util.ApplicationCog):
         await self.detect(ctx, text)
 
 
-def setup(bot: commands.Bot):
+def setup(bot: MasterBot):
     bot.add_cog(Translator(bot))

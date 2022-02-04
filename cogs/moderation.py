@@ -557,5 +557,5 @@ class Moderation(slash_util.ApplicationCog):
             raise type(error)(error)
 
 
-def setup(bot: commands.Bot):
+def setup(bot: MasterBot):
     bot.add_cog(Moderation(bot))

@@ -187,7 +187,7 @@ class Code(slash_util.ApplicationCog):
             await ctx.send(f'An Error!?\n```\n{exc}\n```')
 
 
-def setup(bot: commands.Bot):
+def setup(bot: MasterBot):
     bot.add_cog(Code(bot))
 
 

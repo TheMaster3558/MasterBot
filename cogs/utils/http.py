@@ -1,5 +1,6 @@
 import requests
 import aiohttp
+import asyncio
 
 
 class AsyncHTTPClient:
@@ -19,6 +20,10 @@ class AsyncHTTPClient:
                 return await resp.json()
             return await resp.text()
 
+    def __del__(self):
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(self.session.close())
+
 
 class RequestsHTTPClient:
     def __init__(self, base_url):
@@ -30,3 +35,6 @@ class RequestsHTTPClient:
         if json:
             return resp.json()
         return resp.text
+
+    def __del__(self):
+        self.session.close()

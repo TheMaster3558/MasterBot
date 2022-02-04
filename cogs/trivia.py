@@ -156,5 +156,5 @@ class Trivia(slash_util.ApplicationCog):
         await self.trivia(ctx)
 
 
-def setup(bot: commands.Bot):
+def setup(bot: MasterBot):
     bot.add_cog(Trivia(bot))
