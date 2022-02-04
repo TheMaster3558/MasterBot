@@ -5,6 +5,7 @@ from motor import motor_asyncio
 from pymongo.errors import DuplicateKeyError
 from typing import Optional
 import asyncio
+from bot import MasterBot
 
 
 class WebhookUserFlags(commands.FlagConverter):
@@ -13,7 +14,7 @@ class WebhookUserFlags(commands.FlagConverter):
 
 
 class Webhooks(commands.Cog):
-    def __init__(self, bot):
+    def __init__(self, bot: MasterBot):
         self.bot = bot
         self.session = None
         print('Connecting to mongodb... (Webhooks cog)')
@@ -142,7 +143,7 @@ class Webhooks(commands.Cog):
 
     @commands.command()
     @commands.guild_only()
-    async def delete(self, ctx):
+    async def wdelete(self, ctx):
         if not self.users[ctx.guild.id].get(str(ctx.author.id)):
             return await ctx.send("You don't even have one...")
         del self.users[ctx.guild.id][str(ctx.author.id)]

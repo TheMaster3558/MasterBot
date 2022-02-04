@@ -4,6 +4,7 @@ from async_google_trans_new import AsyncTranslator
 from async_google_trans_new.constant import LANGUAGES
 import slash_util
 import traceback
+from bot import MasterBot
 
 
 class Help:
@@ -29,7 +30,7 @@ class Help:
 
 
 class Translator(slash_util.ApplicationCog):
-    def __init__(self, bot: commands.Bot):
+    def __init__(self, bot: MasterBot):
         super().__init__(bot)
         self.translator = AsyncTranslator(url_suffix='com')
         print('Translator cog loaded')

@@ -7,6 +7,7 @@ import asyncio
 from motor import motor_asyncio
 from pymongo.errors import DuplicateKeyError
 from typing import Optional, Union
+from bot import MasterBot
 
 
 class Help:
@@ -115,7 +116,7 @@ class JokeAPIHTTPClient(AsyncHTTPClient):
 
 
 class Jokes(slash_util.ApplicationCog):
-    def __init__(self, bot):
+    def __init__(self, bot: MasterBot):
         super().__init__(bot)
         self.http = JokeAPIHTTPClient()
         print('Connecting to mongodb... (Jokes cog)')

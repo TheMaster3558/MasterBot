@@ -8,6 +8,7 @@ from motor import motor_asyncio
 from pymongo.errors import DuplicateKeyError, OperationFailure
 import re
 import datetime
+from bot import MasterBot
 
 
 class Help:
@@ -98,14 +99,13 @@ async def timeout_user(member: discord.Member, until, bot: commands.Bot, *, reas
 
 class Moderation(slash_util.ApplicationCog):
     """Will be changed to cache instead of db call in beta"""
-    def __init__(self, bot):
+    def __init__(self, bot: MasterBot):
         super().__init__(bot)
         print('Connecting to mongodb... (Moderation Cog)')
         self.client = motor_asyncio.AsyncIOMotorClient(
             'mongodb+srv://chawkk:Xboxone87@masterbotcluster.ezbjl.mongodb.net/test')
         print('Connected.')
         self.log: motor_asyncio.AsyncIOMotorCollection = self.client['moderation']['channels']
-        self.email = re.compile('\w+@[a-zA-Z]\.[a-z]{2,3}')
         print('Moderation cog loaded')
 
     @commands.Cog.listener()

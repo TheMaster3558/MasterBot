@@ -5,6 +5,7 @@ from typing import Tuple, Optional, Union
 import json
 import copy as c
 import slash_util
+from bot import MasterBot
 
 
 class Help:
@@ -49,7 +50,7 @@ class CustomReactionRoleFlags(commands.FlagConverter):
 
 
 class ReactionRoles(commands.Cog):
-    def __init__(self, bot: commands.Bot):
+    def __init__(self, bot: MasterBot):
         self.bot = bot
         with open('messages.json', 'r') as m:
             self.role_dict = json.load(m)
@@ -82,7 +83,7 @@ class ReactionRoles(commands.Cog):
         with open('messages.json', 'w') as m:
             json.dump(self.role_dict, m, indent=2)
 
-    @tasks.loop(seconds=10)
+    @tasks.loop(seconds=30)
     async def update_file(self):
         loop = asyncio.get_event_loop()
         loop.run_in_executor(None, self._update)
@@ -90,6 +91,10 @@ class ReactionRoles(commands.Cog):
     @update_file.before_loop
     async def before_update(self):
         await self.bot.wait_until_ready()
+
+    @update_file.after_loop
+    async def after(self):
+        await self.update_file()
 
     @commands.command(aliases=['rr', 'reactionrole'])
     @commands.has_permissions(administrator=True)

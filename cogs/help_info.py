@@ -1,6 +1,7 @@
 import discord
 from discord.ext import commands
 import slash_util
+from bot import MasterBot
 
 from cogs.reaction_roles import Help as RRHelp
 from cogs.moderation import Help as MHelp
@@ -9,7 +10,6 @@ from cogs.translate import Help as THelp
 from cogs.trivia import Help as TrHelp
 from cogs.clash_royale import Help as CRHelp
 from cogs.jokes import Help as JHelp
-from cogs.auto import Help as AHelp
 
 import sys
 from async_google_trans_new import __version__ as agtn_version
@@ -17,7 +17,7 @@ import aiohttp
 
 
 class HelpAndInfo(slash_util.ApplicationCog):
-    def __init__(self, bot):
+    def __init__(self, bot: MasterBot):
         super().__init__(bot)
         print('Help and Info cog loaded')
 

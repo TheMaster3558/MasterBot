@@ -6,6 +6,7 @@ import random
 from html import unescape
 import slash_util
 from cogs.utils.view import View
+from bot import MasterBot
 
 
 class Help:
@@ -116,11 +117,10 @@ def view(correct: str, wrong: list):
 
 
 class Trivia(slash_util.ApplicationCog):
-    def __init__(self, bot):
+    def __init__(self, bot: MasterBot):
         super().__init__(bot)
         self.http = OpenTDBHTTPClient()
-        loop = asyncio.get_event_loop()
-        loop.run_until_complete(self.http.get_token())
+        asyncio.ensure_future(self.http.get_token())
         print('Trivia cog loaded')
 
     @commands.command()
