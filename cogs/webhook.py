@@ -8,6 +8,24 @@ import asyncio
 from bot import MasterBot
 
 
+class Help:
+    def __init__(self, prefix):
+        self.prefix = prefix
+
+    def webhook_help(self):
+        message = f'`{self.prefix}webhook create <flags>`: Create your own webhook user!\nFlags:\n**name**\n**avatar** (optional. should be url)\n' \
+        f'`{self.prefix}webhook send <message>`: Send a message with the webhook.'
+        return message
+
+    def delete_help(self):
+        message = f'`{self.prefix}wdelete`: Delete the data of your webhook user.'
+        return message
+
+    def full_help(self):
+        help_list = [self.webhook_help(), self.delete_help()]
+        return '\n'.join(help_list)
+
+
 class WebhookUserFlags(commands.FlagConverter):
     name: str
     avatar: Optional[str] = None
@@ -94,7 +112,7 @@ class Webhooks(commands.Cog):
                                   description='`create`\n`send`')
             embed.set_footer(text='Use create to modify your webhook.')
 
-    @commands.command()
+    @webhook.command()
     @commands.guild_only()
     @commands.bot_has_permissions(manage_webhooks=True)
     async def create(self, ctx: commands.Context, *, flags: WebhookUserFlags):
@@ -122,7 +140,7 @@ class Webhooks(commands.Cog):
         await ctx.send(embed=embed)
         await ctx.message.delete(delay=3)
 
-    @commands.command()
+    @webhook.command()
     @commands.guild_only()
     @commands.bot_has_permissions(manage_webhooks=True)
     async def send(self, ctx: commands.Context, *, content):
@@ -147,6 +165,7 @@ class Webhooks(commands.Cog):
         if not self.users[ctx.guild.id].get(str(ctx.author.id)):
             return await ctx.send("You don't even have one...")
         del self.users[ctx.guild.id][str(ctx.author.id)]
+        await ctx.send('Done.')
 
 
 def setup(bot: MasterBot):

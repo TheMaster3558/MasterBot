@@ -10,6 +10,7 @@ from cogs.translate import Help as THelp
 from cogs.trivia import Help as TrHelp
 from cogs.clash_royale import Help as CRHelp
 from cogs.jokes import Help as JHelp
+from cogs.webhook import Help as WHelp
 
 import sys
 from async_google_trans_new import __version__ as agtn_version
@@ -122,11 +123,11 @@ class HelpAndInfo(slash_util.ApplicationCog):
         await ctx.send(embed=embed)
 
     @_help.command()
-    async def auto(self, ctx):
+    async def webhook(self, ctx):
         prefix = (await self.bot.get_prefix(ctx.message))[2]
-        h = AHelp(prefix)
+        h = WHelp(prefix)
         help_message = h.full_help()
-        embed = discord.Embed(title='Auto Help',
+        embed = discord.Embed(title='Jokes Help',
                               description=help_message)
         await ctx.send(embed=embed)
 
