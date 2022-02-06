@@ -5,6 +5,8 @@ from motor import motor_asyncio
 from pymongo.errors import DuplicateKeyError
 from typing import Optional
 import asyncio
+
+import slash_util
 from bot import MasterBot
 
 
@@ -31,9 +33,9 @@ class WebhookUserFlags(commands.FlagConverter):
     avatar: Optional[str] = None
 
 
-class Webhooks(commands.Cog):
+class Webhooks(slash_util.ApplicationCog):
     def __init__(self, bot: MasterBot):
-        self.bot = bot
+        super().__init__(bot)
         self.session = None
         print('Connecting to mongodb... (Webhooks cog)')
         self.client = motor_asyncio.AsyncIOMotorClient(
@@ -59,6 +61,10 @@ class Webhooks(commands.Cog):
                 await ctx.send(embed=embed)
         if isinstance(error, commands.NoPrivateMessage):
             await ctx.send('Try this in a server.')
+
+    @commands.Cog.listener()
+    async def on_guild_join(self, guild):
+        self.users[guild.id] = {}
 
     async def fetch_webhooks(self):
         for guild in self.bot.guilds:
