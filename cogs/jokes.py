@@ -208,7 +208,7 @@ class Jokes(slash_util.ApplicationCog):
     async def joke(self, ctx, *categories):
         for category in categories:
             if category.lower() not in self.categories:
-                return await ctx.send(f"That isn't a category! The categories are {', '.join(self.categories)}.")
+                return await ctx.send(f"That isn't a category! The categories are `{'`, `'.join(self.categories)}`.")
         blacklist = self.blacklist.get(ctx.guild.id)
         if blacklist:
             blacklist_flags = [k for k, v in blacklist.items() if not v]
