@@ -4,10 +4,10 @@ from cogs.utils.http import AsyncHTTPClient
 from cogs.utils.view import View
 import slash_util
 import asyncio
-from motor import motor_asyncio
-from pymongo.errors import DuplicateKeyError
-from typing import Optional, Union
+from typing import Optional, Union, Tuple, List
 from bot import MasterBot
+import aiosqlite
+from sqlite3 import IntegrityError
 
 
 class Help:
@@ -115,53 +115,89 @@ class JokeAPIHTTPClient(AsyncHTTPClient):
         return await self.request(','.join(categories))
 
 
+def decode_sql_bool(data: Tuple[int]) -> List[bool]:
+    converted = []
+    for num in data:
+        if num == 1:
+            converted.append(True)
+        else:
+            converted.append(False)
+    return converted
+
+
 class Jokes(slash_util.ApplicationCog):
+    default_options = {'nsfw': True, 'religious': True, 'political': True, 'sexist': True, 'racist': True,
+                            'explicit': True}
+
     def __init__(self, bot: MasterBot):
         super().__init__(bot)
-        self.http = JokeAPIHTTPClient()
-        print('Connecting to mongodb... (Jokes cog)')
-        self.client = motor_asyncio.AsyncIOMotorClient(
-            'mongodb+srv://chawkk:Xboxone87@masterbotcluster.ezbjl.mongodb.net/test')
-        self.client = self.client['jokes']['blacklist']
-        print('Connected.')
+        self.db = None
         self.blacklist = {}
         self.update_db.start()
-        self.default_options = {'nsfw': True, 'religious': True, 'political': True, 'sexist': True, 'racist': True,
-                                'explicit': True}
+        self.http = JokeAPIHTTPClient()
         self.used_jokes = [12345]  # 12345 is so the while loop starts
         self.categories = ["any", "misc", "programming", "dark", "pun", "spooky", "christmas"]
         print('Jokes cog loaded')
 
     @commands.Cog.listener()
     async def on_guild_join(self, guild):
-        if str(guild.id) not in self.blacklist.keys():
-            self.blacklist[str(guild.id)] = self.default_options
+        if guild.id not in self.blacklist.keys():
+            self.blacklist[guild.id] = self.default_options
 
     @commands.Cog.listener()
     async def on_guild_remove(self, guild):
-        if str(guild.id) in self.blacklist.keys():
-            del self.blacklist[str(guild.id)]
+        if guild.id in self.blacklist.keys():
+            del self.blacklist[guild.id]
 
     async def fetch_blacklist(self):
         for guild in self.bot.guilds:
-            blacklist = await self.client.find_one({'_id': str(guild.id)})
-            if blacklist is not None:
-                self.blacklist[blacklist.get('_id')] = blacklist.get('options')
-            else:
-                self.blacklist[str(guild.id)] = self.default_options
+            async with self.db.execute(f"""SELECT nsfw, religious, political, sexist, racist, explicit FROM blacklist
+                                        WHERE id = {guild.id}""") as cursor:
+                data = await cursor.fetchone()
+            data = decode_sql_bool(data)
+            converted_dict = {}
+            for num, key in enumerate(self.default_options.keys()):
+                converted_dict[key] = data[num]
+            self.blacklist[guild.id] = converted_dict
 
-    @tasks.loop(seconds=10)
+    @tasks.loop(minutes=3)
     async def update_db(self):
-        for k, v in self.blacklist.items():
-            update = {'_id': k, 'options': v}
+        for guild in self.bot.guilds:
+            if guild.id not in self.blacklist:
+                self.blacklist[guild.id] = self.default_options
             try:
-                await self.client.insert_one(update)
-            except DuplicateKeyError:
-                await self.client.update_one({'_id': k}, {'$set': {'options': v}})
+                await self.db.execute(f"""INSERT INTO blacklist VALUES ({guild.id},
+                {self.blacklist[guild.id]['nsfw']},
+                {self.blacklist[guild.id]['religious']},
+                {self.blacklist[guild.id]['political']},
+                {self.blacklist[guild.id]['sexist']},
+                {self.blacklist[guild.id]['racist']},
+                {self.blacklist[guild.id]['explicit']});""")
+            except IntegrityError:
+                await self.db.execute(f"""UPDATE blacklist
+                SET nsfw = {self.blacklist[guild.id]['nsfw']},
+                    religious = {self.blacklist[guild.id]['religious']},
+                    political = {self.blacklist[guild.id]['political']},
+                    sexist = {self.blacklist[guild.id]['sexist']},
+                    racist = {self.blacklist[guild.id]['racist']},
+                    explicit = {self.blacklist[guild.id]['explicit']}
+                    WHERE id = {guild.id};""")
+        await self.db.commit()
 
     @update_db.before_loop
     async def before(self):
         await self.bot.wait_until_ready()
+        self.db = await aiosqlite.connect('cogs/databases/joke_blacklist.db')
+        await self.db.execute("""CREATE TABLE IF NOT EXISTS blacklist (
+                                        id INTEGER PRIMARY KEY,
+                                        nsfw BOOLEAN,
+                                        religious BOOLEAN,
+                                        political BOOLEAN,
+                                        sexist BOOLEAN,
+                                        racist BOOLEAN,
+                                        explicit BOOLEAN
+                                    );""")
+        await self.db.commit()
         await self.fetch_blacklist()
 
     @update_db.after_loop
@@ -173,7 +209,7 @@ class Jokes(slash_util.ApplicationCog):
         for category in categories:
             if category.lower() not in self.categories:
                 return await ctx.send(f"That isn't a category! The categories are {', '.join(self.categories)}.")
-        blacklist = self.blacklist.get(str(ctx.guild.id))
+        blacklist = self.blacklist.get(ctx.guild.id)
         if blacklist:
             blacklist_flags = [k for k, v in blacklist.items() if not v]
         else:
@@ -213,11 +249,10 @@ class Jokes(slash_util.ApplicationCog):
         await self.joke(ctx, *categories)
 
     @commands.command(name='blacklist')
-    @commands.has_permissions(administrator=True)
     async def _blacklist(self, ctx, *, flags: Union[BlacklistFlags, SlashFlagObject]):
         for k, v in vars(flags).items():
             if v is None:
-                guild = self.blacklist.get(str(ctx.guild.id))
+                guild = self.blacklist.get(ctx.guild.id)
                 if guild:
                     setattr(flags, k, guild.get(k))
                 else:
@@ -288,7 +323,7 @@ class Jokes(slash_util.ApplicationCog):
             await msg.reply(embed=discord.Embed(title='New settings confirmed!'))
         elif view.choice is False:
             await msg.reply(embed=discord.Embed(title='New settings cancelled.'))
-        self.blacklist[str(ctx.guild.id)] = options
+        self.blacklist[ctx.guild.id] = options
 
     @_blacklist.error
     async def error(self, ctx, error):
