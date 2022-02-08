@@ -10,7 +10,7 @@ intents.members = True
 
 
 class MasterBot(slash_util.Bot):
-    __version__ = '1.0.0a'
+    __version__ = '1.0.0b'
     # two tokens for my two bots
     TOKEN1 = 'OTI0MDM1ODc4ODk1MTEyMjUz.YcYteQ.JFJ5PrKgDX8lvQE-p5bQWKGFBBs'
     TOKEN2 = 'ODc4MDM1MDY3OTc5NTYzMDY5.YR7T4Q.oD3Gk9-jNwpYOje5Iz9C8ZN-Xhc'
@@ -40,7 +40,8 @@ class MasterBot(slash_util.Bot):
             'cogs.help_info',
             'cogs.clash_royale',
             'cogs.jokes',
-            'cogs.webhook'
+            'cogs.webhook',
+            'cogs.weather'
         ]
         for cog in cogs:
             self.load_extension(cog)
@@ -54,6 +55,7 @@ class MasterBot(slash_util.Bot):
 
     def restart(self):
         """Reloads all extensions and clears the cache"""
-        for ext in self.extensions:
+        extensions = list(self.extensions).copy()
+        for ext in extensions:
             self.reload_extension(ext)
         self.clear()
