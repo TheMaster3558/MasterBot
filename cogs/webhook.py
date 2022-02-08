@@ -1,13 +1,12 @@
 import discord
 from discord.ext import commands, tasks
 import aiohttp
-from motor import motor_asyncio
-from pymongo.errors import DuplicateKeyError
-from typing import Optional
+from typing import Optional, Dict
 import asyncio
-
 import slash_util
 from bot import MasterBot
+import aiosqlite
+from sqlite3 import IntegrityError
 
 
 class Help:
@@ -16,7 +15,7 @@ class Help:
 
     def webhook_help(self):
         message = f'`{self.prefix}webhook create <flags>`: Create your own webhook user!\nFlags:\n**name**\n**avatar** (optional. should be url)\n' \
-        f'`{self.prefix}webhook send <message>`: Send a message with the webhook.'
+                  f'`{self.prefix}webhook send <message>`: Send a message with the webhook.'
         return message
 
     def delete_help(self):
@@ -37,14 +36,9 @@ class Webhooks(slash_util.ApplicationCog):
     def __init__(self, bot: MasterBot):
         super().__init__(bot)
         self.session = None
-        print('Connecting to mongodb... (Webhooks cog)')
-        self.client = motor_asyncio.AsyncIOMotorClient(
-            'mongodb+srv://chawkk:Xboxone87@masterbotcluster.ezbjl.mongodb.net/test')
-        self.channel_db = self.client['webhook']['channels']
-        self.user_db = self.client['webhook']['users']
-        print('Connected.')
-        self.webhooks = {}
-        self.users = {}
+        self.webhooks: Dict[int, discord.Webhook] = {}
+        self.users: Dict[int, Dict[str, Optional[str]]] = {}
+        self.db = None
         self.update_db.start()
         print('Webhook cog loaded')
 
@@ -57,51 +51,75 @@ class Webhooks(slash_util.ApplicationCog):
         if isinstance(error, commands.BotMissingPermissions):
             if 'manage_webhooks' in error.missing_permissions:
                 embed = discord.Embed(title='I need `manage_webhooks` permissions.',
-                                        description='Tell someone to give it to me')
+                                      description='Tell someone to give it to me')
                 await ctx.send(embed=embed)
-        if isinstance(error, commands.NoPrivateMessage):
+        elif isinstance(error, commands.NoPrivateMessage):
             await ctx.send('Try this in a server.')
-
-    @commands.Cog.listener()
-    async def on_guild_join(self, guild):
-        self.users[guild.id] = {}
+        else:
+            raise error
 
     async def fetch_webhooks(self):
-        for guild in self.bot.guilds:
-            for channel in guild.channels:
-                if channel.permissions_for(guild.me).manage_webhooks:
-                    webhook = await self.channel_db.find_one({'_id': str(channel.id)})
-                    if webhook is not None:
-                        self.webhooks[channel.id] = discord.Webhook.from_url(
-                            f'https://discord.com/api/webhooks/{webhook.get("webhook_id")}/{webhook.get("webhook_token")}',
-                            session=self.session,
-                            bot_token=self.bot.http.token
-                        )
-            data = await self.user_db.find_one({'_id': str(guild.id)})
-            self.users[guild.id] = {}
-            if not data:
+        for channel in self.bot.get_all_channels():
+            cursor = await self.db.execute(f"""SELECT webhook_id, webhook_token FROM webhooks
+                                           WHERE id = {channel.id};""")
+            data = await cursor.fetchone()
+            if data is None:
                 continue
-            for k, v in data.get('users').items():
-                self.users[guild.id][k] = v
+            webhook_id, webhook_token = data
+            self.webhooks[channel.id] = discord.Webhook.from_url(
+                url=f'https://discord.com/api/webhooks/{webhook_id}/{webhook_token}',
+                session=self.session,
+                bot_token=self.bot.http.token
+            )
+        users = list(set(self.bot.users))  # to remove dupes
+        for user in users:
+            cursor = await self.db.execute(f"""SELECT name, avatar FROM users
+                                            WHERE id = {user.id}""")
+            data = await cursor.fetchone()
+            if data is None:
+                continue
+            name, avatar = data
+            if avatar == 'None':
+                avatar = None
+            self.users[user.id] = {'name': name, 'avatar': avatar}
 
     @tasks.loop(minutes=1)
     async def update_db(self):
         for k, v in self.webhooks.items():
-            payload = {'_id': str(k), 'webhook_id': str(v.id), 'webhook_token': v.token}
             try:
-                await self.channel_db.insert_one(payload)
-            except DuplicateKeyError:
-                await self.channel_db.update_one({'_id': str(k)}, {'$set': payload})
+                await self.db.execute(f"""INSERT INTO webhooks VALUES ({k},
+                {v.id},
+                '{v.token}')""")
+            except IntegrityError:
+                await self.db.execute(f"""UPDATE webhooks
+                SET webhook_id = {v.id}, webhook_token = '{v.token}'
+                WHERE id = {k};""")
         for k, v in self.users.items():
-            payload = {'_id': str(k), 'users': v}
             try:
-                await self.user_db.insert_one(payload)
-            except DuplicateKeyError:
-                await self.user_db.update_one({'_id': str(k)}, {'$set': {'users': v}})
+                await self.db.execute(f"""INSERT INTO users VALUES ({k},
+                '{v['name']}',
+                '{v['avatar']}')""")
+            except IntegrityError:
+                await self.db.execute(f"""UPDATE users
+                SET name = '{v['name']}', avatar = '{v['avatar']}'
+                WHERE id = {k};""")
+        await self.db.commit()
 
     @update_db.before_loop
     async def before(self):
         await self.bot.wait_until_ready()
+        self.db = await aiosqlite.connect('cogs/databases/webhooks.db')
+        await self.db.execute("""CREATE TABLE IF NOT EXISTS webhooks (
+                                        id INTEGER PRIMARY KEY,
+                                        webhook_id INT,
+                                        webhook_token TEXT
+                                    );""")
+        await self.db.execute("""CREATE TABLE IF NOT EXISTS users (
+                                        id INTEGER PRIMARY KEY,
+                                        name TEXT,
+                                        avatar TEXT
+                                    );""")
+        await self.db.commit()
         self.session = aiohttp.ClientSession()
         await self.fetch_webhooks()
         print('Webhooks fetched (Webhook cog)')
@@ -122,7 +140,7 @@ class Webhooks(slash_util.ApplicationCog):
     @commands.guild_only()
     @commands.bot_has_permissions(manage_webhooks=True)
     async def create(self, ctx: commands.Context, *, flags: WebhookUserFlags):
-        if self.users[ctx.guild.id].get(str(ctx.author.id)):
+        if self.users.get(ctx.author.id):
             msg = await ctx.send('Are you sure you would like to replace your old webhook users?')
             await msg.add_reaction('✅')
             await msg.add_reaction('❌')
@@ -136,13 +154,13 @@ class Webhooks(slash_util.ApplicationCog):
                     return await ctx.send('Cancelling.')
         if flags.name.lower() == 'clyde':
             return await ctx.send('The name cannot be `clyde`')
-        self.users[ctx.guild.id][str(ctx.author.id)] = {'name': flags.name, 'avatar': flags.avatar}
         embed = discord.Embed(title='New Webhook User!')
         embed.add_field(name='Name', value=flags.name)
         if flags.avatar is not None:
             if not flags.avatar.startswith('http://') and not flags.avatar.startswith('https://'):
                 return await ctx.send('Avatar must be a url starting with `http://` or `https://`')
             embed.set_thumbnail(url=flags.avatar)
+        self.users[ctx.author.id] = {'name': flags.name, 'avatar': flags.avatar}
         await ctx.send(embed=embed)
         await ctx.message.delete(delay=3)
 
@@ -150,34 +168,29 @@ class Webhooks(slash_util.ApplicationCog):
     @commands.guild_only()
     @commands.bot_has_permissions(manage_webhooks=True)
     async def send(self, ctx: commands.Context, *, content):
-        data = self.users[ctx.guild.id].get(str(ctx.author.id))
+        data = self.users.get(ctx.author.id)
         if data is None:
             embed = discord.Embed(title="You don't have a user",
-                                  description=f'Use `{self.bot.get_prefix(ctx.message)}create` to create one')
+                                  description=f'Use `{await self.bot.get_prefix(ctx.message)}create` to create one')
             return await ctx.reply(embed=embed)
         try:
             webhook = self.webhooks[ctx.channel.id]
         except KeyError:
             webhook = await ctx.channel.create_webhook(name='MasterBotWebhook')
             self.webhooks[ctx.channel.id] = webhook
+        print(data)
         await webhook.send(content=content,
                            username=data['name'],
                            avatar_url=data['avatar'])
         await ctx.message.delete()
 
     @commands.command()
-    @commands.guild_only()
     async def wdelete(self, ctx):
-        if not self.users[ctx.guild.id].get(str(ctx.author.id)):
+        if not self.users.get(ctx.author.id):
             return await ctx.send("You don't even have one...")
-        del self.users[ctx.guild.id][str(ctx.author.id)]
+        del self.users[ctx.author.id]
         await ctx.send('Done.')
 
 
 def setup(bot: MasterBot):
     bot.add_cog(Webhooks(bot))
-
-
-
-
-
