@@ -6,6 +6,10 @@ import slash_util
 from typing import Optional
 import aiosqlite
 from sqlite3 import IntegrityError
+from datetime import datetime
+import pytz
+import time
+import asyncio
 
 
 class FlagUnits(commands.FlagConverter):
@@ -44,17 +48,20 @@ class Weather(slash_util.ApplicationCog):
     async def fetch_units(self):
         for guild in self.bot.guilds:
             cursor = await self.db.execute(f"""SELECT temp, speed FROM units
-                                        WHERE id = {guild.id}""")
-            temp, speed = await cursor.fetchone()
+                                        WHERE id = {guild.id};""")
+            data = await cursor.fetchone()
+            if data is None:
+                continue
+            temp, speed = data
             self.temp_units[guild.id] = temp
             self.speed_units[guild.id] = speed
 
-    @tasks.loop(minutes=4)
+    @tasks.loop(seconds=5)
     async def update_db(self):
         for guild in self.bot.guilds:
-            if guild not in self.temp_units:
+            if guild.id not in self.temp_units:
                 self.temp_units[guild.id] = self.metric['temp']
-            if guild not in self.speed_units:
+            if guild.id not in self.speed_units:
                 self.speed_units[guild.id] = self.metric['speed']
             try:
                 await self.db.execute(f"""INSERT INTO units VALUES ({guild.id},
@@ -80,6 +87,7 @@ class Weather(slash_util.ApplicationCog):
 
     @update_db.after_loop
     async def after(self):
+        await asyncio.sleep(1)
         await self.update_db()
 
     @commands.command()
@@ -103,7 +111,36 @@ class Weather(slash_util.ApplicationCog):
         data = await self.http.current(location)
         embed = discord.Embed(title=f'{data.get("location").get("name")}, {data.get("location").get("region")}, {data.get("location").get("country")}',
                               timestamp=ctx.message.created_at)
-
+        tz = pytz.timezone(data['location']['tz_id'])
+        local_time = datetime.fromtimestamp(data['location']["localtime_epoch"], tz)
+        local_time = local_time.strftime('%H:%M')
+        embed.set_footer(text=f'Local Time: {local_time}')
+        temp_unit = self.temp_units.get(ctx.guild.id) or 'C'
+        speed_unit = self.speed_units.get(ctx.guild.id) or 'kph'
+        data = data.get('current')
+        if temp_unit == 'C':
+            temp = data.get('temp_c')
+            feels_like = data.get('feelslike_c')
+        else:
+            temp = data.get('temp_f')
+            feels_like = data.get('feelslike_f')
+        embed.add_field(name='Temperature', value=f'{temp} {temp_unit}')
+        embed.add_field(name='Feels Like', value=f'{feels_like} {temp_unit}')
+        embed.add_field(name='Weather', value=data.get('condition').get('text'))
+        if speed_unit == 'kph':
+            speed = data.get('wind_kph')
+            visibility = str(data.get('vis_km')) + ' km'
+        else:
+            speed = data.get('wind_mph')
+            visibility = str(data.get('vis_miles')) + ' miles'
+        embed.add_field(name='Wind Direction', value=data.get('wind_dir'))
+        embed.add_field(name='Wind Speed', value=f'{speed} {speed_unit}')
+        embed.add_field(name='Visibility', value=visibility)
+        last_updated_at = data.get('last_updated_epoch')
+        last_updated_at = datetime.fromtimestamp(last_updated_at)
+        last_updated_at = round(time.mktime(last_updated_at.timetuple()))
+        embed.add_field(name='Last Updated At', value=f'<t:{last_updated_at}:R>')
+        embed.set_thumbnail(url='https:' + data.get('condition').get('icon'))
         await ctx.send(embed=embed)
 
 
