@@ -1,0 +1,4 @@
+*.pyc
+*.db-shm
+*.db-wal
+venv/*
