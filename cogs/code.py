@@ -174,7 +174,7 @@ class Code(slash_util.ApplicationCog):
     async def reload(self, ctx, *exts):
         for ext in exts:
             self.bot.reload_extension(ext)
-        print(f'Extensions reloaded: {", ".join(exts)}')
+        await ctx.send(f'Extensions reloaded: {", ".join(exts)}')
 
     @commands.command()
     @commands.is_owner()

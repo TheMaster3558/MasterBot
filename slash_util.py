@@ -171,7 +171,11 @@ class Bot(commands.Bot):
         self._connection.application_id = app_info.id
 
         print('Syncing slash commands...')
-        asyncio.ensure_future(self.sync_commands())
+        try:
+            future = asyncio.ensure_future(self.sync_commands())
+        except KeyboardInterrupt:
+            future.cancel()
+            return
         await self.connect(reconnect=reconnect)
 
     def get_application_command(self, name: str) -> Command | None:

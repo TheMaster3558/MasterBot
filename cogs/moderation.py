@@ -143,6 +143,8 @@ class Moderation(slash_util.ApplicationCog):
         if option == 'create':
             if channel is None:
                 return await ctx.send("You didn't give me a channel or I couldn't find the channel =(")
+            if channel.guild != ctx.guild:
+                return await ctx.send('The channel must be in this server.')
             try:
                 await channel.send('Log will be sent here.')
             except discord.errors.Forbidden:

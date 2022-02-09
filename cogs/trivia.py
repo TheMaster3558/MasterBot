@@ -152,7 +152,7 @@ class Trivia(slash_util.ApplicationCog):
             raise type(error)(error)
 
     @slash_util.slash_command(name='trivia', description='Get trivia from opentdb.com!')
-    async def _trivia(self, ctx):
+    async def _trivia(self, ctx: slash_util.Context):
         await self.trivia(ctx)
 
 

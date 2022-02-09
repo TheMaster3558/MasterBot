@@ -127,7 +127,7 @@ class HelpAndInfo(slash_util.ApplicationCog):
         prefix = (await self.bot.get_prefix(ctx.message))[2]
         h = WHelp(prefix)
         help_message = h.full_help()
-        embed = discord.Embed(title='Jokes Help',
+        embed = discord.Embed(title='Webhook Help',
                               description=help_message)
         await ctx.send(embed=embed)
 

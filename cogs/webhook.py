@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands, tasks
 import aiohttp
-from typing import Optional, Dict
+from typing import Optional, Dict, Literal
 import asyncio
 import slash_util
 from bot import MasterBot
@@ -122,10 +122,10 @@ class Webhooks(slash_util.ApplicationCog):
         await self.db.commit()
         self.session = aiohttp.ClientSession()
         await self.fetch_webhooks()
-        print('Webhooks fetched (Webhook cog)')
 
     @update_db.after_loop
     async def close_session(self):
+        await asyncio.sleep(1.5)
         await self.update_db()
         await self.session.close()
 
@@ -164,6 +164,19 @@ class Webhooks(slash_util.ApplicationCog):
         await ctx.send(embed=embed)
         await ctx.message.delete(delay=3)
 
+    @create.error
+    async def error(self, ctx, error):
+        if isinstance(error, (commands.MissingRequiredArgument,
+                              commands.MissingRequiredFlag,
+                              commands.MissingFlagArgument)):
+            embed = discord.Embed(title='Missing flag arguments')
+            embed.add_field(name='name', value='A name.')
+            embed.add_field(name='avatar', value='Optional. A avatar for the URL.')
+            embed.set_footer(text=f'Example: {ctx.prefix}create name: XbowMaster avatar: https://someurl.com/')
+            await ctx.send(embed=embed)
+        else:
+            raise error
+
     @webhook.command()
     @commands.guild_only()
     @commands.bot_has_permissions(manage_webhooks=True)
@@ -183,6 +196,13 @@ class Webhooks(slash_util.ApplicationCog):
                            username=data['name'],
                            avatar_url=data['avatar'])
         await ctx.message.delete()
+
+    @send.error
+    async def error(self, ctx, error):
+        if isinstance(error, commands.MissingRequiredArgument):
+            await ctx.reply('What do I send?', delete_after=5)
+        else:
+            raise error
 
     @commands.command()
     async def wdelete(self, ctx):

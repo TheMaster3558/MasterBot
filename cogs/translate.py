@@ -41,6 +41,7 @@ class Translator(slash_util.ApplicationCog):
             traceback.print_exception(error)
             return
         if ctx.command.cog != self:
+            traceback.print_exception(error)
             return
         if isinstance(error, commands.CommandOnCooldown):
             await ctx.send('Patience! Try again in {:.1f} seconds.'.format(error.retry_after))

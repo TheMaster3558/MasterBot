@@ -4,6 +4,7 @@ from discord.ext import commands
 from time import perf_counter
 from typing import Literal, Optional
 
+
 intents = discord.Intents.default()
 intents.members = True
 

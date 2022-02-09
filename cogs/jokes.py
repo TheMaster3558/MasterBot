@@ -202,6 +202,7 @@ class Jokes(slash_util.ApplicationCog):
 
     @update_db.after_loop
     async def after(self):
+        await asyncio.sleep(0)
         await self.update_db()
 
     @commands.command()

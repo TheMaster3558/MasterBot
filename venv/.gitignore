@@ -1,0 +1,4 @@
+# created by virtualenv automatically
+*.pyc
+*.db-shm
+*.db-wal
