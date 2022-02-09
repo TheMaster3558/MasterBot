@@ -7,9 +7,9 @@ from typing import Optional
 import aiosqlite
 from sqlite3 import IntegrityError
 from datetime import datetime
-import pytz
 import time
 import asyncio
+from cogs.utils.weather_utils import WeatherUtils
 
 
 class FlagUnits(commands.FlagConverter):
@@ -29,7 +29,10 @@ class WeatherAPIHTTPClient(AsyncHTTPClient):
                                      **params)
 
     async def current(self, location):
-        return await self.request('current.json', q=location, aqi='yes')
+        return await self.request('current.json', q=location, aqi='no')
+
+    async def forecast(self, location, days):
+        return await self.request('forecast.json', q=location, days=days)
 
 
 class Weather(slash_util.ApplicationCog):
@@ -109,38 +112,17 @@ class Weather(slash_util.ApplicationCog):
     @commands.command()
     async def current(self, ctx, *, location):
         data = await self.http.current(location)
-        embed = discord.Embed(title=f'{data.get("location").get("name")}, {data.get("location").get("region")}, {data.get("location").get("country")}',
-                              timestamp=ctx.message.created_at)
-        tz = pytz.timezone(data['location']['tz_id'])
-        local_time = datetime.fromtimestamp(data['location']["localtime_epoch"], tz)
-        local_time = local_time.strftime('%H:%M')
-        embed.set_footer(text=f'Local Time: {local_time}')
-        temp_unit = self.temp_units.get(ctx.guild.id) or 'C'
-        speed_unit = self.speed_units.get(ctx.guild.id) or 'kph'
-        data = data.get('current')
-        if temp_unit == 'C':
-            temp = data.get('temp_c')
-            feels_like = data.get('feelslike_c')
-        else:
-            temp = data.get('temp_f')
-            feels_like = data.get('feelslike_f')
-        embed.add_field(name='Temperature', value=f'{temp} {temp_unit}')
-        embed.add_field(name='Feels Like', value=f'{feels_like} {temp_unit}')
-        embed.add_field(name='Weather', value=data.get('condition').get('text'))
-        if speed_unit == 'kph':
-            speed = data.get('wind_kph')
-            visibility = str(data.get('vis_km')) + ' km'
-        else:
-            speed = data.get('wind_mph')
-            visibility = str(data.get('vis_miles')) + ' miles'
-        embed.add_field(name='Wind Direction', value=data.get('wind_dir'))
-        embed.add_field(name='Wind Speed', value=f'{speed} {speed_unit}')
-        embed.add_field(name='Visibility', value=visibility)
-        last_updated_at = data.get('last_updated_epoch')
-        last_updated_at = datetime.fromtimestamp(last_updated_at)
-        last_updated_at = round(time.mktime(last_updated_at.timetuple()))
-        embed.add_field(name='Last Updated At', value=f'<t:{last_updated_at}:R>')
-        embed.set_thumbnail(url='https:' + data.get('condition').get('icon'))
+        embed = await WeatherUtils.build_current_embed(data, ctx, self)
+        if embed is None:
+            return
+        await ctx.send(embed=embed)
+
+    @commands.command()
+    async def forecast(self, ctx, days: Optional[int] = 1, *, location):
+        data = await self.http.forecast(location, days)
+        embed = await WeatherUtils.build_forecast_embed(data, ctx, self, days)
+        if embed is None:
+            return
         await ctx.send(embed=embed)
 
 
