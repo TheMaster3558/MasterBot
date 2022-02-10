@@ -1,0 +1,3 @@
+discord.py>=2.0.0
+slash-util>=1.2.0
+async-google-trans-new>=1.4.0
