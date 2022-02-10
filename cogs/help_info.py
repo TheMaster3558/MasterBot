@@ -20,7 +20,15 @@ import aiohttp
 class HelpAndInfo(slash_util.ApplicationCog):
     def __init__(self, bot: MasterBot):
         super().__init__(bot)
+        self.slash_util_version = None
         print('Help and Info cog loaded')
+       
+    @commands.Cog.listener()
+    async def on_ready():
+        async with aiohttp.ClientSession() as session:
+            async with session.get('https://pypi.python.org/pypi/{package}/json'.format(package='slash-util') as resp:
+                data = await resp.json()
+        self.slash_util_version = list(data['releases'].keys())[-1]
 
     @commands.command()
     async def ping(self, ctx):
@@ -36,6 +44,7 @@ class HelpAndInfo(slash_util.ApplicationCog):
         embed.add_field(name='Version Info', value=f'{self.bot.user.name} version {self.bot.__version__}\n'
                                                   f'[Python {sys.version.split(" ")[0]}](https://www.python.org)\n'
                                                   f'[discord.py {discord.__version__}](https://github.com/Rapptz/discord.py)\n'
+                                                  f'[slash_util {self.slash_util_version}](https://github.com/XuaTheGrate/slash_util)\n'
                                                   f'[async-google-trans-new {agtn_version}](https://github.com/Theelx/async-google-trans-new)\n'
                                                   f'[aiohttp {aiohttp.__version__}](https://docs.aiohttp.org/en/stable/)'
                                                   f'Platform {sys.platform}')
