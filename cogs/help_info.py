@@ -17,16 +17,16 @@ from async_google_trans_new import __version__ as agtn_version
 import aiohttp
 
 
-class HelpAndInfo(slash_util.ApplicationCog):
+class HelpAndInfo(slash_util.Cog):
     def __init__(self, bot: MasterBot):
         super().__init__(bot)
         self.slash_util_version = None
         print('Help and Info cog loaded')
        
     @commands.Cog.listener()
-    async def on_ready():
+    async def on_ready(self):
         async with aiohttp.ClientSession() as session:
-            async with session.get('https://pypi.python.org/pypi/{package}/json'.format(package='slash-util') as resp:
+            async with session.get('https://pypi.python.org/pypi/{package}/json'.format(package='slash-util')) as resp:
                 data = await resp.json()
         self.slash_util_version = list(data['releases'].keys())[-1]
 

@@ -97,8 +97,8 @@ async def timeout_user(member: discord.Member, until, bot: commands.Bot, *, reas
             resp.raise_for_status()
 
 
-class Moderation(slash_util.ApplicationCog):
-    """Will be changed to cache instead of db call in beta"""
+class Moderation(slash_util.Cog):
+    """Will be changed to cache instead of db call in v2 or earlier"""
     def __init__(self, bot: MasterBot):
         super().__init__(bot)
         print('Connecting to mongodb... (Moderation Cog)')

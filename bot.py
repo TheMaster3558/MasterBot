@@ -3,6 +3,7 @@ import discord
 from discord.ext import commands
 from time import perf_counter
 from typing import Literal, Optional
+import asyncio
 
 
 intents = discord.Intents.default()
@@ -12,8 +13,8 @@ intents.members = True
 class MasterBot(slash_util.Bot):
     __version__ = '1.0.0b'
     # two tokens for my two bots
-    TOKEN1 = 'OTI0MDM1ODc4ODk1MTEyMjUz.YcYteQ.JFJ5PrKgDX8lvQE-p5bQWKGFBBs'
-    TOKEN2 = 'ODc4MDM1MDY3OTc5NTYzMDY5.YR7T4Q.oD3Gk9-jNwpYOje5Iz9C8ZN-Xhc'
+    TOKEN1 = 'OTI0MDM1ODc4ODk1MTEyMjUz.YcYteQ.C6CEOvXrumyLiWQoKCPy2XlQ6l0'
+    TOKEN2 = 'ODc4MDM1MDY3OTc5NTYzMDY5.YR7T4Q.JLoUwmy5OvTo2c9lmisvZMqUaPc'
 
     def __init__(self):
         super().__init__(command_prefix=commands.when_mentioned_or('!'),
@@ -29,6 +30,15 @@ class MasterBot(slash_util.Bot):
         print('Logged in as {0} ID: {0.id}'.format(self.user))
         self.on_ready_time = perf_counter()
         print('Time taken to ready up:', round(self.on_ready_time - self.start_time, 1), 'seconds')
+
+    async def start(self, token: str, *, reconnect: bool = True) -> None:
+        await self.login(token)
+
+        app_info = await self.application_info()
+        self._connection.application_id = app_info.id
+
+        asyncio.ensure_future(self.sync_commands())
+        await self.connect(reconnect=reconnect)
 
     def run(self, token: Optional[Literal[1, 2]] = 1) -> None:
         cogs = [

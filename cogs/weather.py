@@ -6,8 +6,6 @@ import slash_util
 from typing import Optional
 import aiosqlite
 from sqlite3 import IntegrityError
-from datetime import datetime
-import time
 import asyncio
 from cogs.utils.weather_utils import WeatherUtils
 
@@ -35,7 +33,7 @@ class WeatherAPIHTTPClient(AsyncHTTPClient):
         return await self.request('forecast.json', q=location, days=days)
 
 
-class Weather(slash_util.ApplicationCog):
+class Weather(slash_util.Cog):
     metric = {'temp': 'C', 'speed': 'kph'}
     customary = {'temp': 'F', 'speed': 'mph'}
 

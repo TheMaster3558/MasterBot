@@ -125,7 +125,7 @@ def decode_sql_bool(data: Tuple[int]) -> List[bool]:
     return converted
 
 
-class Jokes(slash_util.ApplicationCog):
+class Jokes(slash_util.Cog):
     default_options = {'nsfw': True, 'religious': True, 'political': True, 'sexist': True, 'racist': True,
                             'explicit': True}
 

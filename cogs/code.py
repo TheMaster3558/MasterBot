@@ -36,7 +36,7 @@ class Help:
         return '\n'.join(help_list)
 
 
-class Code(slash_util.ApplicationCog):
+class Code(slash_util.Cog):
     """
     Many of the commands are owner only
     """

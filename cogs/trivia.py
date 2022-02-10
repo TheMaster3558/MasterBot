@@ -116,7 +116,7 @@ def view(correct: str, wrong: list):
     return MultipleChoice()
 
 
-class Trivia(slash_util.ApplicationCog):
+class Trivia(slash_util.Cog):
     def __init__(self, bot: MasterBot):
         super().__init__(bot)
         self.http = OpenTDBHTTPClient()

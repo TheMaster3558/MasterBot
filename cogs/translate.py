@@ -29,7 +29,7 @@ class Help:
         return '\n'.join(help_list)
 
 
-class Translator(slash_util.ApplicationCog):
+class Translator(slash_util.Cog):
     def __init__(self, bot: MasterBot):
         super().__init__(bot)
         self.translator = AsyncTranslator(url_suffix='com')
