@@ -44,6 +44,19 @@ class Code(slash_util.Cog):
         super().__init__(bot)
         print('Code cog loaded')
 
+    @commands.Cog.listener()
+    async def on_command_error(self, ctx: commands.Context, error):
+        if not ctx.command:
+            return
+        if ctx.command.cog != self:
+            return
+        if ctx.command.has_error_handler():
+            return
+        if isinstance(error, (commands.MissingPermissions, commands.MissingRequiredArgument)):
+            return
+        else:
+            raise error
+
     @commands.cooldown(1, 60, commands.BucketType.user)
     @commands.command(name='eval', aliases=['e'])
     async def _eval(self, ctx, *, arg: str):
@@ -173,7 +186,7 @@ class Code(slash_util.Cog):
     @commands.is_owner()
     async def reload(self, ctx, *exts):
         for ext in exts:
-            self.bot.reload_extension(ext)
+            self.bot.reload_extension(f'cogs.{ext}')
         await ctx.send(f'Extensions reloaded: {", ".join(exts)}')
 
     @commands.command()
@@ -186,8 +199,36 @@ class Code(slash_util.Cog):
         except Exception as exc:
             await ctx.send(f'An Error!?\n```\n{exc}\n```')
 
+    @commands.group()
+    async def git(self, ctx):
+        pass
+
+    @git.command()
+    async def add(self, ctx, path):
+        __os__.system('git add {}'.format(path))
+        await ctx.send('Files in {} were added to the next commit.'.format(path))
+
+    @git.command()
+    async def remove(self, ctx, path):
+        __os__.system('git remove {}'.format(path))
+        await ctx.send('Files in {} were removed from the next commit.'.format(path))
+
+    @git.command()
+    async def commit(self, ctx, *, message):
+        __os__.system('git commit -m "{}"'.format(message))
+        await ctx.send('Changes have been committed with the message {}'.format(message))
+
+    def force_bool_converter(self, arg) -> bool:
+        return arg.lower() in ('true', 'yes', 'y', 't', 'sure', 'ok')
+
+    @git.command()
+    async def push(self, ctx, force: force_bool_converter):
+        command = 'git push'
+        if force:
+            command += ' -f'
+        __os__.system(command)
+        await ctx.send('Files pushed. Force push = {}.'.format(force))
+
 
 def setup(bot: MasterBot):
     bot.add_cog(Code(bot))
-
-

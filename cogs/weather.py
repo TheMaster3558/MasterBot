@@ -32,6 +32,9 @@ class WeatherAPIHTTPClient(AsyncHTTPClient):
     async def forecast(self, location, days):
         return await self.request('forecast.json', q=location, days=days)
 
+    async def search(self, query):
+        return await self.request('search.json', q=query)
+
 
 class Weather(slash_util.Cog):
     metric = {'temp': 'C', 'speed': 'kph'}
@@ -119,6 +122,14 @@ class Weather(slash_util.Cog):
     async def forecast(self, ctx, days: Optional[int] = 1, *, location):
         data = await self.http.forecast(location, days)
         embed = await WeatherUtils.build_forecast_embed(data, ctx, self, days)
+        if embed is None:
+            return
+        await ctx.send(embed=embed)
+
+    @commands.command(aliases=['place', 'town'])
+    async def city(self, ctx, index: Optional[int] = 1, *, query):
+        data = await self.http.search(query)
+        embed = await WeatherUtils.build_search_embed(data, ctx, index, ctx.message.created_at)
         if embed is None:
             return
         await ctx.send(embed=embed)
