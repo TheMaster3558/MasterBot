@@ -3,3 +3,4 @@
 *.db-wal
 venv/*
 *.idea
+masterbot/cogs/__pycache__dpy2

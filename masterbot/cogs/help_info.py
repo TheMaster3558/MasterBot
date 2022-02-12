@@ -1,34 +1,28 @@
 import discord
 from discord.ext import commands
 import slash_util
-from bot import MasterBot
+from masterbot.bot import MasterBot
 
-from cogs.reaction_roles import Help as RRHelp
-from cogs.moderation import Help as MHelp
-from cogs.code import Help as CHelp
-from cogs.translate import Help as THelp
-from cogs.trivia import Help as TrHelp
-from cogs.clash_royale import Help as CRHelp
-from cogs.jokes import Help as JHelp
-from cogs.webhook import Help as WHelp
+from masterbot.cogs.reaction_roles import Help as RRHelp
+from masterbot.cogs.moderation import Help as MHelp
+from masterbot.cogs.code import Help as CHelp
+from masterbot.cogs.translate import Help as THelp
+from masterbot.cogs.trivia import Help as TrHelp
+from masterbot.cogs.clash_royale import Help as CRHelp
+from masterbot.cogs.jokes import Help as JHelp
+from masterbot.cogs.webhook import Help as WHelp
 
 import sys
 from async_google_trans_new import __version__ as agtn_version
+from importlib.metadata import version
 import aiohttp
 
 
 class HelpAndInfo(slash_util.Cog):
     def __init__(self, bot: MasterBot):
         super().__init__(bot)
-        self.slash_util_version = None
+        self.slash_util_version = version('slash_util')
         print('Help and Info cog loaded')
-       
-    @commands.Cog.listener()
-    async def on_ready(self):
-        async with aiohttp.ClientSession() as session:
-            async with session.get('https://pypi.python.org/pypi/{package}/json'.format(package='slash-util')) as resp:
-                data = await resp.json()
-        self.slash_util_version = list(data['releases'].keys())[-1]
 
     @commands.command()
     async def ping(self, ctx):
@@ -46,7 +40,7 @@ class HelpAndInfo(slash_util.Cog):
                                                   f'[discord.py {discord.__version__}](https://github.com/Rapptz/discord.py)\n'
                                                   f'[slash_util {self.slash_util_version}](https://github.com/XuaTheGrate/slash_util)\n'
                                                   f'[async-google-trans-new {agtn_version}](https://github.com/Theelx/async-google-trans-new)\n'
-                                                  f'[aiohttp {aiohttp.__version__}](https://docs.aiohttp.org/en/stable/)'
+                                                  f'[aiohttp {aiohttp.__version__[:5]}](https://docs.aiohttp.org/en/stable/)\n'
                                                   f'Platform {sys.platform}')
         embed.add_field(name='Stats', value=f'Servers: {len(self.bot.guilds)}\nUsers: {len(set(self.bot.users))}')
         await ctx.send(embed=embed)

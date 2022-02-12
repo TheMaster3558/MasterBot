@@ -1,12 +1,12 @@
 import discord
 from discord.ext import commands
-from cogs.utils.http import AsyncHTTPClient
+from masterbot.cogs.utils.http import AsyncHTTPClient
 import asyncio
 import random
 from html import unescape
 import slash_util
-from cogs.utils.view import View
-from bot import MasterBot
+from masterbot.cogs.utils.view import View
+from masterbot.bot import MasterBot
 
 
 class Help:

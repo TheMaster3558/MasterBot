@@ -2,10 +2,10 @@ import discord
 from discord.ext import commands
 import slash_util
 from typing import Optional, Union
-from cogs.utils.http import AsyncHTTPClient
+from masterbot.cogs.utils.http import AsyncHTTPClient
 from requests.structures import CaseInsensitiveDict
-from cogs.utils.cr_utils import ClashRoyaleUtils
-from bot import MasterBot
+from masterbot.cogs.utils.cr_utils import ClashRoyaleUtils
+from masterbot.bot import MasterBot
 
 
 class Help:

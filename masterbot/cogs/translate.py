@@ -4,7 +4,7 @@ from async_google_trans_new import AsyncTranslator
 from async_google_trans_new.constant import LANGUAGES
 import slash_util
 import traceback
-from bot import MasterBot
+from masterbot.bot import MasterBot
 
 
 class Help:

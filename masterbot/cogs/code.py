@@ -8,7 +8,7 @@ import re
 import os as __os__  # to keep eval command safe
 import sys as __sys__
 import slash_util
-from bot import MasterBot
+from masterbot.bot import MasterBot
 
 
 class Help:
@@ -218,13 +218,10 @@ class Code(slash_util.Cog):
         __os__.system('git commit -m "{}"'.format(message))
         await ctx.send('Changes have been committed with the message {}'.format(message))
 
-    def force_bool_converter(self, arg) -> bool:
-        return arg.lower() in ('true', 'yes', 'y', 't', 'sure', 'ok')
-
     @git.command()
-    async def push(self, ctx, force: force_bool_converter):
+    async def push(self, ctx, force=False):
         command = 'git push'
-        if force:
+        if force == 'force':
             command += ' -f'
         __os__.system(command)
         await ctx.send('Files pushed. Force push = {}.'.format(force))

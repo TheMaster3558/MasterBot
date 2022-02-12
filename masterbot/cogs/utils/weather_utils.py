@@ -91,3 +91,18 @@ class WeatherUtils:
         moon = data.get('astro').get('moon_phase')
         embed.add_field(name='Moon Phase', value=moon)
         return embed
+
+    @staticmethod
+    async def build_search_embed(data: dict, ctx, index, timestamp) -> Optional[discord.Embed]:
+        index -= 1
+        try:
+            data = data[index]
+        except KeyError:
+            await ctx.send("I couldn't find that result. Make sure that city exists.")
+            return
+        embed = discord.Embed(title=data.get('name'), timestamp=timestamp)
+        embed.add_field(name='Region', value=data.get('region'), inline=False)
+        embed.add_field(name='Country', value=data.get('country'))
+        embed.add_field(name='Latitude', value=data.get('lat'), inline=False)
+        embed.add_field(name='Longitude', value=data.get('lon'))
+        return embed

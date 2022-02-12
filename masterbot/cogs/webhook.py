@@ -1,10 +1,10 @@
 import discord
 from discord.ext import commands, tasks
 import aiohttp
-from typing import Optional, Dict, Literal
+from typing import Optional, Dict
 import asyncio
 import slash_util
-from bot import MasterBot
+from masterbot.bot import MasterBot
 import aiosqlite
 from sqlite3 import IntegrityError
 

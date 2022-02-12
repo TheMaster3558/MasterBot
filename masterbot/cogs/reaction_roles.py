@@ -5,7 +5,7 @@ from typing import Tuple, Optional, Union
 import json
 import copy as c
 import slash_util
-from bot import MasterBot
+from masterbot.bot import MasterBot
 
 
 class Help:
@@ -52,7 +52,7 @@ class CustomReactionRoleFlags(commands.FlagConverter):
 class ReactionRoles(commands.Cog):
     def __init__(self, bot: MasterBot):
         self.bot = bot
-        with open('messages.json', 'r') as m:
+        with open('databases/messages.json', 'r') as m:
             self.role_dict = json.load(m)
         print('Reaction Roles cog loaded')
         self.update_file.start()
@@ -80,7 +80,7 @@ class ReactionRoles(commands.Cog):
         return copy
 
     def _update(self):
-        with open('messages.json', 'w') as m:
+        with open('databases/messages.json', 'w') as m:
             json.dump(self.role_dict, m, indent=2)
 
     @tasks.loop(seconds=30)

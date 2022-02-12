@@ -1,13 +1,12 @@
-import discord
 from discord.ext import commands, tasks
-from cogs.utils.http import AsyncHTTPClient
-from bot import MasterBot
+from masterbot.cogs.utils.http import AsyncHTTPClient
+from masterbot.bot import MasterBot
 import slash_util
 from typing import Optional
 import aiosqlite
 from sqlite3 import IntegrityError
 import asyncio
-from cogs.utils.weather_utils import WeatherUtils
+from masterbot.cogs.utils.weather_utils import WeatherUtils
 
 
 class FlagUnits(commands.FlagConverter):

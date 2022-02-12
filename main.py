@@ -1,17 +1,13 @@
-import logging
-from bot import MasterBot
+from masterbot import MasterBot, cog_list
 
 
-# logging
-logger = logging.getLogger('discord')
-logger.setLevel(logging.DEBUG)
-handler = logging.FileHandler(filename='logs/discord.log', encoding='utf-8', mode='w')
-handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
-logger.addHandler(handler)
+bot = MasterBot(cogs=cog_list, log='logs/discord.log')
 
 
-bot = MasterBot()
+# two tokens for my two bots
+TOKEN1 = 'OTI0MDM1ODc4ODk1MTEyMjUz.YcYteQ.C6CEOvXrumyLiWQoKCPy2XlQ6l0'
+TOKEN2 = 'ODc4MDM1MDY3OTc5NTYzMDY5.YR7T4Q.JLoUwmy5OvTo2c9lmisvZMqUaPc'
 
 
 if __name__ == '__main__':
-    bot.run()
+    bot.run(TOKEN1)
