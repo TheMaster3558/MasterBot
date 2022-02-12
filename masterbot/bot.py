@@ -51,6 +51,7 @@ class MasterBot(slash_util.Bot):
             self._cogs_to_add.remove('masterbot.cogs.clash_royale')
 
     async def on_ready(self):
+        print(self.oath_url)
         print('Logged in as {0} ID: {0.id}'.format(self.user))
         self.on_ready_time = perf_counter()
         print('Time taken to ready up:', round(self.on_ready_time - self.start_time, 1), 'seconds')
@@ -68,3 +69,23 @@ class MasterBot(slash_util.Bot):
         for ext in extensions:
             self.reload_extension(ext)
         self.clear()
+
+    @property
+    def oath_url(self):
+        permissions = discord.Permissions(manage_roles=True,
+                                          manage_channels=True,
+                                          kick_members=True,
+                                          ban_members=True,
+                                          manage_webhooks=True,
+                                          moderate_members=True,
+                                          send_messages=True,
+                                          add_reactions=True)
+        scopes = ('bot', 'applications.commands')
+        return discord.utils.oauth_url(self.user.id,
+                                       permissions=permissions,
+                                       scopes=scopes)
+
+    def custom_oath_url(self, permissions: Optional[discord.Permissions] = None, scopes: Optional[Iterable[str]] = None):
+        return discord.utils.oauth_url(self.user.id,
+                                       permissions=permissions,
+                                       scopes=scopes)
