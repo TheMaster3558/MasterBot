@@ -34,6 +34,9 @@ class WeatherAPIHTTPClient(AsyncHTTPClient):
     async def search(self, query):
         return await self.request('search.json', q=query)
 
+    async def timezone(self, location):
+        return await self.request('timezone.json', q=location)
+
 
 class Weather(slash_util.Cog):
     metric = {'temp': 'C', 'speed': 'kph'}
@@ -131,6 +134,12 @@ class Weather(slash_util.Cog):
         embed = await WeatherUtils.build_search_embed(data, ctx, index, ctx.message.created_at)
         if embed is None:
             return
+        await ctx.send(embed=embed)
+
+    @commands.command(aliases=['tz'])
+    async def timezone(self, ctx, *, location):
+        data = await self.http.timezone(location)
+        embed = await WeatherUtils.build_tz_embed(data)
         await ctx.send(embed=embed)
 
 
