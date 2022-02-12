@@ -36,8 +36,8 @@ class Help:
 
 
 class ReactionRoleFlags(commands.FlagConverter):
-    title: Optional[Union[str, bool]] = None
-    names: Tuple[Union[str, bool], ...] = None
+    title: Optional[str] = None
+    names: Tuple[str, ...] = None
     emojis: Tuple[Union[discord.Emoji, str], ...]
     roles: Tuple[discord.Role, ...]
 
