@@ -106,3 +106,10 @@ class WeatherUtils:
         embed.add_field(name='Latitude', value=data.get('lat'), inline=False)
         embed.add_field(name='Longitude', value=data.get('lon'))
         return embed
+
+    @staticmethod
+    async def build_tz_embed(data) -> discord.Embed:
+        embed = discord.Embed(title=f'{data.get("location").get("name")}, {data.get("location").get("region")}, {data.get("location").get("country")}')
+        embed.add_field(name='Timezone ID', value=data.get('location').get('tz_id'))
+        embed.add_field(name='Local Time', value=data.get('location').get('localtime'))
+        return embed

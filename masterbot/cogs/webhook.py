@@ -24,7 +24,7 @@ class Help:
 
     def full_help(self):
         help_list = [self.webhook_help(), self.delete_help()]
-        return '\n'.join(help_list)
+        return '\n'.join(help_list) + '\nNot available with Slash Commands yet'
 
 
 class WebhookUserFlags(commands.FlagConverter):

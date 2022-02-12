@@ -1,3 +1,4 @@
+import discord
 from discord.ext import commands, tasks
 from masterbot.cogs.utils.http import AsyncHTTPClient
 from masterbot.bot import MasterBot
@@ -15,9 +16,9 @@ class FlagUnits(commands.FlagConverter):
 
 
 class WeatherAPIHTTPClient(AsyncHTTPClient):
-    def __init__(self):
+    def __init__(self, api_key):
         super().__init__('http://api.weatherapi.com/v1/')
-        self.api_key = '77aaea92eeeb4a1d80b41211220602'
+        self.api_key = api_key
 
     async def request(self, route, json=True, **params):
         return await super().request(route=route,
@@ -44,7 +45,7 @@ class Weather(slash_util.Cog):
 
     def __init__(self, bot: MasterBot):
         super().__init__(bot)
-        self.http = WeatherAPIHTTPClient()
+        self.http = WeatherAPIHTTPClient(self.bot.api_keys.weather)
         self.temp_units = {}
         self.speed_units = {}
         self.db = None
@@ -115,6 +116,10 @@ class Weather(slash_util.Cog):
     @commands.command()
     async def current(self, ctx, *, location):
         data = await self.http.current(location)
+        if data.get('error'):
+            error = discord.Embed(title='Error',
+                                  description=data.get('error').get('message'))
+            return await ctx.send(embed=error)
         embed = await WeatherUtils.build_current_embed(data, ctx, self)
         if embed is None:
             return
@@ -123,6 +128,10 @@ class Weather(slash_util.Cog):
     @commands.command()
     async def forecast(self, ctx, days: Optional[int] = 1, *, location):
         data = await self.http.forecast(location, days)
+        if data.get('error'):
+            error = discord.Embed(title='Error',
+                                  description=data.get('error').get('message'))
+            return await ctx.send(embed=error)
         embed = await WeatherUtils.build_forecast_embed(data, ctx, self, days)
         if embed is None:
             return
@@ -131,6 +140,10 @@ class Weather(slash_util.Cog):
     @commands.command(aliases=['place', 'town'])
     async def city(self, ctx, index: Optional[int] = 1, *, query):
         data = await self.http.search(query)
+        if data.get('error'):
+            error = discord.Embed(title='Error',
+                                  description=data.get('error').get('message'))
+            return await ctx.send(embed=error)
         embed = await WeatherUtils.build_search_embed(data, ctx, index, ctx.message.created_at)
         if embed is None:
             return
@@ -139,6 +152,10 @@ class Weather(slash_util.Cog):
     @commands.command(aliases=['tz'])
     async def timezone(self, ctx, *, location):
         data = await self.http.timezone(location)
+        if data.get('error'):
+            error = discord.Embed(title='Error',
+                                  description=data.get('error').get('message'))
+            return await ctx.send(embed=error)
         embed = await WeatherUtils.build_tz_embed(data)
         await ctx.send(embed=embed)
 

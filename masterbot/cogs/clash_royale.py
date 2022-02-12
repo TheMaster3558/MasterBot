@@ -103,7 +103,7 @@ class ClanSearchFlags(commands.FlagConverter):
 class ClashRoyale(slash_util.Cog):
     def __init__(self, bot: MasterBot):
         super().__init__(bot)
-        self.api_key = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiIsImtpZCI6IjI4YTMxOGY3LTAwMDAtYTFlYi03ZmExLTJjNzQzM2M2Y2NhNSJ9.eyJpc3MiOiJzdXBlcmNlbGwiLCJhdWQiOiJzdXBlcmNlbGw6Z2FtZWFwaSIsImp0aSI6Ijc5MjhjYTgyLTQzOTYtNDBhMS1hOGFjLTkxYTkyZmRlZDFjYSIsImlhdCI6MTYzNzk2NTE5Niwic3ViIjoiZGV2ZWxvcGVyL2U2ZGEwOWQ3LTg1ZjItMDQxOC1mODI5LWQyNjU3OGRlNGIyYiIsInNjb3BlcyI6WyJyb3lhbGUiXSwibGltaXRzIjpbeyJ0aWVyIjoiZGV2ZWxvcGVyL3NpbHZlciIsInR5cGUiOiJ0aHJvdHRsaW5nIn0seyJjaWRycyI6WyI3Ni4xMDQuMjQ2LjEyNyJdLCJ0eXBlIjoiY2xpZW50In1dfQ.3fLriIL4gEg6-xqJ6SJe56s6kZNP8FvQ8yUr6dAQZDdeCYiectFfRw_q3mj8Lipj0R6BW1k25z-j-zWrLfheYA'
+        self.api_key = self.bot.api_keys.clash_royale
         self.http = ClashRoyaleHTTPClient(self.api_key)
         print('Clash Royale cog loaded')
 
@@ -189,7 +189,10 @@ class ClashRoyale(slash_util.Cog):
 
     @clan.error
     async def error(self, ctx, error):
-        if isinstance(error, commands.CommandOnCooldown):
+        if isinstance(error, commands.CommandInvokeError):
+            await ctx.send('Try giving me a real tag.')
+            raise error
+        elif isinstance(error, commands.CommandOnCooldown):
             await ctx.send(f'Calm down! Try in {error.retry_after} seconds.')
         else:
             raise error
