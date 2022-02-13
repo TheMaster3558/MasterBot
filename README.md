@@ -63,6 +63,7 @@ class Hello(slash_util.Cog):
  ```
  
  Combining Both Examples
+ -----------------------
  ```py
 import masterbot
  
