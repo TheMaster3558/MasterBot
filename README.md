@@ -21,7 +21,7 @@ if __name__ == '__main__':
 
 Cog Example
 -----------
-cogs/hello.py
+`cogs/hello.py`
 ```py
 import slash_util
 import masterbot
