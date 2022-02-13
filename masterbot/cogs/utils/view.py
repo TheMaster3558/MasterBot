@@ -1,3 +1,10 @@
+"""
+License: Apache License 2.0
+2021-present The Master
+See LICENSE for more
+"""
+
+
 import discord
 
 
@@ -12,4 +19,5 @@ class View(discord.ui.View):
         for child in self.children:
             if child.label == name:
                 child.disabled = True
+                break
         await message.edit(view=self)

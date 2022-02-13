@@ -13,6 +13,10 @@ with open('masterbot/__init__.py', 'r') as v:
             break
 
 
+with open('README.md', 'r') as rd:
+    long_description = rd.read()
+
+
 packages = [
     'masterbot',
     'masterbot.cogs'
@@ -26,4 +30,7 @@ setup(name='masterbot',
       install_requires=requirements,
       python_requires='>=3.10.0',
       version=version,
-      packages=packages)
+      packages=packages,
+      long_description=long_description,
+      long_description_content_type='text/markdown',
+      license='Apache License 2.0')

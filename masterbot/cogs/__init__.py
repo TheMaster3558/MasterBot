@@ -1,3 +1,10 @@
+"""
+License: Apache License 2.0
+2021-present The Master
+See LICENSE for more
+"""
+
+
 from ..cogs import utils
 from ..cogs import clash_royale
 from ..cogs import code

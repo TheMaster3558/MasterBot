@@ -1,3 +1,10 @@
+"""
+License: Apache License 2.0
+2021-present The Master
+See LICENSE for more
+"""
+
+
 import discord
 from discord.ext import commands
 import json
