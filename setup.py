@@ -21,6 +21,9 @@ packages = [
 
 setup(name='masterbot',
       author='The Master',
+      description='A discord bot made with discord.py',
       url='https://github.com/chawkk6404/MasterBot',
       install_requires=requirements,
-      python_requires='>=3.10.0')
+      python_requires='>=3.10.0',
+      version=version,
+      packages=packages)
