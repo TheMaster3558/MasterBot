@@ -28,7 +28,7 @@ from discord.ext import commands, tasks
 from masterbot.cogs.utils.http import AsyncHTTPClient
 from masterbot.bot import MasterBot
 import slash_util
-from typing import Optional
+from typing import Optional, Union
 import aiosqlite
 from sqlite3 import IntegrityError
 import asyncio
@@ -123,19 +123,27 @@ class Weather(slash_util.Cog):
         await self.update_db()
 
     @commands.command()
-    async def units(self, ctx, *, flags: FlagUnits):
-        if not flags.temp and not flags.speed:
-            return await ctx.send(f'You forgot the flag arguments. `{ctx.prefix}units <flags_args>`. **Args:**\n`temp` `C` or `F`\n`speed` `mph` or `kph``')
-        if flags.temp:
-            if flags.temp.upper() in ('C', 'F'):
-                self.temp_units[ctx.guild.id] = flags.temp.upper()
+    async def units(self, ctx, *, flags: Union[FlagUnits, str]):
+        if isinstance(flags, FlagUnits):
+            if not flags.temp and not flags.speed:
+                return await ctx.send(f'You forgot the flag arguments. `{ctx.prefix}units <flags_args>`. **Args:**\n`temp` `C` or `F`\n`speed` `mph` or `kph``')
+            if flags.temp:
+                if flags.temp.upper() in ('C', 'F'):
+                    self.temp_units[ctx.guild.id] = flags.temp.upper()
+                else:
+                    return await ctx.send('Temp can only be **c** or **f**')
+            if flags.speed:
+                if flags.speed.lower() in ('mph', 'kph'):
+                    self.speed_units[ctx.guild.id] = flags.speed.lower()
+                else:
+                    return await ctx.send('Speed can only be **kph** or **mph**')
+        else:
+            if flags == 'metric':
+                self.temp_units[ctx.guild.id] = self.metric['temp']
+                self.speed_units[ctx.guild.id] = self.metric['speed']
             else:
-                return await ctx.send('Temp can only be **c** or **f**')
-        if flags.speed:
-            if flags.speed.lower() in ('mph', 'kph'):
-                self.speed_units[ctx.guild.id] = flags.speed.lower()
-            else:
-                return await ctx.send('Speed can only be **kph** or **mph**')
+                self.temp_units[ctx.guild.id] = self.customary['temp']
+                self.speed_units[ctx.guild.id] = self.customary['speed']
         await ctx.send(f'New settings! Temp: `{self.temp_units[ctx.guild.id]}` Speed: `{self.speed_units[ctx.guild.id]}`')
 
     @commands.command()
