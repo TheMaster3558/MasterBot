@@ -1,14 +1,14 @@
-import masterbot.cogs.utils
-import masterbot.cogs.clash_royale
-import masterbot.cogs.code
-import masterbot.cogs.help_info
-import masterbot.cogs.jokes
-import masterbot.cogs.moderation
-import masterbot.cogs.reaction_roles
-import masterbot.cogs.translate
-import masterbot.cogs.trivia
-import masterbot.cogs.weather
-import masterbot.cogs.webhook
+from ..cogs import utils
+from ..cogs import clash_royale
+from ..cogs import code
+from ..cogs import help_info
+from ..cogs import jokes
+from ..cogs import moderation
+from ..cogs import reaction_roles
+from ..cogs import translate
+from ..cogs import trivia
+from ..cogs import weather
+from ..cogs import webhook
 
 
 cog_list = [

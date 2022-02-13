@@ -336,8 +336,8 @@ class Moderation(slash_util.Cog):
 
     @commands.command()
     @commands.guild_only()
-    @commands.has_permissions(moderatate_members=True)
-    @commands.bot_has_permissions(moderatate_members=True)
+    @commands.has_permissions(moderate_members=True)
+    @commands.bot_has_permissions(moderate_members=True)
     async def timeout(self, ctx, member: discord.Member, minutes: int, *, reason: str = None):
         if ctx.author.top_role.position <= member.top_role.position:
             return await ctx.send(
