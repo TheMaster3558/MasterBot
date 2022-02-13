@@ -30,7 +30,7 @@ from discord.ext import commands
 
 
 class Hello(slash_util.Cog):
-    def __init__(bot: masterbot.MasterBot):
+    def __init__(self, bot: masterbot.MasterBot):
         self.bot = bot
         self.letters = {}
        
