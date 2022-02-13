@@ -17,3 +17,46 @@ bot = masterbot.MasterBot(cogs=masterbot.cog_list, api_keys=api_keys)
 if __name__ == '__main__':
     bot.run('token')
 ```
+
+
+Cog Example
+-----------
+```py
+import slash_util
+import masterbot
+import discord
+from discord.ext import commands
+
+
+class Hello(slash_util.Cog):
+    def __init__(bot: masterbot.MasterBot):
+        self.bot = bot
+        self.letters = {}
+       
+    @commands.command()
+    async def letter(self, ctx, letter):
+        self.letters[ctx.author.id] = letter
+    
+    @commands.command()
+    async def myletter(self, ctx, user: discord.User = None):
+        user = user or ctx.author
+        letter = self.letters.get(user.id)
+        if letter is None:
+            return await ctx.send("You don't have a letter saved")
+        await ctx.send("Your letter is {}".format(letter))
+    
+    @slash_util.slash_command(name='letter')
+    async def _letter(self, ctx, letter: str):
+        self.letters[ctx.author.id] = letter
+    
+    @slash_util.slash_command(name='myletter')
+    async def _myletter(self, ctx, user: discord.User = None):
+        user = user or ctx.author
+        letter = self.letters.get(user.id)
+        if letter is None:
+            return await ctx.send("You don't have a letter saved")
+        await ctx.send("Your letter is {}".format(letter))
+        
+ def setup(bot: masterbot.MasterBot):
+     bot.add_cog(Hello(bot))
+ ```
