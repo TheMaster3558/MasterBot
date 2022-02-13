@@ -5,7 +5,7 @@ MasterBot is a Discord Bot created by The Master
 It has a few cogs and development is still in progress
 
 :copyright: (c) 2021-present The Master
-:license: MIT
+:license: Apache License 2.0
 """
 
 
@@ -21,7 +21,7 @@ __title__ = 'masterbot'
 __version__ = '1.0.0b'
 __author__ = 'The Master'
 __copyright__ = 'Copyright 2021-present The Master'
-__license__ = 'MIT'
+__license__ = 'Apache License 2.0'
 
 
 class VersionInfo(namedtuple):
