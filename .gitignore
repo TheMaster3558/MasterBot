@@ -7,3 +7,4 @@ masterbot/cogs/__pycache__dpy2
 main.py
 databases/*
 logs/*
+build/lib/
