@@ -43,7 +43,7 @@ class Hello(slash_util.Cog):
         user = user or ctx.author
         letter = self.letters.get(user.id)
         if letter is None:
-            return await ctx.send("You don't have a letter saved")
+            return await ctx.send("{0.name} don't have a letter saved".format(user))
         await ctx.send("Your letter is {}".format(letter))
     
     @slash_util.slash_command(name='letter')
@@ -55,7 +55,7 @@ class Hello(slash_util.Cog):
         user = user or ctx.author
         letter = self.letters.get(user.id)
         if letter is None:
-            return await ctx.send("You don't have a letter saved")
+            return await ctx.send("{} don't have a letter saved".format(user))
         await ctx.send("Your letter is {}".format(letter))
         
  def setup(bot: masterbot.MasterBot):
