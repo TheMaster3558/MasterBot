@@ -61,3 +61,22 @@ class Hello(slash_util.Cog):
  def setup(bot: masterbot.MasterBot):
      bot.add_cog(Hello(bot))
  ```
+ 
+ Combining Both Examples
+ ```py
+import masterbot
+ 
+ 
+api_keys = masterbot.MasterBotAPIKeyManager(clash_royale='API key from https://developer.clashroyale.com/#/',
+                                            weather='API key from https://www.weatherapi.com/')
+                                            
+                                            
+my_cogs = ['cogs.hello']
+my_cogs.extend(masterbot.cog_list)
+
+bot = masterbot.MasterBot(cogs=my_cogs, api_keys=api_keys)
+
+
+if __name__ == '__main__':
+    bot.run('token')
+ ```
