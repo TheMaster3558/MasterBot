@@ -31,7 +31,7 @@ class MasterBot(slash_util.Bot):
     def __init__(self, command_prefix: Optional[Union[str, Iterable, Callable]] = commands.when_mentioned_or('!'),
                  *,
                  cogs: Optional[Iterable[str]] = None,
-                 log: Optional[str] = None,
+                 log: Optional[os.PathLike] = None,
                  api_keys: Optional[MasterBotAPIKeyManager] = MasterBotAPIKeyManager()
                  ):
         super().__init__(command_prefix=command_prefix,
@@ -49,8 +49,9 @@ class MasterBot(slash_util.Bot):
             handler = logging.FileHandler(filename=log, encoding='utf-8', mode='w')
             handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
             logger.addHandler(handler)
-        if not isinstance(api_keys, MasterBotAPIKeyManager) and api_keys is not None:
-            raise TypeError(f'`api_keys` expected `MasterBotAPIKeyManager not {api_keys.__class__.__name__!r}')
+        if not isinstance(api_keys, MasterBotAPIKeyManager):
+            if api_keys is not None:
+                raise TypeError(f'`api_keys` expected `MasterBotAPIKeyManager not {api_keys.__class__.__name__!r}')
         self.api_keys: MasterBotAPIKeyManager = api_keys
         if not self.api_keys.weather:
             self._cogs_to_add.remove('masterbot.cogs.weather')
