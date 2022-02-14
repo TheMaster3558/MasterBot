@@ -93,7 +93,7 @@ class Trivia(slash_util.Cog):
     def __init__(self, bot: MasterBot):
         super().__init__(bot)
         self.http = OpenTDBHTTPClient()
-        asyncio.ensure_future(self.http.get_token())
+        bot.loop.run_until_complete(self.http.get_token())
         print('Trivia cog loaded')
 
     @commands.command()
