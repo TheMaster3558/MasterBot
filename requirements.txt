@@ -1,3 +1,4 @@
+discord.py>=2.0.0a
 slash_util>=1.2.0
 aiosqlite>=0.17
 async_google_trans_new>=1.4.3
