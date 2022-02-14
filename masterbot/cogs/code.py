@@ -193,7 +193,7 @@ class Code(slash_util.Cog):
     @commands.is_owner()
     async def reload(self, ctx, *exts):
         for ext in exts:
-            self.bot.reload_extension(f'cogs.{ext}')
+            self.bot.reload_extension(ext)
         await ctx.send(f'Extensions reloaded: {", ".join(exts)}')
 
     @commands.command()
