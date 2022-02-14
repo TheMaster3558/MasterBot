@@ -5,8 +5,10 @@ See LICENSE for more
 """
 
 
-from masterbot.cogs.utils import cr_utils
-from masterbot.cogs.utils import embed
-from masterbot.cogs.utils import http
-from masterbot.cogs.utils import view
-from masterbot.cogs.utils import weather_utils
+from masterbot.cogs.utils.cr_utils import *
+from masterbot.cogs.utils.embed import *
+from masterbot.cogs.utils.http import *
+from masterbot.cogs.utils.view import *
+from masterbot.cogs.utils.weather_utils import *
+from masterbot.cogs.utils.embed import *
+from masterbot.cogs.utils.cog import *
