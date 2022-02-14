@@ -2,6 +2,21 @@
 The MasterBot discord bot created by The Master#6404
 
 
+Installation
+-------------
+You **MUST** install discord.py v2 from GitHub
+
+```
+pip install -U git+https://github.com/Rapptz/discord.py
+```
+
+Then you can install MasterBot from GitHub
+```
+https://github.com/chawkk6404/MasterBot
+```
+
+________
+
 Short Example
 -------------
 ```py
@@ -43,7 +58,7 @@ class Hello(slash_util.Cog):
         user = user or ctx.author
         letter = self.letters.get(user.id)
         if letter is None:
-            return await ctx.send("{0.name} don't have a letter saved".format(user))
+            return await ctx.send("{0.name} doesn't have a letter saved".format(user))
         await ctx.send("Your letter is {}".format(letter))
     
     @slash_util.slash_command(name='letter')
@@ -55,9 +70,9 @@ class Hello(slash_util.Cog):
         user = user or ctx.author
         letter = self.letters.get(user.id)
         if letter is None:
-            return await ctx.send("{} don't have a letter saved".format(user))
+            return await ctx.send("{0.name} doesn't have a letter saved".format(user))
         await ctx.send("Your letter is {}".format(letter))
-        
+    
  def setup(bot: masterbot.MasterBot):
      bot.add_cog(Hello(bot))
  ```
