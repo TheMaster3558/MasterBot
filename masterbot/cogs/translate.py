@@ -12,6 +12,7 @@ from async_google_trans_new.constant import LANGUAGES
 import slash_util
 import traceback
 from masterbot.bot import MasterBot
+from typing import Optional
 
 
 class Help:
@@ -57,7 +58,7 @@ class Translator(slash_util.Cog):
 
     @commands.command()
     @commands.cooldown(1, 30, commands.BucketType.user)
-    async def translate(self, ctx, lang, *, text):
+    async def translate(self, ctx, lang, *, text=''):
         if lang in LANGUAGES.keys() or lang in LANGUAGES.values():
             if lang in LANGUAGES.values():
                 lang = {v: k for k, v in LANGUAGES.items()}
@@ -69,13 +70,6 @@ class Translator(slash_util.Cog):
         embed.set_footer(text=f'Text successfully translated to {LANGUAGES.get(lang)}')
         await ctx.send(embed=embed)
 
-    @translate.error
-    async def error(self, ctx, error):
-        if isinstance(error, commands.CommandOnCooldown):
-            await ctx.send(error)
-        else:
-            raise type(error)(error)
-
     @commands.command()
     @commands.cooldown(1, 30, commands.BucketType.user)
     async def detect(self, ctx, *, text):
@@ -84,13 +78,6 @@ class Translator(slash_util.Cog):
                               description=f'Text: {text}')
         embed.set_footer(text='Google translate did its best')
         await ctx.send(embed=embed)
-
-    @detect.error
-    async def error(self, ctx, error):
-        if isinstance(error, commands.CommandOnCooldown):
-            await ctx.send(error)
-        else:
-            raise type(error)(error)
 
     @commands.command(aliases=['codes', 'langs'])
     async def languages(self, ctx):
