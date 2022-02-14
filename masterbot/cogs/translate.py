@@ -58,13 +58,15 @@ class Translator(slash_util.Cog):
 
     @commands.command()
     @commands.cooldown(1, 30, commands.BucketType.user)
-    async def translate(self, ctx, lang, *, text=''):
+    async def translate(self, ctx, lang=None, *, text=''):
         if lang in LANGUAGES.keys() or lang in LANGUAGES.values():
             if lang in LANGUAGES.values():
                 lang = {v: k for k, v in LANGUAGES.items()}
         else:
             text = lang + ' ' + text
             lang = 'en'
+        if not text:
+            return await ctx.send('Give me something to translate.')
         result = await self.translator.translate(text=text, lang_tgt=lang)
         embed = discord.Embed(description=f'Original: {text}\nTranslated: {result}')
         embed.set_footer(text=f'Text successfully translated to {LANGUAGES.get(lang)}')
@@ -78,6 +80,13 @@ class Translator(slash_util.Cog):
                               description=f'Text: {text}')
         embed.set_footer(text='Google translate did its best')
         await ctx.send(embed=embed)
+
+    @detect.error
+    async def error(self, ctx, error):
+        if isinstance(error, commands.MissingRequiredArgument):
+            await ctx.send('Give me text.')
+        else:
+            raise error
 
     @commands.command(aliases=['codes', 'langs'])
     async def languages(self, ctx):
