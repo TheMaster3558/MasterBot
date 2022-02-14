@@ -101,11 +101,17 @@ class Weather(slash_util.Cog):
 
     @update_db.after_loop
     async def after(self):
-        await asyncio.sleep(1)
         await self.update_db()
 
+    @commands.Cog.listener()
+    async def on_error(self, ctx, error):
+        if isinstance(error, commands.MissingRequiredArgument):
+            await ctx.send(f'You missed an argument "{error.param}"')
+        else:
+            raise error
+
     @commands.command()
-    async def units(self, ctx, *, flags: Union[FlagUnits, str]):
+    async def units(self, ctx, *, flags: Union[FlagUnits, str] = None):
         if isinstance(flags, FlagUnits):
             if not flags.temp and not flags.speed:
                 return await ctx.send(f'You forgot the flag arguments. `{ctx.prefix}units <flags_args>`. **Args:**\n`temp` `C` or `F`\n`speed` `mph` or `kph``')
@@ -119,13 +125,15 @@ class Weather(slash_util.Cog):
                     self.speed_units[ctx.guild.id] = flags.speed.lower()
                 else:
                     return await ctx.send('Speed can only be **kph** or **mph**')
-        else:
+        elif isinstance(flags, str):
             if flags == 'metric':
                 self.temp_units[ctx.guild.id] = self.metric['temp']
                 self.speed_units[ctx.guild.id] = self.metric['speed']
             else:
                 self.temp_units[ctx.guild.id] = self.customary['temp']
                 self.speed_units[ctx.guild.id] = self.customary['speed']
+        else:
+            return await ctx.send(f'You forgot the flag arguments. `{ctx.prefix}units <flags_args>`. **Args:**\n`temp` `C` or `F`\n`speed` `mph` or `kph``')
         await ctx.send(f'New settings! Temp: `{self.temp_units[ctx.guild.id]}` Speed: `{self.speed_units[ctx.guild.id]}`')
 
     @commands.command()
