@@ -9,7 +9,7 @@ import slash_util
 import discord
 from discord.ext import commands
 from time import perf_counter
-from typing import Literal, Optional, Callable, Union, Iterable
+from typing import Literal, Optional, Union, Iterable
 import logging
 import os
 from .api_keys import MasterBotAPIKeyManager
@@ -28,12 +28,16 @@ intents.members = True
 class MasterBot(slash_util.Bot):
     __version__ = '1.0.0b'
 
-    def __init__(self, command_prefix: Optional[Union[str, Iterable, Callable]] = commands.when_mentioned_or('!'),
+    def __init__(self, command_prefix: Optional[Union[str, Iterable]] = commands.when_mentioned_or('!'),
                  *,
                  cogs: Optional[Iterable[str]] = None,
-                 log: Optional[os.PathLike] = None,
+                 log: Optional[Union[os.PathLike, str]] = None,
                  api_keys: Optional[MasterBotAPIKeyManager] = MasterBotAPIKeyManager()
                  ):
+        if type(command_prefix).__name__ != 'function':
+            if isinstance(command_prefix, str):
+                command_prefix = [command_prefix]
+            command_prefix = commands.when_mentioned_or(*command_prefix)
         super().__init__(command_prefix=command_prefix,
                          intents=intents,
                          help_command=None,
