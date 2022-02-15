@@ -15,6 +15,22 @@ Then you can install MasterBot from GitHub
 ```
 pip install -U git+https://github.com/chawkk6404/MasterBot
 ```
+________
+Config
+------
+Create a json file named `config.json`
+Add data with this structure
+```json
+{
+  "token": "bot token",
+  "api_keys": {
+    "clash_royale": "API key from https://developer.clashroyale.com/#/",
+    "weather": ""
+  },
+  "command_prefix": "!",
+  "logger": "logs/discord.log"
+}
+```
 
 ________
 
@@ -24,14 +40,11 @@ Short Example
 import masterbot
 
 
-api_keys = masterbot.MasterBotAPIKeyManager(clash_royale='API key from https://developer.clashroyale.com/#/',
-                                            weather='API key from https://www.weatherapi.com/')
-
-bot = masterbot.MasterBot(cogs=masterbot.cog_list, api_keys=api_keys)
+bot = masterbot.MasterBot(cogs=masterbot.cog_list)
 
 
 if __name__ == '__main__':
-    bot.run('token')
+    bot.run()
 ```
 
 
@@ -47,7 +60,7 @@ from discord.ext import commands
 
 class Hello(slash_util.Cog):
     def __init__(self, bot: masterbot.MasterBot):
-        self.bot = bot
+        super().__init__(bot)
         self.letters = {}
        
     @commands.command()
@@ -82,18 +95,14 @@ class Hello(slash_util.Cog):
  -----------------------
  ```py
 import masterbot
- 
- 
-api_keys = masterbot.MasterBotAPIKeyManager(clash_royale='API key from https://developer.clashroyale.com/#/',
-                                            weather='API key from https://www.weatherapi.com/')
                                             
                                             
 my_cogs = ['cogs.hello']
 my_cogs.extend(masterbot.cog_list)
 
-bot = masterbot.MasterBot(cogs=my_cogs, api_keys=api_keys)
+bot = masterbot.MasterBot(cogs=my_cogs)
 
 
 if __name__ == '__main__':
-    bot.run('token')
+    bot.run()
  ```

@@ -59,7 +59,7 @@ class Code(slash_util.Cog):
             return
         if ctx.command.has_error_handler():
             return
-        if isinstance(error, (commands.MissingPermissions, commands.MissingRequiredArgument)):
+        if isinstance(error, (commands.MissingPermissions, commands.MissingRequiredArgument, commands.NotOwner)):
             return
         else:
             raise error
@@ -211,21 +211,25 @@ class Code(slash_util.Cog):
         pass
 
     @git.command()
+    @commands.is_owner()
     async def add(self, ctx, path):
         __os__.system('git add {}'.format(path))
         await ctx.send('Files in {} were added to the next commit.'.format(path))
 
     @git.command()
+    @commands.is_owner()
     async def remove(self, ctx, path):
         __os__.system('git remove {}'.format(path))
         await ctx.send('Files in {} were removed from the next commit.'.format(path))
 
     @git.command()
+    @commands.is_owner()
     async def commit(self, ctx, *, message):
         __os__.system('git commit -m "{}"'.format(message))
         await ctx.send('Changes have been committed with the message {}'.format(message))
 
     @git.command()
+    @commands.is_owner()
     async def push(self, ctx, force=False):
         command = 'git push'
         if force == 'force':

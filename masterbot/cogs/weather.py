@@ -52,7 +52,8 @@ class Weather(slash_util.Cog):
 
     def __init__(self, bot: MasterBot):
         super().__init__(bot)
-        self.http = WeatherAPIHTTPClient(self.bot.api_keys.weather)
+        self.api_key = self.bot.weather_api_key
+        self.http = WeatherAPIHTTPClient(self.api_key)
         self.temp_units = {}
         self.speed_units = {}
         self.db = None
@@ -104,7 +105,7 @@ class Weather(slash_util.Cog):
         await self.update_db()
 
     @commands.Cog.listener()
-    async def on_error(self, ctx, error):
+    async def on_command_error(self, ctx, error):
         if isinstance(error, commands.MissingRequiredArgument):
             await ctx.send(f'You missed an argument "{error.param}"')
         else:

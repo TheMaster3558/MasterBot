@@ -110,7 +110,7 @@ class ClanSearchFlags(commands.FlagConverter):
 class ClashRoyale(slash_util.Cog):
     def __init__(self, bot: MasterBot):
         super().__init__(bot)
-        self.api_key = self.bot.api_keys.clash_royale
+        self.api_key = self.bot.clash_royale_api_key
         self.http = ClashRoyaleHTTPClient(self.api_key)
         print('Clash Royale cog loaded')
 
