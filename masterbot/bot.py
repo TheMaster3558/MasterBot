@@ -12,7 +12,7 @@ from time import perf_counter
 from typing import Literal, Optional, Callable, Union, Iterable
 import logging
 import os
-from .api_keys import MasterBotAPIKeyManager
+from .cogs import cog_list
 
 
 class DatabaseFolderNotFound(Exception):
@@ -28,11 +28,9 @@ intents.members = True
 class MasterBot(slash_util.Bot):
     __version__ = '1.0.0b'
 
-    def __init__(self, command_prefix: Optional[Union[str, Iterable, Callable]] = commands.when_mentioned_or('!'),
+    def __init__(self,
                  *,
-                 cogs: Optional[Iterable[str]] = None,
-                 log: Optional[os.PathLike] = None,
-                 api_keys: Optional[MasterBotAPIKeyManager] = MasterBotAPIKeyManager()
+                 cogs: Optional[Iterable[str]] = cog_list,
                  ):
         super().__init__(command_prefix=command_prefix,
                          intents=intents,
