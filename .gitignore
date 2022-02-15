@@ -9,3 +9,4 @@ databases/*
 logs/*
 build/lib/masterbot
 *.env
+*.json
