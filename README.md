@@ -16,6 +16,7 @@ Then you can install MasterBot from GitHub
 https://github.com/chawkk6404/MasterBot
 ```
 
+
 ________
 
 Short Example
@@ -24,8 +25,8 @@ Short Example
 import masterbot
 
 
-api_keys = masterbot.MasterBotAPIKeyManager(clash_royale='API key from https://developer.clashroyale.com/#/',
-                                            weather='API key from https://www.weatherapi.com/')
+"""api_keys = masterbot.MasterBotAPIKeyManager(clash_royale='API key from https://developer.clashroyale.com/#/',
+                                            weather='API key from https://www.weatherapi.com/')"""
 
 bot = masterbot.MasterBot(cogs=masterbot.cog_list, api_keys=api_keys)
 
