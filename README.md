@@ -13,7 +13,7 @@ pip install -U git+https://github.com/Rapptz/discord.py
 
 Then you can install MasterBot from GitHub
 ```
-https://github.com/chawkk6404/MasterBot
+pip install -U git+https://github.com/chawkk6404/MasterBot
 ```
 
 ________
