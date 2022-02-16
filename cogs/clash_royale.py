@@ -9,10 +9,10 @@ import discord
 from discord.ext import commands
 import slash_util
 from typing import Optional, Union
-from masterbot.cogs.utils.http import AsyncHTTPClient
+from cogs.utils.http import AsyncHTTPClient
 from requests.structures import CaseInsensitiveDict
-from masterbot.cogs.utils.cr_utils import ClashRoyaleUtils
-from masterbot.bot import MasterBot
+from cogs.utils.cr_utils import ClashRoyaleUtils
+from bot import MasterBot
 
 
 class Help:
@@ -110,7 +110,7 @@ class ClanSearchFlags(commands.FlagConverter):
 class ClashRoyale(slash_util.Cog):
     def __init__(self, bot: MasterBot):
         super().__init__(bot)
-        self.api_key = self.bot.clash_royale_api_key
+        self.api_key = self.bot.clash_royale
         self.http = ClashRoyaleHTTPClient(self.api_key)
         print('Clash Royale cog loaded')
 

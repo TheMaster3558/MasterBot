@@ -7,14 +7,13 @@ See LICENSE for more
 
 import discord
 from discord.ext import commands, tasks
-from masterbot.cogs.utils.http import AsyncHTTPClient
-from masterbot.bot import MasterBot
+from cogs.utils.http import AsyncHTTPClient
+from bot import MasterBot
 import slash_util
 from typing import Optional, Union
 import aiosqlite
 from sqlite3 import IntegrityError
-import asyncio
-from masterbot.cogs.utils.weather_utils import WeatherUtils
+from cogs.utils.weather_utils import WeatherUtils
 
 
 class FlagUnits(commands.FlagConverter):
@@ -52,7 +51,7 @@ class Weather(slash_util.Cog):
 
     def __init__(self, bot: MasterBot):
         super().__init__(bot)
-        self.api_key = self.bot.weather_api_key
+        self.api_key = self.bot.weather
         self.http = WeatherAPIHTTPClient(self.api_key)
         self.temp_units = {}
         self.speed_units = {}

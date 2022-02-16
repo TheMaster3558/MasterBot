@@ -14,7 +14,7 @@ import asyncio
 from motor import motor_asyncio
 from pymongo.errors import DuplicateKeyError, OperationFailure
 import datetime
-from masterbot.bot import MasterBot
+from bot import MasterBot
 
 
 class Help:

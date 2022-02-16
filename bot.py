@@ -8,11 +8,8 @@ import slash_util
 import discord
 from discord.ext import commands
 from time import perf_counter
-from typing import Literal, Optional, Union, Iterable
-import logging
+from typing import Optional, Iterable
 import os
-import json
-from .cogs import cog_list
 
 
 class DatabaseFolderNotFound(Exception):
@@ -33,51 +30,40 @@ intents.members = True
 class MasterBot(slash_util.Bot):
     __version__ = '1.0.0b'
 
-    def __init__(self,
-                 *,
-                 cogs: Optional[Iterable[str]] = None):
-        with open('config.json', 'r') as c:
-            config = json.load(c)
-        token = config.get('token')
-        if token is None:
-            raise MissingConfigValue('token')
-        self.token = token
-        command_prefix = config.get('command_prefix')
-        if command_prefix is None:
-            command_prefix = '!'
-        super().__init__(command_prefix=commands.when_mentioned_or(command_prefix),
+    def __init__(self, cr_api_key, weather_api_key):
+        super().__init__(command_prefix=commands.when_mentioned_or('!'),
                          intents=intents,
                          help_command=None,
                          activity=discord.Game(f'version {self.__version__}'),
                          strip_after_prefix=True)
         self.start_time = perf_counter()
         self.on_ready_time = None
-        self._cogs_to_add = cogs or cog_list
-        self.clash_royale_api_key = config.get('api_keys').get('clash_royale')
-        if self.clash_royale_api_key is None:
-            self._cogs_to_add.remove('clash_royale')
-        self.weather_api_key = config.get('api_keys').get('weather')
-        if self.weather_api_key is None:
-            self._cogs_to_add.remove('weather')
-        log = config.get('logger')
-        if log is not None:
-            logger = logging.getLogger('discord')
-            logger.setLevel(logging.DEBUG)
-            handler = logging.FileHandler(filename=log, encoding='utf-8', mode='w')
-            handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
-            logger.addHandler(handler)
+        self.clash_royale = cr_api_key
+        self.weather = weather_api_key
 
     async def on_ready(self):
         print('Logged in as {0} ID: {0.id}'.format(self.user))
         self.on_ready_time = perf_counter()
         print('Time taken to ready up:', round(self.on_ready_time - self.start_time, 1), 'seconds')
 
-    def run(self) -> None:
-        for cog in self._cogs_to_add:
+    def run(self, token) -> None:
+        cogs = [
+            'cogs.clash_royale',
+            'cogs.code',
+            'cogs.help_info',
+            'cogs.jokes',
+            'cogs.moderation',
+            'cogs.reaction_roles',
+            'cogs.translate',
+            'cogs.trivia',
+            'cogs.weather',
+            'cogs.webhook'
+        ]
+        for cog in cogs:
             self.load_extension(cog)
         if 'databases' not in os.listdir():
             raise DatabaseFolderNotFound()
-        super().run(self.token)
+        super().run(token)
 
     def restart(self):
         """Reloads all extensions and clears the cache"""

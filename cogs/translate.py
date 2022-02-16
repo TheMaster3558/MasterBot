@@ -11,8 +11,7 @@ from async_google_trans_new import AsyncTranslator
 from async_google_trans_new.constant import LANGUAGES
 import slash_util
 import traceback
-from masterbot.bot import MasterBot
-from typing import Optional
+from bot import MasterBot
 
 
 class Help:

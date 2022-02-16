@@ -11,7 +11,7 @@ import aiohttp
 from typing import Optional, Dict
 import asyncio
 import slash_util
-from masterbot.bot import MasterBot
+from bot import MasterBot
 import aiosqlite
 from sqlite3 import IntegrityError
 

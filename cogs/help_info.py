@@ -8,16 +8,16 @@ See LICENSE for more
 import discord
 from discord.ext import commands
 import slash_util
-from masterbot.bot import MasterBot
+from bot import MasterBot
 
-from masterbot.cogs.reaction_roles import Help as RRHelp
-from masterbot.cogs.moderation import Help as MHelp
-from masterbot.cogs.code import Help as CHelp
-from masterbot.cogs.translate import Help as THelp
-from masterbot.cogs.trivia import Help as TrHelp
-from masterbot.cogs.clash_royale import Help as CRHelp
-from masterbot.cogs.jokes import Help as JHelp
-from masterbot.cogs.webhook import Help as WHelp
+from cogs.reaction_roles import Help as RRHelp
+from cogs.moderation import Help as MHelp
+from cogs.code import Help as CHelp
+from cogs.translate import Help as THelp
+from cogs.trivia import Help as TrHelp
+from cogs.clash_royale import Help as CRHelp
+from cogs.jokes import Help as JHelp
+from cogs.webhook import Help as WHelp
 
 import sys
 from async_google_trans_new import __version__ as agtn_version

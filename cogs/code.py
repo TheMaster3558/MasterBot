@@ -15,7 +15,7 @@ import re
 import os as __os__  # to keep eval command safe
 import sys as __sys__
 import slash_util
-from masterbot.bot import MasterBot
+from bot import MasterBot
 
 
 class Help:

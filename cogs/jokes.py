@@ -7,12 +7,12 @@ See LICENSE for more
 
 import discord
 from discord.ext import commands, tasks
-from masterbot.cogs.utils.http import AsyncHTTPClient
-from masterbot.cogs.utils.view import View
+from cogs.utils.http import AsyncHTTPClient
+from cogs.utils.view import View
 import slash_util
 import asyncio
 from typing import Optional, Union, Tuple, List
-from masterbot.bot import MasterBot
+from bot import MasterBot
 import aiosqlite
 from sqlite3 import IntegrityError
 

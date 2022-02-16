@@ -12,7 +12,7 @@ from typing import Tuple, Optional, Union
 import json
 import copy as c
 import slash_util
-from masterbot.bot import MasterBot
+from bot import MasterBot
 
 
 class Help:

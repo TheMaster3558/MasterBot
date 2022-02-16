@@ -7,13 +7,12 @@ See LICENSE for more
 
 import discord
 from discord.ext import commands
-from masterbot.cogs.utils.http import AsyncHTTPClient
-import asyncio
+from cogs.utils.http import AsyncHTTPClient
 import random
 from html import unescape
 import slash_util
-from masterbot.cogs.utils.view import View
-from masterbot.bot import MasterBot
+from cogs.utils.view import View
+from bot import MasterBot
 
 
 class Help:
