@@ -1,9 +1,0 @@
-{
-  "token": ,
-  "api_keys": {
-    "clash_royale": ,
-    "weather":
-  },
-  "command_prefix": "!",
-  "logger": "logs/discord.log"
-}
