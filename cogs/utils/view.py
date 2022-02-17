@@ -21,3 +21,7 @@ class View(discord.ui.View):
                 child.disabled = True
                 break
         await message.edit(view=self)
+
+    def add_item(self, item: discord.ui.Item):
+        super().add_item(item)
+        return item

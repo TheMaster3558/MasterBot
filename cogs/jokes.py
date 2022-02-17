@@ -82,13 +82,11 @@ class CategorySelect(discord.ui.Select):
         if interaction.user != self.author:
             return await interaction.response.send_message("Only the person that used the command can use this.",
                                                            ephemeral=True)
-        for child in self._view.children:
-            child.disabled = True
-        await interaction.message.edit(view=self._view)
+        await self._view.disable_all(interaction.message)
         self._view.stop()
 
 
-class CategoryView(discord.ui.View):
+class CategoryView(View):
     def __init__(self, author):
         super().__init__(timeout=30)
         self.item = self.add_item(CategorySelect(author, self))

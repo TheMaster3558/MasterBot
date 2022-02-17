@@ -57,7 +57,8 @@ class MasterBot(slash_util.Bot):
             'cogs.translate',
             'cogs.trivia',
             'cogs.weather',
-            'cogs.webhook'
+            'cogs.webhook',
+            'cogs.forms'
         ]
         for cog in cogs:
             self.load_extension(cog)
