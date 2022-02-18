@@ -4,7 +4,9 @@ import slash_util
 from cogs.utils.view import View
 from bot import MasterBot
 import asyncio
-from typing import List, Dict, Tuple
+from typing import List, Dict
+import time
+import datetime
 
 
 class QuestionView(View):
@@ -93,7 +95,8 @@ class Forms(slash_util.Cog):
         await ctx.send('Type `stop` when you want to finish the form.')
         while True:
             await ctx.send('Type a question:')
-            msg = await self.bot.wait_for('message', check=lambda m: m.author == ctx.author and m.channel == ctx.channel)
+            msg = await self.bot.wait_for('message',
+                                          check=lambda m: m.author == ctx.author and m.channel == ctx.channel)
             if msg.content == 'stop':
                 if len(questions) < 1:
                     return await ctx.send('You need over 0 questions?')
@@ -112,10 +115,26 @@ class Forms(slash_util.Cog):
                                       style=style) for question, style in questions]
         modal = slash_util.Modal(title=title, items=items)
         self.modal[ctx.guild.id].append(modal)
-        await ctx.send('Ok! Users can now use `/takeform`')
+        now = datetime.datetime.now() + datetime.timedelta(hours=expire)
+        expire_time = round(time.mktime(now.timetuple()))
+        embed = discord.Embed(title='Ok! Users can now use `/takeform` to take this form',
+                              description=f'expires <t:{expire_time}:R>')
+        await ctx.send(embed=embed)
         await asyncio.sleep(expire * 3600)
         self.modal[ctx.guild.id].remove(modal)
-        await ctx.author.send(f'Your form ended with the results {self.results.get(modal) or "None"}')
+        results = self.results.get(modal)
+        if not results:
+            return await ctx.author.send('Your form got no responses :(')
+        embed = discord.Embed(title=f'Results for {title}')
+        results_dict = {}
+        for question, _ in questions:
+            results_dict[question] = []
+        for result in results:
+            for k, v in result.items():
+                results_dict[k].append(v)
+        for k, v in results_dict.items():
+            embed.add_field(name=k, value='\n'.join(v))
+        await ctx.send(embed=embed)
 
     @slash_util.slash_command(description='Take a form from another user!', guild_id=878431847162466354)
     async def takeform(self, ctx):
@@ -123,7 +142,7 @@ class Forms(slash_util.Cog):
         if len(modals) == 0:
             return await ctx.send('There are no forms to take.')
         view = FormView(modals, ctx.author)
-        await ctx.send('Select one', view=view)
+        msg = await ctx.send('Select one', view=view)
         await view.wait()
         try:
             value = view.item.values[0]
@@ -135,11 +154,11 @@ class Forms(slash_util.Cog):
                 modal = m
                 break
         view = ConfirmView(modal, self.bot, ctx.command)
-        await ctx.send('Click to start!', view=view)
+        await msg.edit('Click to start! Your results will be anonymously sent to the creator of this form.', view=view)
         await view.wait()
         if view.modal.response is None:
             return
-        if view.modal not in modals:
+        if view.modal not in self.modal[ctx.guild.id]:
             return
         response = view.modal.response
         if modal not in self.results:
