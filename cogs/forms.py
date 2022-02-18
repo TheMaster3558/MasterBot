@@ -86,7 +86,7 @@ class Forms(slash_util.Cog):
         for guild in self.bot.guilds:
             self.modal[guild.id] = []
 
-    @slash_util.slash_command(description='Create a form for other users to take', guild_id=878431847162466354)
+    @slash_util.slash_command(description='Create a form for other users to take')
     async def form(self,
                    ctx,
                    title: str,
@@ -136,7 +136,7 @@ class Forms(slash_util.Cog):
             embed.add_field(name=k, value='\n'.join(v))
         await ctx.send(embed=embed)
 
-    @slash_util.slash_command(description='Take a form from another user!', guild_id=878431847162466354)
+    @slash_util.slash_command(description='Take a form from another user!')
     async def takeform(self, ctx):
         modals = self.modal[ctx.guild.id]
         if len(modals) == 0:
