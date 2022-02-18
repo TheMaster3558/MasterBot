@@ -1,12 +1,9 @@
 *.pyc
-*.db-shm
-*.db-wal
 venv/*
-.idea/*
+.idea/
 masterbot/cogs/__pycache__dpy2
-main.py
+__main__.py
 databases/*
-logs/*
 build/lib/masterbot
 *.env
 *.json
