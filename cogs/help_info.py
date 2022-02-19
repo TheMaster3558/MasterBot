@@ -18,6 +18,7 @@ from cogs.trivia import Help as TrHelp
 from cogs.clash_royale import Help as CRHelp
 from cogs.jokes import Help as JHelp
 from cogs.webhook import Help as WHelp
+from cogs.weather import Help as WEHelp
 
 import sys
 from async_google_trans_new import __version__ as agtn_version
@@ -61,7 +62,7 @@ class HelpAndInfo(slash_util.Cog):
         if ctx.invoked_subcommand is None:
             embed = discord.Embed(title=f'{self.bot.user.name} Help Menu')
             embed.add_field(name='Categories',
-                            value='`reactions`\n`moderation`\n`code`\n`translation`\n`trivia`\n`cr`(Clash Royale)\n`jokes`')
+                            value='`reactions`\n`moderation`\n`code`\n`translation`\n`trivia`\n`cr`(Clash Royale)\n`jokes`\n`webhook`\n`weather`')
             embed.add_field(name='Info', value=f'`{(await self.bot.get_prefix(ctx.message))[2]}info`')
             await ctx.send(embed=embed)
 
@@ -138,6 +139,16 @@ class HelpAndInfo(slash_util.Cog):
         h = WHelp(prefix)
         help_message = h.full_help()
         embed = discord.Embed(title='Webhook Help',
+                              description=help_message)
+        await ctx.send(embed=embed)
+
+    @_help.command()
+    async def weather(self, ctx):
+        prefix = (await self.bot.get_prefix(ctx.message))[2]
+        h = WEHelp(prefix)
+        await ctx.send(h)
+        help_message = h.full_help()
+        embed = discord.Embed(title='Weather Help',
                               description=help_message)
         await ctx.send(embed=embed)
 

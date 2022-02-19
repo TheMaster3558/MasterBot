@@ -13,9 +13,10 @@ from html import unescape
 import slash_util
 from cogs.utils.view import View
 from bot import MasterBot
+from cogs.utils.help_utils import HelpSingleton
 
 
-class Help:
+class Help(metaclass=HelpSingleton):
     def __init__(self, prefix):
         self.prefix = prefix
 

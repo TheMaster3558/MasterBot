@@ -15,9 +15,10 @@ from motor import motor_asyncio
 from pymongo.errors import DuplicateKeyError, OperationFailure
 import datetime
 from bot import MasterBot
+from cogs.utils.help_utils import HelpSingleton
 
 
-class Help:
+class Help(metaclass=HelpSingleton):
     def __init__(self, prefix):
         self.prefix = prefix
 

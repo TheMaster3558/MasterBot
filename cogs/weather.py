@@ -14,9 +14,10 @@ from typing import Optional, Union, Literal
 import aiosqlite
 from sqlite3 import IntegrityError
 from cogs.utils.weather_utils import WeatherUtils
+from cogs.utils.help_utils import HelpSingleton
 
 
-class Help:
+class Help(metaclass=HelpSingleton):
     def __init__(self, prefix):
         self.prefix = prefix
 

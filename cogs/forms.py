@@ -7,6 +7,24 @@ import asyncio
 from typing import List, Dict
 import time
 import datetime
+from cogs.utils.help_utils import HelpSingleton
+
+
+class Help(metaclass=HelpSingleton):
+    def __init__(self, prefix):
+        self.prefix = prefix
+
+    def form_help(self):
+        message = f'`{self.prefix}form <title> [expires_in_hours]`: Create a form for other users to take.'
+        return message
+
+    def takeform_help(self):
+        message = f'`{self.prefix}takeform`: Take a form from another user!'
+        return message
+
+    def full_help(self):
+        help_list = [self.form_help(), self.takeform_help()]
+        return '\n'.join(help_list) + '\nOnly available with Slash Commands.'
 
 
 class QuestionView(View):
@@ -87,10 +105,13 @@ class Forms(slash_util.Cog):
             self.modal[guild.id] = []
 
     @slash_util.slash_command(description='Create a form for other users to take')
+    @slash_util.describe(title='The title', expire='The hours it will expire in. Defaults to 3.')
     async def form(self,
                    ctx,
                    title: str,
                    expire: slash_util.Range[1, 48] = 3):
+        if not ctx.guild:
+            return await ctx.send('Try this in a server.')
         questions = []
         await ctx.send('Type `stop` when you want to finish the form.')
         while True:
@@ -138,6 +159,8 @@ class Forms(slash_util.Cog):
 
     @slash_util.slash_command(description='Take a form from another user!')
     async def takeform(self, ctx):
+        if not ctx.guild:
+            return await ctx.send('Try this in a server.')
         modals = self.modal[ctx.guild.id]
         if len(modals) == 0:
             return await ctx.send('There are no forms to take.')

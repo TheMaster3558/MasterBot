@@ -14,9 +14,10 @@ import slash_util
 from bot import MasterBot
 import aiosqlite
 from sqlite3 import IntegrityError
+from cogs.utils.help_utils import HelpSingleton
 
 
-class Help:
+class Help(metaclass=HelpSingleton):
     def __init__(self, prefix):
         self.prefix = prefix
 
@@ -90,7 +91,7 @@ class Webhooks(slash_util.Cog):
                 avatar = None
             self.users[user.id] = {'name': name, 'avatar': avatar}
 
-    @tasks.loop(minutes=1)
+    @tasks.loop(minutes=7)
     async def update_db(self):
         for k, v in self.webhooks.items():
             try:

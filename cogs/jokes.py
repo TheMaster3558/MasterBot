@@ -15,9 +15,10 @@ from typing import Optional, Union, Iterable
 from bot import MasterBot
 import aiosqlite
 from sqlite3 import IntegrityError
+from cogs.utils.help_utils import HelpSingleton
 
 
-class Help:
+class Help(metaclass=HelpSingleton):
     def __init__(self, prefix):
         self.prefix = prefix
 
