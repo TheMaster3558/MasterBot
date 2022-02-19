@@ -1,10 +1,3 @@
-"""
-License: Apache License 2.0
-2021-present The Master
-See LICENSE for more
-"""
-
-
 import discord
 import re
 

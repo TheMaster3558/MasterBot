@@ -2,9 +2,4 @@
 venv/*
 .idea/
 masterbot/cogs/__pycache__dpy2
-__main__.py
-main.py
-databases/*
-build/lib/masterbot
-*.env
-*.json
+

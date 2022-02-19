@@ -1,9 +1,3 @@
-"""
-License: Apache License 2.0
-2021-present The Master
-See LICENSE for more
-"""
-
 import slash_util
 import discord
 from discord.ext import commands
@@ -25,6 +19,11 @@ class MissingConfigValue(Exception):
 
 intents = discord.Intents.default()
 intents.members = True
+
+
+"""
+https://azure.microsoft.com/en-us/free/virtual-machines/search/?OCID=AID2200277_SEM_93fccfc30f331d38359eadd231eb7f93:G:s&ef_id=93fccfc30f331d38359eadd231eb7f93:G:s&msclkid=93fccfc30f331d38359eadd231eb7f93
+"""
 
 
 class MasterBot(slash_util.Bot):
