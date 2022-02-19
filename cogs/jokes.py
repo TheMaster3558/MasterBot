@@ -11,7 +11,7 @@ from cogs.utils.http import AsyncHTTPClient
 from cogs.utils.view import View
 import slash_util
 import asyncio
-from typing import Optional, Union, Tuple, List
+from typing import Optional, Union, Iterable
 from bot import MasterBot
 import aiosqlite
 from sqlite3 import IntegrityError
@@ -108,8 +108,8 @@ class SlashFlagObject:
 
 
 class JokeAPIHTTPClient(AsyncHTTPClient):
-    def __init__(self):
-        super().__init__('https://v2.jokeapi.dev/joke/')
+    def __init__(self, loop):
+        super().__init__('https://v2.jokeapi.dev/joke/', loop=loop)
 
     async def get_joke(self, categories=None, blacklist_flags=None):
         categories = categories or ['Any']
@@ -120,7 +120,7 @@ class JokeAPIHTTPClient(AsyncHTTPClient):
         return await self.request(','.join(categories))
 
 
-def decode_sql_bool(data: Tuple[int]) -> List[bool]:
+def decode_sql_bool(data: Iterable[int]) -> Iterable[bool]:
     converted = []
     for num in data:
         if num == 1:
@@ -139,7 +139,7 @@ class Jokes(slash_util.Cog):
         self.db = None
         self.blacklist = {}
         self.update_db.start()
-        self.http = JokeAPIHTTPClient()
+        self.http = JokeAPIHTTPClient(self.bot.loop)
         self.used_jokes = [12345]  # 12345 is so the while loop starts
         self.categories = ["any", "misc", "programming", "dark", "pun", "spooky", "christmas"]
         print('Jokes cog loaded')

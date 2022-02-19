@@ -11,15 +11,17 @@ import asyncio
 
 
 class AsyncHTTPClient:
-    def __init__(self, base_url, *, connector: aiohttp.BaseConnector = None, headers=None):
+    def __init__(self, base_url, *, connector: aiohttp.BaseConnector = None, headers=None, loop=None):
         self.base = base_url
         self._connector = connector
-        self.session = aiohttp.ClientSession(connector=self._connector, headers=headers)
+        self.loop = loop
+        self.headers = headers
+        self.session = aiohttp.ClientSession(connector=self._connector, headers=headers, loop=loop)
 
     async def create(self):
         if not self.session.closed:
             await self.session.close()
-        self.session = aiohttp.ClientSession(connector=self._connector)
+        self.session = aiohttp.ClientSession(connector=self._connector, headers=self.headers, loop=self.loop)
 
     async def request(self, route, json=True, **params):
         async with self.session.get(self.base + route, params=params) as resp:

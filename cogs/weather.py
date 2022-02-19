@@ -22,8 +22,8 @@ class FlagUnits(commands.FlagConverter):
 
 
 class WeatherAPIHTTPClient(AsyncHTTPClient):
-    def __init__(self, api_key):
-        super().__init__('http://api.weatherapi.com/v1/')
+    def __init__(self, api_key, loop):
+        super().__init__('http://api.weatherapi.com/v1/', loop=loop)
         self.api_key = api_key
 
     async def request(self, route, json=True, **params):
@@ -52,7 +52,7 @@ class Weather(slash_util.Cog):
     def __init__(self, bot: MasterBot):
         super().__init__(bot)
         self.api_key = self.bot.weather
-        self.http = WeatherAPIHTTPClient(self.api_key)
+        self.http = WeatherAPIHTTPClient(self.api_key, self.bot.loop)
         self.temp_units = {}
         self.speed_units = {}
         self.db = None

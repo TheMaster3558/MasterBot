@@ -28,8 +28,8 @@ class Help:
 
 
 class OpenTDBHTTPClient(AsyncHTTPClient):
-    def __init__(self):
-        super().__init__('https://opentdb.com/')
+    def __init__(self, loop):
+        super().__init__('https://opentdb.com/', loop=loop)
         self.token = None
 
     async def trivia(self, amount=1):
@@ -91,7 +91,7 @@ class MultipleChoice(View):
 class Trivia(slash_util.Cog):
     def __init__(self, bot: MasterBot):
         super().__init__(bot)
-        self.http = OpenTDBHTTPClient()
+        self.http = OpenTDBHTTPClient(self.bot.loop)
         bot.loop.run_until_complete(self.http.get_token())
         print('Trivia cog loaded')
 

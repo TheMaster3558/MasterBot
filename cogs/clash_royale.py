@@ -55,12 +55,12 @@ locations = {'europe': 57000000, 'north america': 57000001, 'south america': 570
 
 
 class ClashRoyaleHTTPClient(AsyncHTTPClient):
-    def __init__(self, api_key):
+    def __init__(self, api_key, loop):
         self.api_key = api_key
         headers = CaseInsensitiveDict()
         headers['Authorization'] = f'Bearer {api_key}'
         headers['content-type'] = 'application/json'
-        super().__init__('https://api.clashroyale.com/v1/', headers=headers)
+        super().__init__('https://api.clashroyale.com/v1/', headers=headers, loop=loop)
 
     async def player_request(self, tag) -> dict:
         """
@@ -111,7 +111,7 @@ class ClashRoyale(slash_util.Cog):
     def __init__(self, bot: MasterBot):
         super().__init__(bot)
         self.api_key = self.bot.clash_royale
-        self.http = ClashRoyaleHTTPClient(self.api_key)
+        self.http = ClashRoyaleHTTPClient(self.api_key, self.bot.loop)
         print('Clash Royale cog loaded')
 
     @commands.command()

@@ -127,7 +127,7 @@ class Webhooks(slash_util.Cog):
                                         avatar TEXT
                                     );""")
         await self.db.commit()
-        self.session = aiohttp.ClientSession()
+        self.session = aiohttp.ClientSession(loop=self.bot.loop)
         await self.fetch_webhooks()
 
     @update_db.after_loop
