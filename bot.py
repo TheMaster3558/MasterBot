@@ -28,7 +28,7 @@ intents.members = True
 
 
 class MasterBot(slash_util.Bot):
-    __version__ = '1.0.0b'
+    __version__ = '1.0.0rc'
 
     def __init__(self, cr_api_key, weather_api_key):
         super().__init__(command_prefix=commands.when_mentioned_or('!'),
