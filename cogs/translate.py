@@ -109,6 +109,7 @@ class Translator(slash_util.Cog):
     @slash_util.slash_command(name='languages', description='Get a valid list of languages.')
     async def _languages(self, ctx):
         await self.languages(ctx)
+        await ctx.send('Check ur DMs')
 
     @slash_util.slash_command(name='detect', description='Detect the language of your text.')
     @slash_util.describe(text='The text to detect the language of.')
