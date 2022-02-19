@@ -56,12 +56,12 @@ class HelpAndInfo(slash_util.Cog):
             embed = discord.Embed(title=f'{self.bot.user.name} Help Menu')
             embed.add_field(name='Categories',
                             value='`reactions`\n`moderation`\n`code`\n`translation`\n`trivia`\n`cr`(Clash Royale)\n`jokes`\n`webhook`\n`weather`')
-            embed.add_field(name='Info', value=f'`{(await self.bot.get_prefix(ctx.message))[2]}info`')
+            embed.add_field(name='Info', value=f'`{ctx.clean_prefix}info`')
             await ctx.send(embed=embed)
 
     @_help.command()
     async def reactions(self, ctx):
-        prefix = (await self.bot.get_prefix(ctx.message))[2]
+        prefix = ctx.clean_prefix
         h = RRHelp(prefix)
         help_message = h.full_help()
         embed = discord.Embed(title='Reaction Role Help',
@@ -70,7 +70,7 @@ class HelpAndInfo(slash_util.Cog):
 
     @_help.command()
     async def moderation(self, ctx):
-        prefix = (await self.bot.get_prefix(ctx.message))[2]
+        prefix = ctx.clean_prefix
         h = MHelp(prefix)
         help_message = h.full_help()
         embed = discord.Embed(title='Moderation Help',
@@ -79,7 +79,7 @@ class HelpAndInfo(slash_util.Cog):
 
     @_help.command()
     async def code(self, ctx):
-        prefix = (await self.bot.get_prefix(ctx.message))[2]
+        prefix = ctx.clean_prefix
         h = CHelp(prefix)
         help_message = h.full_help()
         embed = discord.Embed(title='Code Help',
@@ -88,7 +88,7 @@ class HelpAndInfo(slash_util.Cog):
 
     @_help.command()
     async def translate(self, ctx):
-        prefix = (await self.bot.get_prefix(ctx.message))[2]
+        prefix = ctx.clean_prefix
         h = THelp(prefix)
         help_message = h.full_help()
         embed = discord.Embed(title='Translate Help',
@@ -98,7 +98,7 @@ class HelpAndInfo(slash_util.Cog):
 
     @_help.command()
     async def trivia(self, ctx):
-        prefix = (await self.bot.get_prefix(ctx.message))[2]
+        prefix = ctx.clean_prefix
         h = TrHelp(prefix)
         help_message = h.full_help()
         embed = discord.Embed(title='Trivia Help',
@@ -108,7 +108,7 @@ class HelpAndInfo(slash_util.Cog):
 
     @_help.command()
     async def cr(self, ctx):
-        prefix = (await self.bot.get_prefix(ctx.message))[2]
+        prefix = ctx.clean_prefix
         h = CRHelp(prefix)
         help_message = h.full_help()
         embed = discord.Embed(title='Clash Royale Help',
@@ -118,7 +118,7 @@ class HelpAndInfo(slash_util.Cog):
 
     @_help.command()
     async def jokes(self, ctx):
-        prefix = (await self.bot.get_prefix(ctx.message))[2]
+        prefix = ctx.clean_prefix
         h = JHelp(prefix)
         help_message = h.full_help()
         embed = discord.Embed(title='Jokes Help',
@@ -128,7 +128,7 @@ class HelpAndInfo(slash_util.Cog):
 
     @_help.command()
     async def webhook(self, ctx):
-        prefix = (await self.bot.get_prefix(ctx.message))[2]
+        prefix = ctx.clean_prefix
         h = WHelp(prefix)
         help_message = h.full_help()
         embed = discord.Embed(title='Webhook Help',
@@ -137,9 +137,8 @@ class HelpAndInfo(slash_util.Cog):
 
     @_help.command()
     async def weather(self, ctx):
-        prefix = (await self.bot.get_prefix(ctx.message))[2]
+        prefix = ctx.clean_prefix
         h = WEHelp(prefix)
-        await ctx.send(h)
         help_message = h.full_help()
         embed = discord.Embed(title='Weather Help',
                               description=help_message)

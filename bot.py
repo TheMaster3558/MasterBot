@@ -2,7 +2,7 @@ import slash_util
 import discord
 from discord.ext import commands
 from time import perf_counter
-from typing import Optional, Iterable
+from typing import Optional, Iterable, Union, List
 import os
 
 
