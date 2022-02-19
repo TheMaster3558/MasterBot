@@ -145,6 +145,13 @@ class Jokes(slash_util.Cog):
         print('Jokes cog loaded')
 
     @commands.Cog.listener()
+    async def on_command_error(self, ctx, error):
+        if isinstance(error, commands.MissingPermissions):
+            return
+        else:
+            raise error
+
+    @commands.Cog.listener()
     async def on_guild_join(self, guild):
         if guild.id not in self.blacklist.keys():
             self.blacklist[guild.id] = self.default_options
@@ -255,6 +262,7 @@ class Jokes(slash_util.Cog):
         await self.joke(ctx, *categories)
 
     @commands.command(name='blacklist')
+    @commands.has_permissions(administrator=True)
     async def _blacklist(self, ctx, *, flags: Union[BlacklistFlags, SlashFlagObject]):
         for k, v in vars(flags).items():
             if v is None:
