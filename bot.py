@@ -24,12 +24,6 @@ class CannotSendMessage(commands.CheckFailure):
     pass
 
 
-async def check(ctx):
-    if ctx.channel.permissions_for(ctx.me).send_messages:
-        return True
-    raise CannotSendMessage('DM an admin to give me permissions to send messages.')
-
-
 intents = discord.Intents.default()
 intents.members = True
 
@@ -49,7 +43,6 @@ class MasterBot(slash_util.Bot):
                          activity=discord.Game(f'version {self.__version__}'),
                          strip_after_prefix=True)
         self.add_cog(Prefix(self))
-        self.add_check(check)
         self.start_time = perf_counter()
         self.on_ready_time = None
         self.clash_royale = cr_api_key
@@ -66,8 +59,7 @@ class MasterBot(slash_util.Bot):
         if context.command is None:
             return
         if isinstance(exception, commands.CheckFailure):
-            if isinstance(exception, CannotSendMessage):
-                await context.author.send('I need send message permissions.')
+            return
         if not context.command.has_error_handler() and context.command.cog:
             if hasattr(context.command.cog, 'on_command_error'):
                 return
