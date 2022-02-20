@@ -20,10 +20,6 @@ class MissingConfigValue(Exception):
         super().__init__(f'config value {value} is missing in config.json')
 
 
-class CannotSendMessage(commands.CheckFailure):
-    pass
-
-
 intents = discord.Intents.default()
 intents.members = True
 
@@ -34,9 +30,9 @@ https://azure.microsoft.com/en-us/free/virtual-machines/search/?OCID=AID2200277_
 
 
 class MasterBot(slash_util.Bot):
-    __version__ = '1.0.1'
+    __version__ = '1.0.0rc'
 
-    def __init__(self, cr_api_key, weather_api_key):
+    def __init__(self, cr_api_key, weather_api_key, mongo_db):
         super().__init__(command_prefix=get_prefix,
                          intents=intents,
                          help_command=None,
@@ -49,6 +45,7 @@ class MasterBot(slash_util.Bot):
         self.weather = weather_api_key
         self.prefixes = {}
         self.prefixes_db = None
+        self.moderation_mongo = mongo_db
 
     async def on_ready(self):
         print('Logged in as {0} ID: {0.id}'.format(self.user))

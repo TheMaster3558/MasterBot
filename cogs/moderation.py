@@ -103,7 +103,7 @@ class Moderation(slash_util.Cog):
         super().__init__(bot)
         print('Connecting to mongodb... (Moderation Cog)')
         self.client = motor_asyncio.AsyncIOMotorClient(
-            'mongodb+srv://chawkk:Xboxone87@masterbotcluster.ezbjl.mongodb.net/test')
+            bot.moderation_mongo)
         print('Connected.')
         self.log: motor_asyncio.AsyncIOMotorCollection = self.client['moderation']['channels']
         print('Moderation cog loaded')
