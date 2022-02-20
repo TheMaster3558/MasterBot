@@ -1,12 +1,12 @@
-from __future__ import annotations
-
 import slash_util
 import discord
 from discord.ext import commands
 from time import perf_counter
 from typing import Optional, Iterable
 import os
-from prefix import Prefix,  get_prefix
+from prefix import Prefix, get_prefix
+import traceback
+import sys
 
 
 class DatabaseFolderNotFound(Exception):
@@ -54,6 +54,10 @@ class MasterBot(slash_util.Bot):
     async def on_command_error(self, context: commands.Context, exception: commands.errors.CommandError) -> None:
         if isinstance(exception, commands.CheckFailure):
             return
+        if not context.command.has_error_handler() and context.command.cog:
+            if hasattr(context.command.cog, 'on_command_error'):
+                return
+            traceback.print_exception(exception, exception.__traceback__, file=sys.stderr)
 
     def run(self, token) -> None:
         cogs = [
@@ -84,6 +88,8 @@ class MasterBot(slash_util.Bot):
 
     @property
     def oath_url(self):
+        if not self.user:
+            return
         permissions = discord.Permissions(manage_roles=True,
                                           manage_channels=True,
                                           kick_members=True,
@@ -99,6 +105,8 @@ class MasterBot(slash_util.Bot):
 
     def custom_oath_url(self, permissions: Optional[discord.Permissions] = None,
                         scopes: Optional[Iterable[str]] = None):
+        if not self.user:
+            return
         return discord.utils.oauth_url(self.user.id,
                                        permissions=permissions,
                                        scopes=scopes)

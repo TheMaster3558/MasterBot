@@ -3,7 +3,6 @@ from discord.ext import commands
 from async_google_trans_new import AsyncTranslator
 from async_google_trans_new.constant import LANGUAGES
 import slash_util
-import traceback
 from bot import MasterBot
 from cogs.utils.help_utils import HelpSingleton
 
@@ -39,10 +38,8 @@ class Translator(slash_util.Cog):
     @commands.Cog.listener()
     async def on_command_error(self, ctx, error):
         if ctx.command is None:
-            traceback.print_exception(error)
             return
         if ctx.command.cog != self:
-            traceback.print_exception(error)
             return
         if isinstance(error, commands.CommandOnCooldown):
             await ctx.send('Patience! Try again in {:.1f} seconds.'.format(error.retry_after))
