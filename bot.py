@@ -55,7 +55,7 @@ class MasterBot(slash_util.Bot):
     async def on_command_error(self, context: commands.Context, exception: commands.errors.CommandError) -> None:
         if not context.command:
             return
-        if not hasattr(context.command.cog, 'on_command_error'):
+        if not hasattr(context.command.cog, 'on_command_error') and not context.command.has_error_handler():
             traceback.print_exception(exception, file=sys.stderr)
 
     def run(self, token) -> None:
