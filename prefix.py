@@ -1,10 +1,14 @@
+from __future__ import annotations
+
 import discord
 from discord.ext import commands, tasks
-from typing import List
+from typing import List, TYPE_CHECKING
 import json
+if TYPE_CHECKING:
+    from bot import MasterBot
 
 
-async def get_prefix(bot, msg: discord.Message) -> List[str]:
+async def get_prefix(bot: MasterBot, msg: discord.Message) -> List[str]:
     prefixes = commands.when_mentioned(bot, msg)
     if msg.guild:
         _prefix = bot.prefixes.get(str(msg.guild.id))
@@ -18,7 +22,7 @@ async def get_prefix(bot, msg: discord.Message) -> List[str]:
 
 
 class Prefix(commands.Cog):
-    def __init__(self, bot):
+    def __init__(self, bot: MasterBot):
         self.bot = bot
         self.update_prefixes.start()
 
