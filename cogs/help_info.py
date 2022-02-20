@@ -43,7 +43,7 @@ class HelpAndInfo(slash_util.Cog):
                                                   f'[async-google-trans-new {agtn_version}](https://github.com/Theelx/async-google-trans-new)\n'
                                                   f'[aiohttp {aiohttp.__version__[:5]}](https://docs.aiohttp.org/en/stable/)\n'
                                                   f'Platform {sys.platform}')
-        embed.add_field(name='Stats', value=f'Servers: {len(self.bot.guilds)}\nUsers: {len(set(self.bot.users))}')
+        embed.add_field(name='Stats', value=f'Servers: {len(self.bot.guilds)}\nUnique Users: {len(set(self.bot.users))}')
         await ctx.send(embed=embed)
 
     @slash_util.slash_command(name='info', description='Get info about the bot')

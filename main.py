@@ -1,3 +1,13 @@
+"""
+MasterBot
+~~~~~~~~~~
+a Discord Bot with many uses and more to come
+
+:copyright: (c) 2021-present The Master
+:license: Mozilla Public License Version 2.0, see LICENSE for more
+"""
+
+
 from bot import MasterBot
 
 

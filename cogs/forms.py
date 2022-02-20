@@ -136,12 +136,12 @@ class Forms(slash_util.Cog):
                                       style=style) for question, style in questions]
         modal = slash_util.Modal(title=title, items=items)
         self.modal[ctx.guild.id].append(modal)
-        now = datetime.datetime.now() + datetime.timedelta(hours=expire)
+        now = datetime.datetime.now() + datetime.timedelta(hours=expire)  # type: ignore
         expire_time = round(time.mktime(now.timetuple()))
         embed = discord.Embed(title='Ok! Users can now use `/takeform` to take this form',
                               description=f'expires <t:{expire_time}:R>')
         await ctx.send(embed=embed)
-        await asyncio.sleep(expire * 3600)
+        await asyncio.sleep(expire * 3600)  # type: ignore
         self.modal[ctx.guild.id].remove(modal)
         results = self.results.get(modal)
         if not results:

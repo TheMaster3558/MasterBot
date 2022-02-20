@@ -1,9 +1,12 @@
+from __future__ import annotations
+
 import slash_util
 import discord
 from discord.ext import commands
 from time import perf_counter
-from typing import Optional, Iterable, Union, List
+from typing import Optional, Iterable
 import os
+from prefix import Prefix,  get_prefix
 
 
 class DatabaseFolderNotFound(Exception):
@@ -30,20 +33,27 @@ class MasterBot(slash_util.Bot):
     __version__ = '1.0.0rc'
 
     def __init__(self, cr_api_key, weather_api_key):
-        super().__init__(command_prefix=commands.when_mentioned_or('!'),
+        super().__init__(command_prefix=get_prefix,
                          intents=intents,
                          help_command=None,
                          activity=discord.Game(f'version {self.__version__}'),
                          strip_after_prefix=True)
+        self.add_cog(Prefix(self))
         self.start_time = perf_counter()
         self.on_ready_time = None
         self.clash_royale = cr_api_key
         self.weather = weather_api_key
+        self.prefixes = {}
+        self.prefixes_db = None
 
     async def on_ready(self):
         print('Logged in as {0} ID: {0.id}'.format(self.user))
         self.on_ready_time = perf_counter()
         print('Time taken to ready up:', round(self.on_ready_time - self.start_time, 1), 'seconds')
+
+    async def on_command_error(self, context: commands.Context, exception: commands.errors.CommandError) -> None:
+        if isinstance(exception, commands.CheckFailure):
+            return
 
     def run(self, token) -> None:
         cogs = [
