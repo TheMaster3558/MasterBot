@@ -135,6 +135,10 @@ class Weather(slash_util.Cog):
 
     @commands.Cog.listener()
     async def on_command_error(self, ctx, error):
+        if not ctx.command:
+            return
+        if ctx.command.cog != self:
+            return
         if isinstance(error, commands.MissingRequiredArgument):
             await ctx.send(f'You missed an argument "{error.param}"')
         else:

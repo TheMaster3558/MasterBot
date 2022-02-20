@@ -56,14 +56,10 @@ class MasterBot(slash_util.Bot):
         print('Time taken to ready up:', round(self.on_ready_time - self.start_time, 1), 'seconds')
 
     async def on_command_error(self, context: commands.Context, exception: commands.errors.CommandError) -> None:
-        if context.command is None:
+        if not context.command:
             return
-        if isinstance(exception, commands.CheckFailure):
-            return
-        if not context.command.has_error_handler() and context.command.cog:
-            if hasattr(context.command.cog, 'on_command_error'):
-                return
-            traceback.print_exception(exception, exception.__traceback__, file=sys.stderr)
+        if not hasattr(context.command.cog, 'on_command_error'):
+            traceback.print_exception(exception, file=sys.stderr)
 
     def run(self, token) -> None:
         cogs = [

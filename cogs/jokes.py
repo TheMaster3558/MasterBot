@@ -140,6 +140,10 @@ class Jokes(slash_util.Cog):
 
     @commands.Cog.listener()
     async def on_command_error(self, ctx, error):
+        if not ctx.command:
+            return
+        if ctx.command.cog != self:
+            return
         if isinstance(error, commands.MissingPermissions):
             return
         else:

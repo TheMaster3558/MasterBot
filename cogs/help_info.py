@@ -18,6 +18,15 @@ from async_google_trans_new import __version__ as agtn_version
 from importlib.metadata import version
 import aiohttp
 
+from cogs.utils.view import View
+
+
+class InviteView(View):
+    def __init__(self, bot: MasterBot):
+        super().__init__()
+        url = bot.oath_url
+        self.add_item(discord.ui.Button(label='Click here!', url=url))
+
 
 class HelpAndInfo(slash_util.Cog):
     def __init__(self, bot: MasterBot):
@@ -32,6 +41,16 @@ class HelpAndInfo(slash_util.Cog):
     @slash_util.slash_command(name='ping', description='Pong!')
     async def _ping(self, ctx):
         await self.ping(ctx)
+
+    @commands.command()
+    async def invite(self, ctx):
+        embed = discord.Embed(title=f'{self.bot.user.name} Invite')
+        await ctx.author.send(embed=embed, view=InviteView(self.bot))
+
+    @slash_util.slash_command(name='invite', description='Invite me!')
+    async def _invite(self, ctx):
+        await ctx.send('Check ur DMs.')
+        await self.invite(ctx)
 
     @commands.command()
     async def info(self, ctx):
