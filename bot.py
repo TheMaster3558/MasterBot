@@ -63,6 +63,8 @@ class MasterBot(slash_util.Bot):
         print('Time taken to ready up:', round(self.on_ready_time - self.start_time, 1), 'seconds')
 
     async def on_command_error(self, context: commands.Context, exception: commands.errors.CommandError) -> None:
+        if context.command is None:
+            return
         if isinstance(exception, commands.CheckFailure):
             if isinstance(exception, CannotSendMessage):
                 await context.author.send('I need send message permissions.')
