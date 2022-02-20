@@ -7,7 +7,10 @@ import json
 async def get_prefix(bot, msg: discord.Message) -> List[str]:
     prefixes = commands.when_mentioned(bot, msg)
     if msg.guild:
-        _prefix = bot.prefixes.get(str(msg.guild.id)) or '!'
+        _prefix = bot.prefixes.get(str(msg.guild.id))
+        if _prefix is None:
+            _prefix = '!'
+            bot.prefixes[str(msg.guild.id)] = _prefix
     else:
         _prefix = '!'
     prefixes.append(_prefix)
@@ -18,6 +21,10 @@ class Prefix(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.update_prefixes.start()
+
+    @commands.Cog.listener()
+    async def on_guild_remove(self, guild):
+        del self.bot.prefixes[str(guild.id)]
 
     @commands.command()
     @commands.has_permissions(administrator=True)
