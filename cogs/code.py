@@ -123,10 +123,9 @@ class Code(slash_util.Cog):
 
         sys.stdout = sys.__stdout__
 
-        try:
-            await ctx.reply(f'```\n{temp_out.getvalue()}\n```', mention_author=False)
-        except AttributeError:
-            await ctx.send(f'```\n{temp_out.getvalue()}\n```')
+        if isinstance(ctx, slash_util.Context):
+            return await ctx.send(f'```\n{temp_out.getvalue()}\n```')
+        await ctx.reply(f'```\n{temp_out.getvalue()}\n```', mention_author=False)
 
     @_eval.error
     async def error(self, ctx, error):
