@@ -157,7 +157,7 @@ class Code(slash_util.Cog):
         elif isinstance(error, (commands.MemberNotFound, commands.UserNotFound)):
             await ctx.send("I couldn't find that person =(")
         else:
-            raise type(error)(error)
+            raise error
 
     @commands.command()
     async def search(self, ctx, what, *, text):
