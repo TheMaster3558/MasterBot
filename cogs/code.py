@@ -1,5 +1,4 @@
 import sys
-
 import discord
 from discord.ext import commands
 from typing import Optional, Union
