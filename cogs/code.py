@@ -160,8 +160,8 @@ class Code(slash_util.Cog):
             raise error
 
     @commands.command()
-    async def search(self, ctx, what, *, text):
-        returned = re.search(what, text)
+    async def search(self, ctx, regex, *, text):
+        returned = re.search(regex, text)
         await ctx.send(returned)
 
     @slash_util.slash_command(name='search', description='Use regex to search text')
@@ -170,8 +170,8 @@ class Code(slash_util.Cog):
         await self.search(ctx=ctx, what=regex, text=text)
 
     @commands.command()
-    async def match(self, ctx, what, *, text):
-        returned = re.fullmatch(what, text)
+    async def match(self, ctx, regex, *, text):
+        returned = re.fullmatch(regex, text)
         await ctx.send(returned)
 
     @slash_util.slash_command(name='match', description='Use regex to match text')
