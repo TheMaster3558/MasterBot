@@ -10,6 +10,8 @@ import sys as __sys__
 import slash_util
 from bot import MasterBot
 from cogs.utils.help_utils import HelpSingleton
+import aiofiles
+from html import escape
 
 
 class Help(metaclass=HelpSingleton):
@@ -230,6 +232,37 @@ class Code(slash_util.Cog):
             command += ' -f'
         __os__.system(command)
         await ctx.send('Files pushed. Force push = {}.'.format(force))
+
+    @commands.command(name='code')
+    async def _code(self, ctx, file_path, lines=None):
+        if lines is None:
+            pass
+        elif '-' in lines:
+            lines = [int(line) for line in lines.split('-')]
+        else:
+            lines = int(lines)
+        async with aiofiles.open(file_path, 'r') as file:
+            content = (await file.read()).split('\n')
+        if isinstance(lines, list):
+            content = '\n'.join(content[(lines[0]+1):(lines[1]+1)])
+        elif lines is None:
+            content = '\n'.join(content)
+        else:
+            content = content[lines]
+        content.replace('`', '<')
+        try:
+            embed = discord.Embed(title=f'Code for {file_path}',
+                                  description=f'```py\n{content}\n```')
+            await ctx.send(embed=embed)
+        except discord.HTTPException:
+            await ctx.send('Too much to send.')
+
+    @_code.error
+    async def error(self, ctx, error):
+        if isinstance(error, commands.MissingRequiredArgument):
+            await ctx.send('You forgot "{}"'.format(error.param))
+        else:
+            raise error
 
 
 def setup(bot: MasterBot):
