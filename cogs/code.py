@@ -132,10 +132,10 @@ class Code(slash_util.Cog):
         if isinstance(error, commands.CommandOnCooldown):
             await ctx.send('Patience. Wait {:.1f} seconds'.format(error.retry_after))
         else:
-            await ctx.send('Command raised an exception\n```{}```'.format(error))
+            await ctx.send('Command raised an exception\n```\n{}\n```'.format(error))
 
     @commands.command()
-    async def canrun(self, ctx, user: Optional[discord.Member], *, acommand):
+    async def canrun(self, ctx, user: Optional[discord.User], *, acommand):
         command: Union[commands.Command, commands.Group] = self.bot.all_commands.get(acommand)
         if command is None:
             embed = discord.Embed(title=f'Command `{acommand}` not found.')
