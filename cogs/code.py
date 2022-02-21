@@ -1,9 +1,8 @@
+import sys
+
 import discord
 from discord.ext import commands
-import inspect
 from typing import Optional, Union
-import random
-import math
 import re
 import os as __os__  # to keep eval command safe
 import sys as __sys__
@@ -11,7 +10,8 @@ import slash_util
 from bot import MasterBot
 from cogs.utils.help_utils import HelpSingleton
 import aiofiles
-from html import escape
+import aiohttp
+import io
 
 
 class Help(metaclass=HelpSingleton):
@@ -34,17 +34,57 @@ class Help(metaclass=HelpSingleton):
         message = f'`{self.prefix}match <regex> <text>`: Use regular expressions `re.fullmatch()`. Same as `search` but full match.'
         return message
 
+    def code_help(self):
+        message = f'`{self.prefix}code <file> [lines]`: Get some code from the bot.'
+        return message
+
     def full_help(self):
-        help_list = [self.eval_help(), self.canrun_help(), self.search_help(), self.match_help()]
+        help_list = [self.eval_help(), self.canrun_help(), self.search_help(), self.match_help(), self.code_help()]
         return '\n'.join(help_list)
+
+
+async def aexec(code):
+    # https://stackoverflow.com/questions/44859165/async-exec-in-python
+    # Make an async function with the code and `exec` it
+    exec(
+        f'async def __ex(): ' +
+        ''.join(f'\n {l}' for l in code.split('\n'))
+    )
+
+    # Get `__ex` from local variables, call it and return the result
+    return await locals()['__ex']()
+
+
+class CodeBlock:
+    """Credits to Rapptz the creator of RoboDanny"""
+    missing_error = 'Missing code block. Please use the following markdown\n\\`\\`\\`py\ncode here\n\\`\\`\\`'
+
+    def __init__(self, argument):
+        try:
+            block, code = argument.split('\n', 1)
+        except ValueError:
+            raise commands.BadArgument(self.missing_error)
+
+        if not block.startswith('```') and not code.endswith('```'):
+            raise commands.BadArgument(self.missing_error)
+        self.source = code.rstrip('`').replace('```', '')
+
+
+class SlashCodeBlock:
+    def __init__(self, argument):
+        self.source = argument
 
 
 class Code(slash_util.Cog):
     """
     Many of the commands are owner only
     """
+    forbidden_imports = ['os', 'sys', 'subprocess']
+    forbidden_words = ['ctx', '__os__', '__sys__', 'bot', 'open(']
+
     def __init__(self, bot: MasterBot):
         super().__init__(bot)
+        self.session = aiohttp.ClientSession(loop=self.bot.loop)
         print('Code cog loaded')
 
     @commands.Cog.listener()
@@ -62,52 +102,32 @@ class Code(slash_util.Cog):
 
     @commands.cooldown(1, 60, commands.BucketType.user)
     @commands.command(name='eval', aliases=['e'])
-    async def _eval(self, ctx, *, arg: str):
+    async def _eval(self, ctx, *, code: Union[CodeBlock, SlashCodeBlock]):
         """
         This command will need lots of working on.
         Maybe will switch to SnekBox soon
         """
-        if '__' in arg or 'os' in arg or 'bot' in arg:
-            return
-        if arg.startswith('```') and arg.endswith('```'):
-            arg = list(arg)
-            del arg[0]
-            del arg[0]
-            del arg[0]
-            del arg[-1]
-            del arg[-1]
-            del arg[-1]
-            arg = ''.join(arg)
-        elif arg.startswith('```py') and arg.endswith('```'):
-            arg = list(arg)
-            del arg[0]
-            del arg[0]
-            del arg[0]
-            del arg[0]
-            del arg[0]
-            del arg[-1]
-            del arg[-1]
-            arg = ''.join(arg)
-        elif arg.startswith('`') and arg.endswith('`'):
-            arg = list(arg)
-            del arg[0]
-            del arg[-1]
-            arg = ''.join(arg)
-        res = exec(arg, {'math': math, 'random': random, 're': re})
-        if inspect.isawaitable(res):
-            try:
-                sendable = str(await res)
-            except Exception as exc:
-                sendable = 'Error\n{}'.format(exc)
-            if len(sendable) > 0:
-                await ctx.send('```py\n{}\n```'.format(sendable))
-        else:
-            try:
-                sendable = str(res)
-            except Exception as exc:
-                sendable = 'Error\n{}'.format(exc)
-            if len(sendable) > 0:
-                await ctx.send('```py\n{}\n```'.format(sendable))
+        if len(code.source.split('\n')) > 300:
+            return await ctx.send("You can't eval over 300 lines.")
+        if any([word in code.source for word in self.forbidden_words]):
+            return await ctx.send('Your code has a word that would be risky to eval.')
+        if any([f'import {word}' in code.source or f'__import__("{word}")' in code.source or f"__import__('{word}')" in code.source for word in self.forbidden_imports]):
+            return await ctx.send("You can't import that.")
+
+        temp_out = io.StringIO()
+        sys.stdout = temp_out
+
+        try:
+            await aexec(code.source)
+        except Exception as e:
+            return await ctx.send(f'Your code raised an exception\n```\n{e}\n```')
+
+        sys.stdout = sys.__stdout__
+
+        try:
+            await ctx.reply(f'```\n{temp_out.getvalue()}\n```', mention_author=False)
+        except AttributeError:
+            await ctx.send(f'```\n{temp_out.getvalue()}\n```')
 
     @_eval.error
     async def error(self, ctx, error):
@@ -164,8 +184,8 @@ class Code(slash_util.Cog):
     @commands.command()
     @commands.is_owner()
     async def logger(self, ctx, last=5):
-        with open('discord.log', 'r') as l:
-            log = l.read()
+        with aiofiles.open('logs/discord.log', 'r') as l:
+            log = await l.read()
         log = log.split('\n')
         log.reverse()
         full = [log[i] for i in range(1, last)]
@@ -244,7 +264,7 @@ class Code(slash_util.Cog):
         async with aiofiles.open(file_path, 'r') as file:
             content = (await file.read()).split('\n')
         if isinstance(lines, list):
-            content = '\n'.join(content[(lines[0]+1):(lines[1]+1)])
+            content = '\n'.join(content[lines[0]+1:lines[1]+1])
         elif lines is None:
             content = '\n'.join(content)
         else:
@@ -263,6 +283,14 @@ class Code(slash_util.Cog):
             await ctx.send('You forgot "{}"'.format(error.param))
         else:
             raise error
+
+    @slash_util.slash_command(name='eval', description='Run a Python file')
+    async def __eval(self, ctx, file: discord.Attachment):
+        if not file.filename.endswith('.py'):
+            return await ctx.send('It must be a `python` file.')
+        code = await file.read()
+        code = SlashCodeBlock(code.decode('utf-8'))
+        await self._eval(ctx, code=code)
 
 
 def setup(bot: MasterBot):
