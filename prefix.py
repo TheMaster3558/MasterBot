@@ -66,6 +66,3 @@ class Prefix(commands.Cog):
     @update_prefixes.after_loop
     async def after(self):
         await self.update_prefixes()
-
-
-
