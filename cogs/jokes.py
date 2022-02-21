@@ -126,7 +126,7 @@ def decode_sql_bool(data: Iterable[int]) -> Iterable[bool]:
 
 class Jokes(slash_util.Cog):
     default_options = {'nsfw': True, 'religious': True, 'political': True, 'sexist': True, 'racist': True,
-                            'explicit': True}
+                       'explicit': True}
 
     def __init__(self, bot: MasterBot):
         super().__init__(bot)
