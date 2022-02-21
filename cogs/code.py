@@ -162,7 +162,7 @@ class Code(slash_util.Cog):
     @commands.command()
     async def search(self, ctx, what, *, text):
         returned = re.search(what, text)
-        await ctx.send(bool(returned))
+        await ctx.send(returned)
 
     @slash_util.slash_command(name='search', description='Use regex to search text')
     @slash_util.describe(regex='The regular expression', text='The text to search.')
@@ -172,7 +172,7 @@ class Code(slash_util.Cog):
     @commands.command()
     async def match(self, ctx, what, *, text):
         returned = re.fullmatch(what, text)
-        await ctx.send(bool(returned))
+        await ctx.send(returned)
 
     @slash_util.slash_command(name='match', description='Use regex to match text')
     @slash_util.describe(regex='The regular expression', text='The text to match.')
