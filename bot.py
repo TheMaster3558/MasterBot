@@ -71,7 +71,7 @@ class MasterBot(slash_util.Bot):
             'cogs.weather',
             'cogs.webhook',
             'cogs.forms',
-            'cogs.google'
+            'cogs.edge'
         ]
         for cog in cogs:
             self.load_extension(cog)

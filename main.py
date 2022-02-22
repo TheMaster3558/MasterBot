@@ -16,8 +16,8 @@ bot = MasterBot("eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiIsImtpZCI6IjI4YTMxOGY3LTAwMDA
                 'mongodb+srv://chawkk:Xboxone87@masterbotcluster.ezbjl.mongodb.net/test')
 
 
-TOKEN1 = "OTI0MDM1ODc4ODk1MTEyMjUz.YcYteQ.C6CEOvXrumyLiWQoKCPy2XlQ6l0"
-TOKEN2 = 'ODc4MDM1MDY3OTc5NTYzMDY5.YR7T4Q.JLoUwmy5OvTo2c9lmisvZMqUaPc'
+TOKEN1 = "OTI0MDM1ODc4ODk1MTEyMjUz.YcYteQ.3P07DJfWoIyocSV_b2KkQ_xZDk8"
+TOKEN2 = 'ODc4MDM1MDY3OTc5NTYzMDY5.YR7T4Q.Xw4X8dB_CZgr8xlAeE9IQu4iriw'
 
 
 if __name__ == '__main__':
