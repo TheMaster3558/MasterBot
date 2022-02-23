@@ -7,6 +7,7 @@ import os
 from prefix import Prefix, get_prefix
 import traceback
 import sys
+import logging
 
 
 class DatabaseFolderNotFound(Exception):
@@ -37,7 +38,8 @@ class MasterBot(slash_util.Bot):
                          intents=intents,
                          help_command=None,
                          activity=discord.Game(f'version {self.__version__}'),
-                         strip_after_prefix=True)
+                         strip_after_prefix=True,
+                         enable_debug_events=True)
         self.add_cog(Prefix(self))
         self.start_time = perf_counter()
         self.on_ready_time = None
@@ -46,6 +48,11 @@ class MasterBot(slash_util.Bot):
         self.prefixes = {}
         self.prefixes_db = None
         self.moderation_mongo = mongo_db
+        logger = logging.getLogger('discord')
+        logger.setLevel(logging.DEBUG)
+        handler = logging.FileHandler(filename='logs/discord.log', encoding='utf-8', mode='w')
+        handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
+        logger.addHandler(handler)
 
     async def on_ready(self):
         print('Logged in as {0} ID: {0.id}'.format(self.user))
