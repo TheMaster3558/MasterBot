@@ -22,7 +22,6 @@ class MissingConfigValue(Exception):
 
 
 intents = discord.Intents.default()
-intents.members = True
 
 
 """
@@ -31,7 +30,7 @@ https://azure.microsoft.com/en-us/free/virtual-machines/search/?OCID=AID2200277_
 
 
 class MasterBot(slash_util.Bot):
-    __version__ = '1.0.2'
+    __version__ = '1.0.3'
 
     def __init__(self, cr_api_key, weather_api_key, mongo_db, topgg = None):
         super().__init__(command_prefix=get_prefix,
