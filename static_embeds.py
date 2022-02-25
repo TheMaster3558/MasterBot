@@ -1,9 +1,11 @@
+# -*- coding: utf-8 -*-
+
 import discord
 from async_google_trans_new.constant import LANGUAGES
 
 locations = {'europe': 57000000, 'north america': 57000001, 'south america': 57000002, 'asia': 57000003,
              'oceania': 57000004, 'africa': 57000005, 'international': 57000006, 'afghanistan': 57000007,
-             'åland islands': 57000008, 'albania': 57000009, 'algeria': 57000010, 'american samoa': 57000011,
+             'Ã¥land islands': 57000008, 'albania': 57000009, 'algeria': 57000010, 'american samoa': 57000011,
              'andorra': 57000012, 'angola': 57000013, 'anguilla': 57000014, 'antarctica': 57000015,
              'antigua and barbuda': 57000016, 'argentina': 57000017, 'armenia': 57000018, 'aruba': 57000019,
              'ascension island': 57000020, 'australia': 57000021, 'austria': 57000022, 'azerbaijan': 57000023,
@@ -17,8 +19,8 @@ locations = {'europe': 57000000, 'north america': 57000001, 'south america': 570
              'cayman islands': 57000051, 'central african republic': 57000052, 'ceuta and melilla': 57000053,
              'chad': 57000054, 'chile': 57000055, 'china': 57000056, 'christmas island': 57000057,
              'cocos (keeling) islands': 57000058, 'colombia': 57000059, 'comoros': 57000060, 'congo (drc)': 57000061,
-             'congo (republic)': 57000062, 'cook islands': 57000063, 'costa rica': 57000064, 'côte d’ivoire': 57000065,
-             'croatia': 57000066, 'cuba': 57000067, 'curaçao': 57000068, 'cyprus': 57000069, 'czech republic': 57000070,
+             'congo (republic)': 57000062, 'cook islands': 57000063, 'costa rica': 57000064, 'cÃ´te dâ€™ivoire': 57000065,
+             'croatia': 57000066, 'cuba': 57000067, 'curaÃ§ao': 57000068, 'cyprus': 57000069, 'czech republic': 57000070,
              'denmark': 57000071, 'diego garcia': 57000072, 'djibouti': 57000073, 'dominica': 57000074,
              'dominican republic': 57000075, 'ecuador': 57000076, 'egypt': 57000077, 'el salvador': 57000078,
              'equatorial guinea': 57000079, 'eritrea': 57000080, 'estonia': 57000081, 'ethiopia': 57000082,
@@ -47,10 +49,10 @@ locations = {'europe': 57000000, 'north america': 57000001, 'south america': 570
              'pakistan': 57000178, 'palau': 57000179, 'palestine': 57000180, 'panama': 57000181,
              'papua new guinea': 57000182, 'paraguay': 57000183, 'peru': 57000184, 'philippines': 57000185,
              'pitcairn islands': 57000186, 'poland': 57000187, 'portugal': 57000188, 'puerto rico': 57000189,
-             'qatar': 57000190, 'réunion': 57000191, 'romania': 57000192, 'russia': 57000193, 'rwanda': 57000194,
-             'saint barthélemy': 57000195, 'saint helena': 57000196, 'saint kitts and nevis': 57000197,
+             'qatar': 57000190, 'rÃ©union': 57000191, 'romania': 57000192, 'russia': 57000193, 'rwanda': 57000194,
+             'saint barthÃ©lemy': 57000195, 'saint helena': 57000196, 'saint kitts and nevis': 57000197,
              'saint lucia': 57000198, 'saint martin': 57000199, 'saint pierre and miquelon': 57000200,
-             'samoa': 57000201, 'san marino': 57000202, 'são tomé and príncipe': 57000203, 'saudi arabia': 57000204,
+             'samoa': 57000201, 'san marino': 57000202, 'sÃ£o tomÃ© and prÃ­ncipe': 57000203, 'saudi arabia': 57000204,
              'senegal': 57000205, 'serbia': 57000206, 'seychelles': 57000207, 'sierra leone': 57000208,
              'singapore': 57000209, 'sint maarten': 57000210, 'slovakia': 57000211, 'slovenia': 57000212,
              'solomon islands': 57000213, 'somalia': 57000214, 'south africa': 57000215, 'south korea': 57000216,
