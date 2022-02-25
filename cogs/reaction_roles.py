@@ -15,16 +15,16 @@ class Help(metaclass=HelpSingleton):
 
     def reaction_roles_help(self):
         message = f'`{self.prefix}reactionrole`: Alias = `{self.prefix}rr`. Create a reaction role!' + f'\nArguments:\n\t`title` (optional)\n\t`names` (optional, roles names ' \
-        f'will replace)\n\t`emojis`\n\t`roles`\n Example: `{self.prefix}rr title: ' \
-        f'Hi! names: Red Green Blue emojis: ❤ 💚 💙 roles: RedRole GreenRole ' \
-        f'Blue Role`'
+                                                                                                       f'will replace)\n\t`emojis`\n\t`roles`\n Example: `{self.prefix}rr title: ' \
+                                                                                                       f'Hi! names: Red Green Blue emojis: ❤ 💚 💙 roles: RedRole GreenRole ' \
+                                                                                                       f'Blue Role`'
         return message
 
     def custom_reaction_roles_help(self):
         message = f'`{self.prefix}customreactionrole`: Alias = `{self.prefix}crr`. Create a customreaction role!' + f'\nArguments:\n\t`title` (optional)\n\t`description` (optional)' \
-        f'\n\t`emojis`\n\t`roles`\n Example: `{self.prefix}rr title: ' \
-        f'Hi! description: react to get a color role! emojis: ❤ 💚 💙 roles: RedRole GreenRole ' \
-        f'Blue Role`'
+                                                                                                                    f'\n\t`emojis`\n\t`roles`\n Example: `{self.prefix}rr title: ' \
+                                                                                                                    f'Hi! description: react to get a color role! emojis: ❤ 💚 💙 roles: RedRole GreenRole ' \
+                                                                                                                    f'Blue Role`'
         return message
 
     def delete_help(self):
@@ -106,15 +106,15 @@ class ReactionRoles(commands.Cog):
         names = flags.names
         title = flags.title
         if len(emojis) != len(roles):
-            embed = discord.Embed(title='amount of emojis and roles should be the same')
-            return await ctx.send(embed=embed)
+            msg = 'amount of emojis and roles should be the same'
+            return await ctx.send(msg)
         for role in roles:
             if ctx.guild.roles.index(role) >= ctx.guild.roles.index(ctx.guild.me.top_role):
-                embed = discord.Embed(title='The role must be below my top role')
-                return await ctx.send(embed=embed, delete_after=10)
+                msg = 'The role must be below my top role'
+                return await ctx.send(msg, delete_after=10)
         if len(roles) > 10:
-            embed = discord.Embed(title='You must have 10 or under roles per reaction role message :|')
-            return await ctx.send(embed=embed, delete_after=10)
+            msg = 'You must have 10 or under roles per reaction role message :|'
+            return await ctx.send(msg, delete_after=10)
         if names is None:
             des = [f'{str(emojis[i])} = {str(roles[i].name)}' for i in range(0, len(roles))]
         else:
@@ -126,8 +126,8 @@ class ReactionRoles(commands.Cog):
             try:
                 await message.add_reaction(emoji)
             except discord.errors.HTTPException:
-                embed = discord.Embed(title="Couldn't find one of the emojis 🤔")
-                await ctx.send(embed=embed, delete_after=10)
+                msg = "Couldn't find one of the emojis 🤔. Make sure you only have 1 space separating them."
+                await ctx.send(msg, delete_after=10)
                 return await message.delete()
         d = {}
         for i in range(len(emojis)):
@@ -142,8 +142,7 @@ class ReactionRoles(commands.Cog):
     @reaction_role.error
     async def error(self, ctx, error):
         if isinstance(error, commands.errors.RoleNotFound):
-            embed = discord.Embed(title='1 or more of the roles was not found. 🤔')
-            await ctx.send(embed=embed, delete_after=10)
+            await ctx.send('1 or more of the roles was not found. 🤔', delete_after=10)
         elif isinstance(error, commands.errors.MissingPermissions):
             pass
         elif isinstance(error, commands.BotMissingPermissions):
@@ -165,16 +164,16 @@ class ReactionRoles(commands.Cog):
             embed.set_footer(text='Do not make me say this again!')
             await ctx.send(embed=embed, delete_after=30)
         else:
-            raise type(error)(error)
+            raise error
 
     @slash_util.slash_command(name='reaction role', description='Learn about how to make a reaction role message.')
     async def _reaction_role(self, ctx: slash_util.Context):
         embed = discord.Embed(title="Sorry but this won't work",
-                              description="Slash Commands are different than normal commands." \
-                              "The user input is much different. Message commands use flags." \
-                              "Flags don't really work well in Slash Commands" \
-                              f"Use {ctx.bot.name} as the prefix and do the `rr` command." \
-                              "Sorry but it's easier for both me and you.")
+                              description="Slash Commands are different than normal commands." 
+                                          "The user input is much different. Message commands use flags." 
+                                          "Size Varying Flags don't really work well in Slash Commands" 
+                                          f"Use {ctx.bot.name} as the prefix and do the `rr` command." 
+                                          "Sorry but it's easier for both me and you.")
         await ctx.send(embed=embed)
 
     @commands.command(aliases=['crr', 'customreactionrole'])
@@ -186,15 +185,15 @@ class ReactionRoles(commands.Cog):
         emojis = flags.emojis
         description = flags.description
         if len(emojis) != len(roles):
-            embed = discord.Embed(title='amount of emojis and roles should be the same')
-            return await ctx.send(embed=embed)
+            msg = 'amount of emojis and roles should be the same'
+            return await ctx.send(msg)
         for role in roles:
             if ctx.guild.roles.index(role) >= ctx.guild.roles.index(ctx.guild.me.top_role):
-                embed = discord.Embed(title='The role must be below my top role')
-                return await ctx.send(embed=embed, delete_after=10)
+                msg = 'The role must be below my top role'
+                return await ctx.send(msg, delete_after=10)
         if len(roles) > 10:
-            embed = discord.Embed(title='You must have 10 or under roles per reaction role message :|')
-            return await ctx.send(embed=embed, delete_after=10)
+            msg = 'You must have 10 or under roles per reaction role message :|'
+            return await ctx.send(msg, delete_after=10)
         reaction_embed = discord.Embed(title=title or '',
                                        description=description or '')
         message = await ctx.send(embed=reaction_embed)
@@ -202,9 +201,8 @@ class ReactionRoles(commands.Cog):
             try:
                 await message.add_reaction(emoji)
             except discord.errors.HTTPException:
-                embed = discord.Embed(title="Couldn't find one of the emojis 🤔",
-                                      description='Make sure only **1** space is separating them')
-                await ctx.send(embed=embed, delete_after=10)
+                msg = "Couldn't find one of the emojis 🤔. Make sure you only have 1 space separating them."
+                await ctx.send(msg, delete_after=10)
                 return await message.delete()
         d = {}
         for i in range(len(emojis)):
@@ -219,8 +217,8 @@ class ReactionRoles(commands.Cog):
     @custom_reaction_role.error
     async def error(self, ctx, error):
         if isinstance(error, commands.errors.RoleNotFound):
-            embed = discord.Embed(title='1 or more of the roles was not found. 🤔')
-            await ctx.send(embed=embed, delete_after=10)
+            msg = '1 or more of the roles was not found. 🤔'
+            await ctx.send(embed=msg, delete_after=10)
         elif isinstance(error, commands.errors.MissingPermissions):
             pass
         elif isinstance(error, commands.BotMissingPermissions):
@@ -310,8 +308,7 @@ class ReactionRoles(commands.Cog):
         if message.author.id != ctx.author.id:
             return
         if message.guild.id != ctx.guild.id:
-            embed = discord.Embed(title='Try using the command in the server the message is in')
-            return await ctx.send(embed=embed, delete_after=10)
+            return await ctx.send('Try using the command in the server the message is in', delete_after=10)
         try:
             self.role_dict.pop(str(message.id))
         except KeyError:
@@ -320,8 +317,8 @@ class ReactionRoles(commands.Cog):
     @delete.error
     async def error(self, ctx, error):
         if isinstance(error, commands.errors.MissingRequiredArgument):
-            embed = discord.Embed(title="Where's the message!? I can't find it without the link or ID")
-            await ctx.send(embed=embed)
+            msg = "Where's the message!? I can't find it without the link or ID"
+            await ctx.reply(embed=msg)
 
 
 def setup(bot: MasterBot):

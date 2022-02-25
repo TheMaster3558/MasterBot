@@ -9,6 +9,18 @@ from bot import MasterBot
 import aiosqlite
 from sqlite3 import IntegrityError
 from cogs.utils.help_utils import HelpSingleton
+from static_embeds import (
+    joke_category_embed,
+    nsfw_embed,
+    religious_embed,
+    political_embed,
+    sexist_embed,
+    racist_embed,
+    explicit_embed,
+    alert_bed,
+    confirm_bed,
+    cancel_bed,
+)
 
 
 class Help(metaclass=HelpSingleton):
@@ -248,9 +260,8 @@ class Jokes(slash_util.Cog):
 
     @slash_util.slash_command(name='joke', description='Let me tell you a joke!')
     async def _joke(self, ctx: slash_util.Context):
-        embed = discord.Embed(title='Select a Category')
         view = CategoryView(ctx.author)
-        await ctx.send(embed=embed, view=view)
+        await ctx.send(embed=joke_category_embed, view=view)
         await view.wait()
         categories = view.item.values
         if len(categories) > 1 and 'Any' in categories:
@@ -287,54 +298,40 @@ class Jokes(slash_util.Cog):
         msg = await ctx.send(embed=embed, view=view)
         secondary = False
         if options.get('nsfw') is True:
-            await asyncio.sleep(1)
-            nsfw_embed = discord.Embed(
-                title='By having NSFW jokes turned on, you agree that all users are mature enough to handle them')
+            await asyncio.sleep(0.4)
             await msg.reply(embed=nsfw_embed)
             secondary = True
         if options.get('religious') is True:
-            await asyncio.sleep(1)
-            religious_embed = discord.Embed(
-                title='By having Religious jokes turned on, you agree that users may take offense from some jokes')
+            await asyncio.sleep(0.4)
             await msg.reply(embed=religious_embed)
             secondary = True
         if options.get('political') is True:
-            await asyncio.sleep(1)
-            political_embed = discord.Embed(
-                title='By having Political jokes turned on, you agree that users may have conflicting political views and may take offense')
+            await asyncio.sleep(0.4)
             await msg.reply(embed=political_embed)
             secondary = True
         if options.get('sexist') is True:
-            await asyncio.sleep(1)
-            sexist_embed = discord.Embed(
-                title='By having Sexist jokes turned on, you agree that users may take offense from some jokes')
+            await asyncio.sleep(0.4)
             await ctx.send(embed=sexist_embed)
             secondary = True
         if options.get('racist') is True:
-            await asyncio.sleep(1)
-            racist_embed = discord.Embed(
-                title='By having Racist jokes turned on, you agree that users may take offense from some jokes')
+            await asyncio.sleep(0.4)
             await msg.reply(embed=racist_embed)
             secondary = True
         if options.get('explicit') is True:
-            await asyncio.sleep(1)
-            explicit_embed = discord.Embed(
-                title='By having Explicit turned on, you agree that all users are mature enough to handle them')
+            await asyncio.sleep(0.4)
             await msg.reply(embed=explicit_embed)
             secondary = True
         if secondary is True:
-            await asyncio.sleep(1)
-            alert_bed = discord.Embed(
-                title='We are not responsible for any jokes that make any users or goups, feel discomfort or feel offended.')
+            await asyncio.sleep(0.4)
             await ctx.send(embed=alert_bed)
         await view.wait()
         if view.choice is None:
             await msg.reply(embed=discord.Embed(title='Cancelled'))
             await view.disable_all(msg)
         elif view.choice is True:
-            await msg.reply(embed=discord.Embed(title='New settings confirmed!'))
+            await msg.reply(emebed=confirm_bed)
         elif view.choice is False:
-            await msg.reply(embed=discord.Embed(title='New settings cancelled.'))
+            await msg.reply(embed=cancel_bed)
         self.blacklist[ctx.guild.id] = options
 
     @_blacklist.error

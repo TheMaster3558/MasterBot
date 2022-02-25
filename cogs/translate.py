@@ -5,6 +5,7 @@ from async_google_trans_new.constant import LANGUAGES
 import slash_util
 from bot import MasterBot
 from cogs.utils.help_utils import HelpSingleton
+from static_embeds import lang_bed
 
 
 class Help(metaclass=HelpSingleton):
@@ -80,9 +81,7 @@ class Translator(slash_util.Cog):
 
     @commands.command(aliases=['codes', 'langs'])
     async def languages(self, ctx):
-        embed = discord.Embed(title='List of Languages',
-                              description='\n'.join(f'{k}/{v}' for k, v in LANGUAGES.items()))
-        await ctx.author.send(embed=embed)
+        await ctx.author.send(embed=lang_bed)
 
     @slash_util.slash_command(name='translate', description='Translate using google translate!')
     @slash_util.describe(lang='The language to translate to. Use /languages for a list.')

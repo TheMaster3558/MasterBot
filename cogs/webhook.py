@@ -136,6 +136,7 @@ class Webhooks(slash_util.Cog):
             embed = discord.Embed(title='Categories',
                                   description='`create`\n`send`')
             embed.set_footer(text='Use create to modify your webhook.')
+            await ctx.send(embed=embed)
 
     @webhook.command()
     @commands.guild_only()
