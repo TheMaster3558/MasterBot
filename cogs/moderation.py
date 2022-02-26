@@ -99,6 +99,7 @@ async def timeout_user(member: discord.Member, until, bot: commands.Bot, *, reas
 
 class Moderation(slash_util.Cog):
     """Will be changed to cache instead of db call in v2 or earlier"""
+
     def __init__(self, bot: MasterBot):
         super().__init__(bot)
         print('Connecting to mongodb... (Moderation Cog)')
@@ -204,7 +205,7 @@ class Moderation(slash_util.Cog):
                 "I can't let you do that. Your top role is lower or equal to theirs in the hierarchy.")
         if delete_after < 1 or delete_after > 7:
             return await ctx.send('Delete After Days must be from 1-7')
-        await member.ban(reason=reason, delete_message_days=delete_after)
+        await member.ban(reason=reason, delete_message_days=delete_after)  # type: ignore
         await ctx.send(f'{member} got banned.')
         log = await self.log.find_one({'_id': str(ctx.guild.id)})
         if log:
