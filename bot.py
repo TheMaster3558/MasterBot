@@ -10,24 +10,8 @@ import sys
 import logging
 
 
-class DatabaseFolderNotFound(Exception):
-    def __init__(self):
-        message = 'create a directory named `databases` for the databases to be created and accessed'
-        super().__init__(message)
-
-
-class MissingConfigValue(Exception):
-    def __init__(self, value):
-        super().__init__(f'config value {value} is missing in config.json')
-
-
 intents = discord.Intents.default()
 intents.members = True
-
-
-"""
-https://azure.microsoft.com/en-us/free/virtual-machines/search/?OCID=AID2200277_SEM_93fccfc30f331d38359eadd231eb7f93:G:s&ef_id=93fccfc30f331d38359eadd231eb7f93:G:s&msclkid=93fccfc30f331d38359eadd231eb7f93
-"""
 
 
 class MasterBot(slash_util.Bot):
@@ -82,8 +66,6 @@ class MasterBot(slash_util.Bot):
         ]
         for cog in cogs:
             self.load_extension(cog)
-        if 'databases' not in os.listdir():
-            raise DatabaseFolderNotFound()
         super().run(token)
 
     def restart(self):
