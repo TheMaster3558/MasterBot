@@ -160,8 +160,6 @@ class Moderation(slash_util.Cog):
     async def error(self, ctx, error):
         if isinstance(error, commands.ChannelNotFound):
             await ctx.send("I couldn't find that channel. I wonder why..")
-        else:
-            raise error
 
     @commands.command()
     @commands.has_permissions(kick_members=True)
@@ -193,8 +191,6 @@ class Moderation(slash_util.Cog):
             await ctx.send(embed=embed)
         elif isinstance(error, commands.MemberNotFound):
             await ctx.send('Member not found?')
-        else:
-            raise type(error)(error)
 
     @commands.command()
     @commands.has_permissions(ban_members=True)
@@ -223,8 +219,6 @@ class Moderation(slash_util.Cog):
             await ctx.send(embed=embed)
         elif isinstance(error, commands.MemberNotFound):
             await ctx.send('Member not found?')
-        else:
-            raise type(error)(error)
 
     @commands.command()
     @commands.has_permissions(ban_members=True)
@@ -256,8 +250,6 @@ class Moderation(slash_util.Cog):
             await ctx.send(embed=embed)
         elif isinstance(error, commands.MemberNotFound):
             await ctx.send('Member(s) not found?')
-        else:
-            raise type(error)(error)
 
     @commands.command()
     @commands.has_permissions(ban_members=True)
@@ -285,8 +277,6 @@ class Moderation(slash_util.Cog):
             await ctx.send(embed=embed)
         elif isinstance(error, commands.MemberNotFound):
             await ctx.send('Member not found?')
-        else:
-            raise type(error)(error)
 
     @commands.command()
     @commands.has_permissions(ban_members=True)
@@ -309,8 +299,6 @@ class Moderation(slash_util.Cog):
             await ctx.send(embed=embed)
         elif isinstance(error, commands.UserNotFound):
             await ctx.send("User does not exist apparently.")
-        else:
-            raise type(error)(error)
 
     @commands.command()
     @commands.has_permissions(ban_members=True)
@@ -333,8 +321,6 @@ class Moderation(slash_util.Cog):
             await ctx.send(embed=embed)
         elif isinstance(error, commands.UserNotFound):
             await ctx.send("User does not exist apparently.")
-        else:
-            raise type(error)(error)
 
     @commands.command()
     @commands.guild_only()
@@ -371,8 +357,6 @@ class Moderation(slash_util.Cog):
             await ctx.send(embed=embed)
         elif isinstance(error, commands.MemberNotFound):
             await ctx.send("I didn't find the member.")
-        else:
-            raise error
 
     @commands.command()
     @commands.has_permissions(administrator=True)
@@ -408,8 +392,6 @@ class Moderation(slash_util.Cog):
             await ctx.send(embed=embed)
         elif isinstance(error, commands.MemberNotFound):
             await ctx.send("I didn't find the member.")
-        else:
-            raise type(error)(error)
 
     @commands.command()
     @commands.has_permissions(manage_roles=True)
@@ -441,8 +423,6 @@ class Moderation(slash_util.Cog):
             await ctx.send(embed=embed)
         elif isinstance(error, commands.MemberNotFound):
             await ctx.send("I didn't find the member.")
-        else:
-            raise type(error)(error)
 
     @commands.command()
     @commands.has_permissions(manage_channels=True)
@@ -480,8 +460,6 @@ class Moderation(slash_util.Cog):
             await ctx.send("That role doesn't exist.")
         elif isinstance(error, commands.ChannelNotFound):
             await ctx.send("That channel doesn't exist.")
-        else:
-            raise type(error)(error)
 
     @commands.command()
     @commands.has_permissions(manage_channels=True)
@@ -519,8 +497,6 @@ class Moderation(slash_util.Cog):
             await ctx.send("That role doesn't exist.")
         elif isinstance(error, commands.ChannelNotFound):
             await ctx.send("That channel doesn't exist.")
-        else:
-            raise type(error)(error)
 
     @commands.command(aliases=['purge'])
     @commands.has_permissions(manage_messages=True)
@@ -556,8 +532,6 @@ class Moderation(slash_util.Cog):
             await ctx.send(embed=embed)
         elif isinstance(error, (commands.RoleNotFound, commands.MemberNotFound, commands.ChannelNotFound)):
             await ctx.send("I couldn't find that channel or member or role.")
-        else:
-            raise type(error)(error)
 
 
 def setup(bot: MasterBot):
