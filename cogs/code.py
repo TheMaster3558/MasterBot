@@ -128,8 +128,11 @@ class Code(slash_util.Cog):
         await ctx.reply(f'```\n{temp_out.getvalue()}\n```', mention_author=False)
 
     @_eval.error
-    async def error(self, ctx, error):
+    async def error(self, ctx: commands.Context, error):
         if isinstance(error, commands.CommandOnCooldown):
+            if await self.bot.is_owner(ctx.author):
+                await ctx.reinvoke()
+                return
             await ctx.send('Patience. Wait {:.1f} seconds'.format(error.retry_after))
         else:
             await ctx.send('Command raised an exception\n```\n{}\n```'.format(error))
