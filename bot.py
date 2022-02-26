@@ -22,6 +22,7 @@ class MissingConfigValue(Exception):
 
 
 intents = discord.Intents.default()
+intents.members = True
 
 
 """
@@ -77,6 +78,7 @@ class MasterBot(slash_util.Bot):
             'cogs.weather',
             'cogs.webhook',
             'cogs.forms',
+            'cogs.math'
         ]
         for cog in cogs:
             self.load_extension(cog)
