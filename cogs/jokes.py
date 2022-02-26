@@ -139,6 +139,7 @@ def decode_sql_bool(data: Iterable[int]) -> Iterable[bool]:
 class Jokes(slash_util.Cog):
     default_options = {'nsfw': True, 'religious': True, 'political': True, 'sexist': True, 'racist': True,
                        'explicit': True}
+    categories = ["any", "misc", "programming", "dark", "pun", "spooky", "christmas"]
 
     def __init__(self, bot: MasterBot):
         super().__init__(bot)
@@ -147,7 +148,6 @@ class Jokes(slash_util.Cog):
         self.update_db.start()
         self.http = JokeAPIHTTPClient(self.bot.loop)
         self.used_jokes = [12345]  # 12345 is so the while loop starts
-        self.categories = ["any", "misc", "programming", "dark", "pun", "spooky", "christmas"]
         print('Jokes cog loaded')
 
     @commands.Cog.listener()
