@@ -10,6 +10,7 @@ from cogs.utils.view import View
 from typing import Literal
 import asyncio
 
+
 Num = Literal[0, 1, 2]
 
 
