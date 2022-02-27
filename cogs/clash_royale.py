@@ -7,7 +7,7 @@ from requests.structures import CaseInsensitiveDict
 from cogs.utils.cr_utils import ClashRoyaleUtils
 from bot import MasterBot
 from cogs.utils.help_utils import HelpSingleton
-from static_embeds import cr_locations_embed
+from static_embeds import cr_locations_embed, locations
 
 
 class Help(metaclass=HelpSingleton):
