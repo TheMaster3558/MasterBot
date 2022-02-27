@@ -108,7 +108,6 @@ class TicTacToeView(View):
             return True
         if interaction.user.id in self.users:
             await interaction.response.send_message('Wait for your turn', ephemeral=True)
-            return False
         await interaction.response.send_message('You are not in this tic tac toe game')
         return False
 
