@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands, tasks
 import aiohttp
-from typing import Optional, Dict
+from typing import Optional
 import asyncio
 import slash_util
 from bot import MasterBot
@@ -37,8 +37,8 @@ class Webhooks(slash_util.Cog):
     def __init__(self, bot: MasterBot):
         super().__init__(bot)
         self.session = None
-        self.webhooks: Dict[int, discord.Webhook] = {}
-        self.users: Dict[int, Dict[str, Optional[str]]] = {}
+        self.webhooks: dict[int, discord.Webhook] = {}
+        self.users: dict[int, dict[str, Optional[str]]] = {}
         self.db = None
         self.update_db.start()
         print('Webhook cog loaded')

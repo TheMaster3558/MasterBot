@@ -4,7 +4,6 @@ import slash_util
 from cogs.utils.view import View
 from bot import MasterBot
 import asyncio
-from typing import List, Dict
 import time
 import datetime
 from cogs.utils.help_utils import HelpSingleton
@@ -94,8 +93,8 @@ class ConfirmView(View):
 class Forms(slash_util.Cog):
     def __init__(self, bot: MasterBot):
         super().__init__(bot)
-        self.modal: Dict[int, List[slash_util.Modal]] = {}
-        self.results: Dict[slash_util.Modal, List[dict]] = {}
+        self.modal: dict[int, list[slash_util.Modal]] = {}
+        self.results: dict[slash_util.Modal, list[dict]] = {}
         print('Forms cog loaded')
 
     @commands.Cog.listener()
