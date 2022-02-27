@@ -7,7 +7,7 @@ import re
 from typing import Type, TypeVar, Dict, Literal
 
 
-UorM = TypeVar('UorM', bound=discord.User)
+UserT = TypeVar('UserT', bound=discord.User)
 N = TypeVar('N', int, float)
 
 
@@ -23,7 +23,7 @@ class Math(slash_util.Cog):
     def __init__(self, bot: MasterBot):
         super().__init__(bot)
         self.parse_regex = re.compile('\w *= *\d+')
-        self.states: Dict[UorM, Dict[str, N]] = {}
+        self.states: Dict[UserT, Dict[str, N]] = {}
         print('Math cog loaded')
 
     def parse_for_vars(self, expression):
