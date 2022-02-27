@@ -4,7 +4,7 @@ import slash_util
 import expr
 from bot import MasterBot
 import re
-from typing import Type, TypeVar, Dict
+from typing import Type, TypeVar, Dict, Literal
 
 
 UorM = TypeVar('UorM', bound=discord.User)
@@ -48,7 +48,11 @@ class Math(slash_util.Cog):
             variables = self.states[ctx.author]
         result = evaluate(expression, variables=variables)
         await ctx.reply(result, mention_author=False)
-        return
+
+    @slash_util.slash_command(name='math', description="I'll do some math for you!")
+    @slash_util.describe(expression='The math expression')
+    async def _math(self, ctx, expression: str):
+        await self.math(ctx, expression=expression)
 
     @math.error
     async def error(self, ctx, error):
@@ -69,6 +73,14 @@ class Math(slash_util.Cog):
     @state.command(aliases=['del', 'destroy'])
     async def delete(self, ctx):
         del self.states[ctx.author]
+
+    @slash_util.slash_command(name='state', description='Create a state to save variables when using /math')
+    @slash_util.describe(option='"create" or "delete"', variables='Preset variables for your state')
+    async def _state(self, ctx, option: Literal["create", "delete"], variables: str = ''):
+        if option == 'create':
+            await self.create(ctx, variables=variables)
+        else:
+            await self.delete(ctx)
 
 
 def setup(bot: MasterBot):
