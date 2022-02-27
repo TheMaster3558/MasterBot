@@ -125,7 +125,10 @@ class Games(slash_util.Cog):
         embed.set_footer(text='You have 3 minutes.')
         msg = await ctx.send(embed=embed, view=view)
         await view.wait()
-        await msg.reply(f'The winner is {view.winner}!')
+        if view.winner:
+            await msg.reply(f'The winner is {view.winner}!')
+            return
+        await msg.reply("You couldn't finish in time.")
 
     @tictactoe.error
     async def error(self, ctx, error):
