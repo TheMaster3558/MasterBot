@@ -3,7 +3,7 @@ from discord.ext import commands, tasks
 import asyncio
 from typing import Tuple, Optional, Union
 import json
-import copy as c
+from copy import deepcopy
 import slash_util
 from bot import MasterBot
 from cogs.utils.help_utils import HelpSingleton
@@ -60,7 +60,7 @@ class ReactionRoles(commands.Cog):
 
     async def convert_all(self, message):
         ctx = await self.bot.get_context(message)
-        copy = c.deepcopy(self.role_dict)
+        copy = deepcopy(self.role_dict)
         copy = copy[str(message.id)]
         copy: dict = copy.get('emojis')
         original_keys = list(copy.keys())
