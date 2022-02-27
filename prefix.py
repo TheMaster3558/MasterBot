@@ -15,7 +15,7 @@ async def get_prefix(bot: MasterBot, msg: discord.Message) -> List[str]:
     else:
         _prefix = '!'
     prefixes.append(_prefix)
-    return commands.when_mentioned_or(*prefixes)(bot, msg)
+    return prefixes
 
 
 class Prefix(commands.Cog):

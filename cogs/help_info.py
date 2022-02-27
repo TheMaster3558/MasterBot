@@ -2,6 +2,7 @@ import discord
 from discord.ext import commands
 import slash_util
 from bot import MasterBot
+import re
 
 from cogs.reaction_roles import Help as RRHelp
 from cogs.moderation import Help as MHelp
@@ -32,7 +33,18 @@ class HelpAndInfo(slash_util.Cog):
     def __init__(self, bot: MasterBot):
         super().__init__(bot)
         self.slash_util_version = version('slash_util')
+        self.mention_regex = None
         print('Help and Info cog loaded')
+
+    @commands.Cog.listener()
+    async def on_ready(self):
+        self.mention_regex = re.compile(f'<@!?{self.bot.user.id}>')
+
+    @commands.Cog.listener()
+    async def on_message(self, message: discord.Message):
+        if self.mention_regex.fullmatch(message.content):
+            prefix = (await self.bot.get_prefix(message))[2]
+            await message.reply(f'My prefix is `{prefix}`', mention_author=False)
 
     @commands.command()
     async def ping(self, ctx):
