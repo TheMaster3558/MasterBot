@@ -58,6 +58,7 @@ class TicTacToeButton(discord.ui.Button['TicTacToeView']):
                     for child in self.view.children:
                         if child.x == k:
                             child.style = discord.ButtonStyle.green
+                    break
             if not finished:
                 for k, v in counter_y.items():
                     if v == 3:
@@ -66,6 +67,7 @@ class TicTacToeButton(discord.ui.Button['TicTacToeView']):
                         for child in self.view.children:
                             if child.y == k:
                                 child.style = discord.ButtonStyle.green
+                        break
 
         await interaction.message.edit(view=self.view)
         if finished:
