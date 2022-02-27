@@ -3,7 +3,6 @@ import discord
 from discord.ext import commands
 from time import perf_counter
 from typing import Optional, Iterable
-import os
 from prefix import Prefix, get_prefix
 import traceback
 import sys
