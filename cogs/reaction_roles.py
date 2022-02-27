@@ -251,24 +251,14 @@ class ReactionRoles(commands.Cog):
             return
         channel = self.bot.get_channel(payload.channel_id)
         message = await channel.fetch_message(payload.message_id)
-        data = await self.convert_all(message)
-        message_emojis = data.copy()
+        message_emojis = await self.convert_all(message)
         try:
             emoji = await commands.EmojiConverter().convert(await self.bot.get_context(message), str(payload.emoji))
         except commands.errors.EmojiNotFound:
             emoji = str(payload.emoji)
         if emoji not in message_emojis.keys():
             return await message.clear_reaction(emoji)
-        my_dict = {}
-        for k, v in message_emojis.items():
-            if not isinstance(k, str):
-                my_dict[id(k)] = v
-            else:
-                my_dict[k] = v
-        try:
-            role = my_dict[id(emoji)]
-        except KeyError:
-            role = my_dict[emoji]
+        role = message_emojis[emoji]
         if role not in payload.member.roles:
             await payload.member.add_roles(role)
 
@@ -282,24 +272,12 @@ class ReactionRoles(commands.Cog):
             return
         channel = self.bot.get_channel(payload.channel_id)
         message = await channel.fetch_message(payload.message_id)
-        data = await self.convert_all(message)
-        message_emojis = data
+        message_emojis = await self.convert_all(message)
         try:
             emoji = await commands.EmojiConverter().convert(await self.bot.get_context(message), str(payload.emoji))
         except commands.errors.EmojiNotFound:
             emoji = str(payload.emoji)
-        print(self.role_dict)
-        my_dict = {}
-        for k, v in message_emojis.items():
-            if not isinstance(k, str):
-                my_dict[id(k)] = v
-            else:
-                my_dict[k] = v
-        print(self.role_dict)
-        try:
-            role = my_dict[id(emoji)]
-        except KeyError:
-            role = my_dict[emoji]
+        role = message_emojis[emoji]
         if role in member.roles:
             await member.remove_roles(role)
 
