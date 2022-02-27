@@ -14,7 +14,7 @@ intents.members = True
 
 
 class MasterBot(slash_util.Bot):
-    __version__ = '1.1.2'
+    __version__ = '1.1.3'
 
     def __init__(self, cr_api_key, weather_api_key, mongo_db):
         super().__init__(command_prefix=get_prefix,
