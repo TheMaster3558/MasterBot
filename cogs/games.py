@@ -134,7 +134,7 @@ class Games(slash_util.Cog):
         elif isinstance(error, commands.MemberNotFound):
             await ctx.reply("I couldn't find that member")
         elif isinstance(error, commands.MissingRequiredArgument):
-            o_msg = await ctx.send('Mention a user')
+            o_msg = await ctx.reply('Mention a user to play against.')
             try:
                 msg = await self.bot.wait_for('message',
                                               check=lambda m: m.channel == ctx.channel and m.author == ctx.author,
