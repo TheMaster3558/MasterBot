@@ -27,7 +27,6 @@ class TicTacToeButton(discord.ui.Button['TicTacToeView']):
             if (child.x, child.y) == (self.x, self.y):  # type: ignore
                 self.disabled = True
                 break
-        await interaction.message.edit(view=self.view)
         if self.view.turn == 0:
             self.view.x.append((self.x, self.y))
             player = 'x'
@@ -68,8 +67,8 @@ class TicTacToeButton(discord.ui.Button['TicTacToeView']):
                             if child.y == k:
                                 child.style = discord.ButtonStyle.green
 
+        await interaction.message.edit(view=self.view)
         if finished:
-            await interaction.message.edit(view=self.view)
             await self.view.disable_all(interaction.message)
             self.view.stop()
         self.view.turn = 1 if self.view.turn == 0 else 0
