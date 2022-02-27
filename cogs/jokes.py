@@ -67,8 +67,7 @@ class BlacklistView(View):
 
 
 class CategorySelect(discord.ui.Select):
-    def __init__(self, author, view):
-        self._view = view
+    def __init__(self, author):
         self.author = author
         options = [
             discord.SelectOption(label='Any'),
@@ -89,13 +88,13 @@ class CategorySelect(discord.ui.Select):
             return await interaction.response.send_message("Only the person that used the command can use this.",
                                                            ephemeral=True)
         await self._view.disable_all(interaction.message)
-        self._view.stop()
+        self.view.stop()
 
 
 class CategoryView(View):
     def __init__(self, author):
         super().__init__(timeout=30)
-        self.item = self.add_item(CategorySelect(author, self))
+        self.item = self.add_item(CategorySelect(author))
 
 
 class BlacklistFlags(commands.FlagConverter):

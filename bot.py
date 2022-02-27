@@ -63,7 +63,7 @@ class MasterBot(slash_util.Bot):
             'cogs.webhook',
             'cogs.forms',
             'cogs.math',
-            'cogs.tictactoe'
+            'cogs.games'
         ]
         for cog in cogs:
             self.load_extension(cog)

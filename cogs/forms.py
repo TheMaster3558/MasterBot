@@ -46,9 +46,8 @@ class QuestionView(View):
 
 
 class FormSelect(discord.ui.Select['FormView']):
-    def __init__(self, forms, author, view):
+    def __init__(self, forms, author):
         self.author = author
-        self._view = view
         options = [discord.SelectOption(label=f'{form.title}') for form in forms]
         super().__init__(placeholder='Select a Form',
                          min_values=1,
@@ -59,14 +58,14 @@ class FormSelect(discord.ui.Select['FormView']):
         if interaction.user != self.author:
             return interaction.response.send_message('This is not for you.',
                                                      ephemeral=True)
-        await self._view.disable_all(interaction.message)
-        self._view.stop()
+        await self.view.disable_all(interaction.message)
+        self.view.stop()
 
 
 class FormView(View):
     def __init__(self, forms, author):
         super().__init__(timeout=30)
-        self.item = self.add_item(FormSelect(forms, author, self))
+        self.item = self.add_item(FormSelect(forms, author))
 
 
 class ConfirmView(View):
