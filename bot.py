@@ -1,12 +1,17 @@
+from __future__ import annotations
+
 import slash_util
 import discord
 from discord.ext import commands
 from time import perf_counter
-from typing import Optional, Iterable
+from typing import Optional, Iterable, TypeVar
 from prefix import Prefix, get_prefix
 import traceback
 import sys
 import logging
+
+
+MasterBotT = TypeVar('MasterBotT', bound='MasterBot')
 
 
 intents = discord.Intents.default()
@@ -16,7 +21,7 @@ intents.members = True
 class MasterBot(slash_util.Bot):
     __version__ = '1.1.3'
 
-    def __init__(self, cr_api_key, weather_api_key, mongo_db):
+    def __init__(self, cr_api_key: str, weather_api_key: str, mongo_db: str, /) -> None:
         super().__init__(command_prefix=get_prefix,
                          intents=intents,
                          help_command=None,
@@ -37,7 +42,16 @@ class MasterBot(slash_util.Bot):
         handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
         logger.addHandler(handler)
 
-    async def on_ready(self):
+    @classmethod
+    def custom(cls, cr_api_key: str, weather_api_key: str, mongo_db: str, /,
+               command_prefix='!', **options) -> MasterBotT:
+        self = cls(cr_api_key, weather_api_key, mongo_db)
+        self.command_prefix = command_prefix
+        for k, v in options:
+            setattr(self, k, v)
+        return self
+
+    async def on_ready(self) -> None:
         print('Logged in as {0} ID: {0.id}'.format(self.user))
         self.on_ready_time = perf_counter()
         print('Time taken to ready up:', round(self.on_ready_time - self.start_time, 1), 'seconds')
@@ -48,7 +62,7 @@ class MasterBot(slash_util.Bot):
         if not hasattr(context.command.cog, 'on_command_error') and not context.command.has_error_handler():
             traceback.print_exception(exception, file=sys.stderr)
 
-    def run(self, token) -> None:
+    def run(self, token: str) -> None:
         cogs = [
             'cogs.clash_royale',
             'cogs.code',
@@ -76,7 +90,7 @@ class MasterBot(slash_util.Bot):
         self.clear()
 
     @property
-    def oath_url(self):
+    def oath_url(self) -> str:
         if not self.user:
             return
         permissions = discord.Permissions(manage_roles=True,
@@ -93,7 +107,7 @@ class MasterBot(slash_util.Bot):
                                        scopes=scopes)
 
     def custom_oath_url(self, permissions: Optional[discord.Permissions] = None,
-                        scopes: Optional[Iterable[str]] = None):
+                        scopes: Optional[Iterable[str]] = None) -> str:
         if not self.user:
             return
         return discord.utils.oauth_url(self.user.id,
