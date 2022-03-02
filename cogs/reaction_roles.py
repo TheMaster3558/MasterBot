@@ -86,8 +86,8 @@ class ReactionRoles(commands.Cog):
 
     @tasks.loop(seconds=30)
     async def update_file(self):
-        loop = asyncio.get_event_loop()
-        loop.run_in_executor(None, self._update)
+        async with self.bot.acquire_lock(self):
+            await self.bot.loop.run_in_executor(None, self._update)
 
     @update_file.before_loop
     async def before_update(self):

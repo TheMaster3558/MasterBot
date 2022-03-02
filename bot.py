@@ -9,9 +9,11 @@ from prefix import Prefix, get_prefix
 import traceback
 import sys
 import logging
+import asyncio
 
 
 MasterBotT = TypeVar('MasterBotT', bound='MasterBot')
+CogT = TypeVar('CogT', bound=commands.Cog)
 
 
 intents = discord.Intents.default()
@@ -29,18 +31,29 @@ class MasterBot(slash_util.Bot):
                          strip_after_prefix=True,
                          enable_debug_events=True)
         self.add_cog(Prefix(self))
+
         self.start_time = perf_counter()
         self.on_ready_time = None
+
         self.clash_royale = cr_api_key
         self.weather = weather_api_key
+
         self.prefixes = {}
         self.prefixes_db = None
         self.moderation_mongo = mongo_db
+
         logger = logging.getLogger('discord')
         logger.setLevel(logging.DEBUG)
         handler = logging.FileHandler(filename='logs/discord.log', encoding='utf-8', mode='w')
         handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
         logger.addHandler(handler)
+
+        self.locks: dict[CogT, asyncio.Lock] = {}
+
+    def acquire_lock(self, cog: CogT) -> asyncio.Lock:
+        if cog not in self.locks:
+            self.locks[cog] = asyncio.Lock()
+        return self.locks[cog]
 
     @classmethod
     def custom(cls, cr_api_key: str, weather_api_key: str, mongo_db: str, /,

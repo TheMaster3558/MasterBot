@@ -2,8 +2,10 @@ from __future__ import annotations
 
 import discord
 from discord.ext import commands, tasks
-from typing import List, TYPE_CHECKING
 import json
+
+from typing import List, TYPE_CHECKING
+
 if TYPE_CHECKING:
     from bot import MasterBot
 
@@ -53,12 +55,13 @@ class Prefix(commands.Cog):
 
     @tasks.loop(minutes=9)
     async def update_prefixes(self):
-        await self.bot.loop.run_in_executor(None, self.update_file)
+        async with self.bot.acquire_lock(self):
+            await self.bot.loop.run_in_executor(None, self.update_file)
 
     @update_prefixes.before_loop
     async def before(self):
         await self.bot.wait_until_ready()
-        await self.bot.loop.run_in_executor(None, self.fetch_prefixes)
+        await self.update_prefixes()
 
     @update_prefixes.after_loop
     async def after(self):
