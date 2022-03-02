@@ -7,8 +7,9 @@ from discord.ext import commands
 import slash_util
 from bot import MasterBot
 from cogs.utils.view import View
-from typing import Literal
+from typing import Literal, Optional
 import asyncio
+import random
 
 
 Num = Literal[0, 1, 2]
@@ -112,6 +113,45 @@ class TicTacToeView(View):
         return False
 
 
+class RockPaperScissorsButton(discord.ui.Button['RockPaperScissors']):
+    def __init__(self, name, emoji):
+        self.name = name
+        super().__init__(label=name, emoji=emoji)
+
+    async def callback(self, interaction: discord.Interaction):
+        if self.view.p1 == interaction.user:
+            self.view.value1 = self.name
+        else:
+            self.view.value2 = self.name
+        if self.view.p2 is None:
+            self.view.value2 = random.choice([name for name, emoji in self.view.options])
+            await self.view.disable_all(interaction.message)
+            self.view.stop()
+            return
+        if self.view.value1 and self.view.value2:
+            await self.view.disable_all(interaction.message)
+            self.view.stop()
+
+
+class RockPaperScissors(View):
+    options = (('Rock', '🪨'), ('Paper', '📜'), ('Scissors', '✂'))
+
+    def __init__(self, p1: discord.User, p2: Optional[discord.User] = None):
+        self.p1 = p1
+        self.p2 = p2
+        self.value1 = None
+        self.value2 = None
+        super().__init__()
+        for name, emoji in self.options:
+            self.add_item(RockPaperScissorsButton(name, emoji))
+
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        if interaction.user not in (self.p1, self.p2):
+            await interaction.response.send_message('You are not in this game.')
+            return False
+        return True
+
+
 class Games(slash_util.Cog):
     def __init__(self, bot: MasterBot):
         super().__init__(bot)
@@ -151,6 +191,18 @@ class Games(slash_util.Cog):
                 await ctx.send("sadly I couldn't find that member")
                 return
             await self.tictactoe(ctx, member=member)
+
+    @slash_util.slash_command(name='tictactoe', description='Challenge a user to Tic Tac Toe!')
+    async def _tictactoe(self, ctx, member: discord.Member):
+        await self.tictactoe(ctx, member=member)
+
+    @commands.command(aliases=['rps'])
+    async def rock_paper_scissors(self, ctx: commands.Context, member: discord.Member = None):
+        view = RockPaperScissors(ctx.author, member)
+        member = member or ctx.me
+        embed = discord.Embed(title=f'{ctx.author.display_name} vs {member.display_name}')
+        await ctx.send(embed=embed, view=view)
+        await view.wait()
 
 
 def setup(bot: MasterBot):
