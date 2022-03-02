@@ -10,7 +10,7 @@ class View(discord.ui.View):
 
     async def disable_button(self, name, message) -> None:
         for child in self.children:
-            if child.label == name:
+            if child.label == name:  # type: ignore
                 child.disabled = True
                 break
         await message.edit(view=self)
