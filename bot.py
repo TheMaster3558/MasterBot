@@ -103,7 +103,7 @@ class MasterBot(slash_util.Bot):
         self.clear()
 
     @property
-    def oath_url(self) -> str:
+    def oath_url(self) -> Optional[str]:
         if not self.user:
             return
         permissions = discord.Permissions(manage_roles=True,
@@ -120,7 +120,7 @@ class MasterBot(slash_util.Bot):
                                        scopes=scopes)
 
     def custom_oath_url(self, permissions: Optional[discord.Permissions] = None,
-                        scopes: Optional[Iterable[str]] = None) -> str:
+                        scopes: Optional[Iterable[str]] = None) -> Optional[str]:
         if not self.user:
             return
         return discord.utils.oauth_url(self.user.id,
