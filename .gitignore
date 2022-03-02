@@ -2,5 +2,4 @@
 venv/*
 .idea/
 masterbot/cogs/__pycache__dpy2
-__main.py__
 main.py
