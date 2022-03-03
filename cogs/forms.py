@@ -7,6 +7,7 @@ import asyncio
 import time
 import datetime
 from cogs.utils.help_utils import HelpSingleton
+from cogs.utils.cog import Cog
 
 
 class Help(metaclass=HelpSingleton):
@@ -90,7 +91,7 @@ class ConfirmView(View):
         self.stop()
 
 
-class Forms(slash_util.Cog):
+class Forms(Cog):
     def __init__(self, bot: MasterBot):
         super().__init__(bot)
         self.modal: dict[int, list[slash_util.Modal]] = {}

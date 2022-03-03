@@ -3,11 +3,11 @@ from discord.ext import commands, tasks
 import aiohttp
 from typing import Optional
 import asyncio
-import slash_util
 from bot import MasterBot
 import aiosqlite
 from sqlite3 import IntegrityError
 from cogs.utils.help_utils import HelpSingleton
+from cogs.utils.cog import Cog
 
 
 class Help(metaclass=HelpSingleton):
@@ -33,7 +33,7 @@ class WebhookUserFlags(commands.FlagConverter):
     avatar: Optional[str] = None
 
 
-class Webhooks(slash_util.Cog):
+class Webhooks(Cog):
     def __init__(self, bot: MasterBot):
         super().__init__(bot)
         self.session = None

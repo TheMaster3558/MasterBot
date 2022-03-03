@@ -21,6 +21,7 @@ from static_embeds import (
     confirm_bed,
     cancel_bed,
 )
+from cogs.utils.cog import Cog
 
 
 class Help(metaclass=HelpSingleton):
@@ -135,7 +136,7 @@ def decode_sql_bool(data: Iterable[int]) -> Iterable[bool]:
     return converted
 
 
-class Jokes(slash_util.Cog):
+class Jokes(Cog):
     default_options = {'nsfw': True, 'religious': True, 'political': True, 'sexist': True, 'racist': True,
                        'explicit': True}
     categories = ["any", "misc", "programming", "dark", "pun", "spooky", "christmas"]

@@ -7,6 +7,7 @@ import slash_util
 from cogs.utils.view import View
 from bot import MasterBot
 from cogs.utils.help_utils import HelpSingleton
+from cogs.utils.cog import Cog
 
 
 class Help(metaclass=HelpSingleton):
@@ -82,7 +83,7 @@ class MultipleChoice(View):
         return True
 
 
-class Trivia(slash_util.Cog):
+class Trivia(Cog):
     def __init__(self, bot: MasterBot):
         super().__init__(bot)
         self.http = OpenTDBHTTPClient(self.bot.loop)

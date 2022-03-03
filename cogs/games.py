@@ -10,6 +10,7 @@ from cogs.utils.view import View
 from typing import Literal, Optional
 import asyncio
 import random
+from cogs.utils.cog import Cog
 
 
 Num = Literal[0, 1, 2]
@@ -166,7 +167,7 @@ class RockPaperScissors(View):
         return None
 
 
-class Games(slash_util.Cog):
+class Games(Cog):
     def __init__(self, bot: MasterBot):
         super().__init__(bot)
         print('Games cog loaded')
@@ -207,6 +208,7 @@ class Games(slash_util.Cog):
             await self.tictactoe(ctx, member=member)
 
     @slash_util.slash_command(name='tictactoe', description='Challenge a user to Tic Tac Toe!')
+    @slash_util.describe(member='The member to challenge.')
     async def _tictactoe(self, ctx, member: discord.Member):
         await self.tictactoe(ctx, member=member)
 

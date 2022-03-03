@@ -6,6 +6,7 @@ import slash_util
 from bot import MasterBot
 from cogs.utils.help_utils import HelpSingleton
 from static_embeds import lang_bed
+from cogs.utils.cog import Cog
 
 
 class Help(metaclass=HelpSingleton):
@@ -30,7 +31,7 @@ class Help(metaclass=HelpSingleton):
         return '\n'.join(help_list)
 
 
-class Translator(slash_util.Cog):
+class Translator(Cog):
     def __init__(self, bot: MasterBot):
         super().__init__(bot)
         self.translator = AsyncTranslator(url_suffix='com')

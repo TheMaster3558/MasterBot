@@ -5,6 +5,26 @@ import expr
 from bot import MasterBot
 import re
 from typing import Type, TypeVar, Dict, Literal
+from cogs.utils.cog import Cog
+from cogs.utils.help_utils import HelpSingleton
+
+
+class Help(metaclass=HelpSingleton):
+    def __init__(self, prefix):
+        self.prefix = prefix
+
+    def math_help(self):
+        message = f'`{self.prefix}math <expression>`: Let me do some math for you!'
+        return message
+
+    def state_help(self):
+        message = f'`{self.prefix}state create [vars]`: `vars` are optional. Create a state to save variables accross math commands!'
+        message2 = f'`{self.prefix}state delete`: Delete that state.'
+        return message + '\n' + message2
+
+    def full_help(self):
+        help_list = [self.math_help(), self.state_help()]
+        return '\n'.join(help_list)
 
 
 UserT = TypeVar('UserT', bound=discord.User)
@@ -19,7 +39,7 @@ def evaluate(expression: str, /, *, cls: Type[expr.core.C] = expr.builtin.Decima
     return result
 
 
-class Math(slash_util.Cog):
+class Math(Cog):
     def __init__(self, bot: MasterBot):
         super().__init__(bot)
         self.parse_regex = re.compile('\w *= *\d+')

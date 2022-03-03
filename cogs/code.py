@@ -11,6 +11,7 @@ from cogs.utils.help_utils import HelpSingleton
 import aiofiles
 import aiohttp
 import io
+from cogs.utils.cog import Cog
 
 
 class Help(metaclass=HelpSingleton):
@@ -74,7 +75,7 @@ class SlashCodeBlock:
         self.source = argument
 
 
-class Code(slash_util.Cog):
+class Code(Cog):
     """
     Many of the commands are owner only
     """

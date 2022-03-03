@@ -8,6 +8,7 @@ import aiosqlite
 from sqlite3 import IntegrityError
 from cogs.utils.weather_utils import WeatherUtils
 from cogs.utils.help_utils import HelpSingleton
+from cogs.utils.cog import Cog
 
 
 class Help(metaclass=HelpSingleton):
@@ -75,7 +76,7 @@ class WeatherAPIHTTPClient(AsyncHTTPClient):
         return await self.request('timezone.json', q=location)
 
 
-class Weather(slash_util.Cog):
+class Weather(Cog):
     metric = {'temp': 'C', 'speed': 'kph'}
     customary = {'temp': 'F', 'speed': 'mph'}
 

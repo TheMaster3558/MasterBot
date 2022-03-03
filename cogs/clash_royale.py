@@ -8,6 +8,7 @@ from cogs.utils.cr_utils import ClashRoyaleUtils
 from bot import MasterBot
 from cogs.utils.help_utils import HelpSingleton
 from static_embeds import cr_locations_embed, locations
+from cogs.utils.cog import Cog
 
 
 class Help(metaclass=HelpSingleton):
@@ -99,7 +100,7 @@ class ClanSearchFlags(commands.FlagConverter):
     result: Optional[int] = 1
 
 
-class ClashRoyale(slash_util.Cog):
+class ClashRoyale(Cog):
     def __init__(self, bot: MasterBot):
         super().__init__(bot)
         self.api_key = self.bot.clash_royale

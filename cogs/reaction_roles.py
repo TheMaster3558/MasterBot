@@ -7,6 +7,7 @@ from copy import deepcopy
 import slash_util
 from bot import MasterBot
 from cogs.utils.help_utils import HelpSingleton
+from cogs.utils.cog import Cog
 
 
 class Help(metaclass=HelpSingleton):
@@ -50,9 +51,9 @@ class CustomReactionRoleFlags(commands.FlagConverter):
     roles: Tuple[discord.Role, ...]
 
 
-class ReactionRoles(commands.Cog):
+class ReactionRoles(Cog, help_command=Help):
     def __init__(self, bot: MasterBot):
-        self.bot = bot
+        super().__init__(bot)
         with open('databases/messages.json', 'r') as m:
             self.role_dict = json.load(m)
         print('Reaction Roles cog loaded')
@@ -166,7 +167,7 @@ class ReactionRoles(commands.Cog):
         else:
             raise error
 
-    @slash_util.slash_command(name='reaction role', description='Learn about how to make a reaction role message.')
+    @slash_util.slash_command(name='reactionrole', description='Learn about how to make a reaction role message.')
     async def _reaction_role(self, ctx: slash_util.Context):
         embed = discord.Embed(title="Sorry but this won't work",
                               description="Slash Commands are different than normal commands." 

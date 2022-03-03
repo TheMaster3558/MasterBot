@@ -9,6 +9,7 @@ from pymongo.errors import DuplicateKeyError, OperationFailure
 import datetime
 from bot import MasterBot
 from cogs.utils.help_utils import HelpSingleton
+from cogs.utils.cog import Cog
 
 
 class Help(metaclass=HelpSingleton):
@@ -91,13 +92,13 @@ async def timeout_user(member: discord.Member, until, bot: commands.Bot, *, reas
     _timeout = _timeout.astimezone(datetime.timezone.utc).isoformat()
     json_data = {'communication_disabled_until': _timeout}
     async with aiohttp.ClientSession(headers=headers) as session:
-        async with session.get(url, json=json_data) as resp:
+        async with session.patch(url, json=json_data) as resp:
             if resp.status in range(200, 299):
                 return member
             resp.raise_for_status()
 
 
-class Moderation(slash_util.Cog):
+class Moderation(Cog):
     """Will be changed to cache instead of db call in v2 or earlier"""
 
     def __init__(self, bot: MasterBot):

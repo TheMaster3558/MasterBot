@@ -4,15 +4,17 @@ import slash_util
 from bot import MasterBot
 import re
 
-from cogs.reaction_roles import Help as RRHelp
-from cogs.moderation import Help as MHelp
-from cogs.code import Help as CHelp
-from cogs.translate import Help as THelp
-from cogs.trivia import Help as TrHelp
-from cogs.clash_royale import Help as CRHelp
-from cogs.jokes import Help as JHelp
-from cogs.webhook import Help as WHelp
-from cogs.weather import Help as WEHelp
+from cogs.reaction_roles import ReactionRoles
+from cogs.moderation import Moderation
+from cogs.code import Code
+from cogs.translate import Translator
+from cogs.trivia import Trivia
+from cogs.clash_royale import ClashRoyale
+from cogs.jokes import Jokes
+from cogs.webhook import Webhooks
+from cogs.weather import Weather
+from cogs.forms import Forms
+from cogs.math import Math
 
 import sys
 from async_google_trans_new import __version__ as agtn_version
@@ -93,7 +95,7 @@ class HelpAndInfo(slash_util.Cog):
     @_help.command()
     async def reactions(self, ctx):
         prefix = ctx.clean_prefix
-        h = RRHelp(prefix)
+        h = ReactionRoles.help_command(prefix)
         help_message = h.full_help()
         embed = discord.Embed(title='Reaction Role Help',
                               description=help_message)
@@ -102,7 +104,7 @@ class HelpAndInfo(slash_util.Cog):
     @_help.command()
     async def moderation(self, ctx):
         prefix = ctx.clean_prefix
-        h = MHelp(prefix)
+        h = Moderation.help_command(prefix)
         help_message = h.full_help()
         embed = discord.Embed(title='Moderation Help',
                               description=help_message)
@@ -111,7 +113,7 @@ class HelpAndInfo(slash_util.Cog):
     @_help.command()
     async def code(self, ctx):
         prefix = ctx.clean_prefix
-        h = CHelp(prefix)
+        h = Code.help_command(prefix)
         help_message = h.full_help()
         embed = discord.Embed(title='Code Help',
                               description=help_message)
@@ -120,7 +122,7 @@ class HelpAndInfo(slash_util.Cog):
     @_help.command()
     async def translate(self, ctx):
         prefix = ctx.clean_prefix
-        h = THelp(prefix)
+        h = Translator.help_command(prefix)
         help_message = h.full_help()
         embed = discord.Embed(title='Translate Help',
                               description=help_message)
@@ -130,7 +132,7 @@ class HelpAndInfo(slash_util.Cog):
     @_help.command()
     async def trivia(self, ctx):
         prefix = ctx.clean_prefix
-        h = TrHelp(prefix)
+        h = Trivia.help_command(prefix)
         help_message = h.full_help()
         embed = discord.Embed(title='Trivia Help',
                               description=help_message)
@@ -140,7 +142,7 @@ class HelpAndInfo(slash_util.Cog):
     @_help.command()
     async def cr(self, ctx):
         prefix = ctx.clean_prefix
-        h = CRHelp(prefix)
+        h = ClashRoyale.help_command(prefix)
         help_message = h.full_help()
         embed = discord.Embed(title='Clash Royale Help',
                               description=help_message)
@@ -150,7 +152,7 @@ class HelpAndInfo(slash_util.Cog):
     @_help.command()
     async def jokes(self, ctx):
         prefix = ctx.clean_prefix
-        h = JHelp(prefix)
+        h = Jokes.help_command(prefix)
         help_message = h.full_help()
         embed = discord.Embed(title='Jokes Help',
                               description=help_message)
@@ -160,7 +162,7 @@ class HelpAndInfo(slash_util.Cog):
     @_help.command()
     async def webhook(self, ctx):
         prefix = ctx.clean_prefix
-        h = WHelp(prefix)
+        h = Webhooks.help_command(prefix)
         help_message = h.full_help()
         embed = discord.Embed(title='Webhook Help',
                               description=help_message)
@@ -169,7 +171,7 @@ class HelpAndInfo(slash_util.Cog):
     @_help.command()
     async def weather(self, ctx):
         prefix = ctx.clean_prefix
-        h = WEHelp(prefix)
+        h = Weather.help_command(prefix)
         help_message = h.full_help()
         embed = discord.Embed(title='Weather Help',
                               description=help_message)
