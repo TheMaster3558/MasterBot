@@ -7,5 +7,9 @@ class HelpSingleton(type):
         cls._instances[cls].prefix = prefix
         return cls._instances[cls]
 
+    @property
+    def current_prefix(cls):
+        return cls._instances[cls].prefix
+
 
 
