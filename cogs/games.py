@@ -149,7 +149,21 @@ class RockPaperScissors(View):
         if interaction.user not in (self.p1, self.p2):
             await interaction.response.send_message('You are not in this game.')
             return False
-        return True
+        else:
+            if interaction.user == self.p1 and self.value1:
+                await interaction.response.send_message(f'You already selected {self.value1}')
+            elif interaction.user == self.p2 and self.value2:
+                await interaction.response.send_message(f'You already selected {self.value2}')
+            else:
+                return True
+        return False
+
+    def get_value(self, player: discord.User):
+        if player == self.p1:
+            return self.value1
+        elif player == self.p2:
+            return self.value2
+        return None
 
 
 class Games(slash_util.Cog):
@@ -201,8 +215,32 @@ class Games(slash_util.Cog):
         view = RockPaperScissors(ctx.author, member)
         member = member or ctx.me
         embed = discord.Embed(title=f'{ctx.author.display_name} vs {member.display_name}')
-        await ctx.send(embed=embed, view=view)
+        msg = await ctx.send(embed=embed, view=view)
         await view.wait()
+        winner = None
+        v1 = view.value1
+        v2 = view.value2
+        if v1 == 'Rock':
+            if v2 == 'Scissors':
+                winner = ctx.author
+            elif v2 == 'Paper':
+                winner = member
+        elif v1 == 'Paper':
+            if v2 == 'Scissors':
+                winner = member
+            elif v2 == 'Rock':
+                winner = ctx.author
+        else:
+            if v2 == 'Rock':
+                winner = member
+            elif v2 == 'Paper':
+                winner = ctx.author
+        if winner is None:
+            await msg.reply('Tie. They both picked the same thing LOL.')
+        loser = ctx.author if winner is not ctx.author else member
+        embed = discord.Embed(title=f'The winner is {winner.display_name}!',
+                              description=f'{view.get_value(winner)} beats {view.get_value(loser)}')
+        await msg.reply(embed=embed)
 
 
 def setup(bot: MasterBot):
