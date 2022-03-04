@@ -11,6 +11,8 @@ from typing import Literal, Optional
 import asyncio
 import random
 from cogs.utils.cog import Cog
+from PIL import Image, ImageDraw, ImageFont
+from io import BytesIO
 
 
 Num = Literal[0, 1, 2]
@@ -168,6 +170,9 @@ class RockPaperScissors(View):
 
 
 class Games(Cog):
+    word = 'faces'
+    font = ImageFont.truetype('arial.ttf', 15)
+
     def __init__(self, bot: MasterBot):
         super().__init__(bot)
         print('Games cog loaded')
@@ -243,6 +248,69 @@ class Games(Cog):
         embed = discord.Embed(title=f'The winner is {winner.display_name}!',
                               description=f'{view.get_value(winner)} beats {view.get_value(loser)}')
         await msg.reply(embed=embed)
+
+    @commands.command()
+    async def wordle(self, ctx):
+        background = Image.new(mode='RGB', size=(185, 220), color='white')
+        results = {}
+
+        attempt = 1
+        y = 17
+
+        success = False
+
+        sent = await ctx.send('Type a 5 letter word to guess.', )
+        check = lambda m: len(m.content) == 5 and m.author == ctx.author
+
+        while attempt < 7:
+
+            try:
+                msg = await self.bot.wait_for('message', check=check, timeout=600)
+            except asyncio.TimeoutError:
+                await sent.reply('Try guessing a bit faster next time.')
+                return
+
+            content = msg.content.lower()
+
+            for index, letter in enumerate(content):
+                if letter == self.word[index]:
+                    results[index] = (letter, 'green')
+                elif letter in self.word:
+                    results[index] = (letter, '#FFD700')
+                else:
+                    results[index] = (letter, 'gray')
+
+            x = 10
+
+            for letter, color in results.values():
+                background.paste(Image.new('RGB', size=(25, 25), color=color), (x, y))
+                x += 35
+
+            img = ImageDraw.Draw(background)
+            x = 18.5
+
+            for letter, _ in results.values():
+                img.text((x, y + attempt), letter.upper(), font=self.font)
+                x += 35
+
+            with BytesIO() as image_binary:
+                background.save(image_binary, 'PNG')
+                image_binary.seek(0)
+                file = discord.File(image_binary, 'image.png')
+            await msg.reply(file=file, mention_author=False)
+
+            if content == self.word:
+                success = True
+                break
+
+            attempt += 1
+            y += 29
+
+        if not success:
+            await sent.reply("You didn't guess it.")
+            return
+
+        await sent.reply(f'It took you {attempt} tries.')
 
 
 def setup(bot: MasterBot):
