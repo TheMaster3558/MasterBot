@@ -290,7 +290,7 @@ class Games(Cog):
             x = 18.5
 
             for letter, _ in results.values():
-                img.text((x, y + attempt), letter.upper(), font=self.font)
+                img.text((x, y + 4), letter.upper(), font=self.font)
                 x += 35
 
             with BytesIO() as image_binary:
