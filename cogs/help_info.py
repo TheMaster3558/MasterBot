@@ -20,6 +20,7 @@ import sys
 from async_google_trans_new import __version__ as agtn_version
 from importlib.metadata import version
 import aiohttp
+import fuzzywuzzy
 
 from cogs.utils.view import View
 
@@ -74,7 +75,8 @@ class HelpAndInfo(slash_util.Cog):
                                                   f'[discord.py {discord.__version__}](https://github.com/Rapptz/discord.py)\n'
                                                   f'[slash_util {self.slash_util_version}](https://github.com/XuaTheGrate/slash_util)\n'
                                                   f'[async-google-trans-new {agtn_version}](https://github.com/Theelx/async-google-trans-new)\n'
-                                                  f'[aiohttp {aiohttp.__version__[:5]}](https://docs.aiohttp.org/en/stable/)\n'
+                                                  f'[aiohttp {aiohttp.__version__}](https://docs.aiohttp.org/en/stable/)\n'
+                                                  f'[fuzzywuzzy {fuzzywuzzy.__version__}](https://github.com/seatgeek/fuzzywuzzy)\n'
                                                   f'Platform {sys.platform}')
         embed.add_field(name='Stats', value=f'Servers: {len(self.bot.guilds)}\nUnique Users: {len(set(self.bot.users))}')
         await ctx.send(embed=embed)
@@ -88,7 +90,7 @@ class HelpAndInfo(slash_util.Cog):
         if ctx.invoked_subcommand is None:
             embed = discord.Embed(title=f'{self.bot.user.name} Help Menu')
             embed.add_field(name='Categories',
-                            value='`reactions`\n`moderation`\n`code`\n`translation`\n`trivia`\n`cr`(Clash Royale)\n`jokes`\n`webhook`\n`weather`')
+                            value='`reactions`\n`moderation`\n`code`\n`translation`\n`trivia`\n`cr`(Clash Royale)\n`jokes`\n`webhook`\n`weather`\n`forms`\n`weather`')
             embed.add_field(name='Info', value=f'`{ctx.clean_prefix}info`')
             await ctx.send(embed=embed)
 
@@ -177,6 +179,23 @@ class HelpAndInfo(slash_util.Cog):
                               description=help_message)
         await ctx.send(embed=embed)
 
+    @_help.command()
+    async def forms(self, ctx):
+        prefix = ctx.clean_prefix
+        h = Forms.help_command(prefix)
+        help_message = h.full_help()
+        embed = discord.Embed(title='Forms Help',
+                              description=help_message)
+        await ctx.send(embed=embed)
+
+    @_help.command()
+    async def math(self, ctx):
+        prefix = ctx.clean_prefix
+        h = Math.help_command(prefix)
+        help_message = h.full_help()
+        embed = discord.Embed(title='Math Help',
+                              description=help_message)
+        await ctx.send(embed=embed)
 
 def setup(bot: MasterBot):
     bot.add_cog(HelpAndInfo(bot))
