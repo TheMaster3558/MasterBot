@@ -81,7 +81,7 @@ class MasterBot(slash_util.Bot):
             possibles = [cmd for cmd in self.all_commands if fuzz.ratio(
                     context.message.content,
                     cmd
-                ) > 60
+                ) > 70
             ]
             if len(possibles) > 0:
                 embed = discord.Embed(title="I couldn't find that command",
