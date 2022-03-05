@@ -78,7 +78,7 @@ class HelpAndInfo(slash_util.Cog):
                                                   f'[slash_util {self.slash_util_version}](https://github.com/XuaTheGrate/slash_util)\n'
                                                   f'[async-google-trans-new {agtn_version}](https://github.com/Theelx/async-google-trans-new)\n'
                                                   f'[aiohttp {aiohttp.__version__}](https://docs.aiohttp.org/en/stable/)\n'
-                                                  f'[fuzzywuzzy {fuzzywuzzy.__version__}](https://github.com/seatgeek/fuzzywuzzy)\n'
+                                                  f'[fuzzywuzzy {fuzzywuzzy.__version__}](https://github.com/seatgeek/thefuzz)\n'
                                                   f'Platform {sys.platform}')
         embed.add_field(name='Stats', value=f'Servers: {len(self.bot.guilds)}\nUnique Users: {len(set(self.bot.users))}')
         await ctx.send(embed=embed)
