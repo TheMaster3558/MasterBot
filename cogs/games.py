@@ -3,20 +3,25 @@
 from __future__ import annotations
 
 import discord
-from discord.ext import commands
+from discord.ext import commands, tasks
 import slash_util
 from bot import MasterBot
 from cogs.utils.view import View
-from typing import Literal, Optional
+from typing import Literal, Optional, TypeVar, Type
 import asyncio
 import random
 from cogs.utils.cog import Cog
 from PIL import Image, ImageDraw, ImageFont
 from io import BytesIO
-import enchant
+from english_words import english_words_lower_set
+from datetime import time
 
 
-Num = Literal[0, 1, 2]
+words = [word for word in english_words_lower_set if len(word) == 5]
+
+
+UserID = TypeVar('UserID', bound=Type[int])
+Num = TypeVar('Num', bound=Literal[0, 1, 2])
 
 
 class TicTacToeButton(discord.ui.Button['TicTacToeView']):
@@ -171,13 +176,19 @@ class RockPaperScissors(View):
 
 
 class Games(Cog):
-    word = 'faces'
+    word = None
     font = ImageFont.truetype('arial.ttf', 15)
 
     def __init__(self, bot: MasterBot):
         super().__init__(bot)
-        self.d = enchant.Dict('en_US')
+        self.done: list[UserID] = []
+        self.new_word.start()
         print('Games cog loaded')
+
+    @tasks.loop(time=time(0, 0, 0))
+    async def new_word(self):
+        self.word = random.choice(words)
+        self.done.clear()
 
     @commands.command()
     @commands.guild_only()
@@ -251,8 +262,23 @@ class Games(Cog):
                               description=f'{view.get_value(winner)} beats {view.get_value(loser)}')
         await msg.reply(embed=embed)
 
+    @staticmethod
+    def convert(seconds):
+        seconds = seconds % (24 * 3600)
+        hour = seconds // 3600
+        seconds %= 3600
+        minutes = seconds // 60
+        seconds %= 60
+
+        return "%d:%02d:%02d" % (hour, minutes, seconds)
+
     @commands.command()
     async def wordle(self, ctx):
+        if ctx.author.id in self.done:  # id is used so `User` and `Member` are treated the same
+            next_word = self.new_word.next_iteration - discord.utils.utcnow()
+            await ctx.reply(f"You've already done it. A new word comes in {self.convert(next_word.total_seconds())}")
+            return
+
         background = Image.new(mode='RGB', size=(185, 220), color='white')
         results = {}
 
@@ -265,7 +291,6 @@ class Games(Cog):
         check = lambda m: len(m.content) == 5 and m.author == ctx.author
 
         while attempt < 7:
-
             try:
                 msg = await self.bot.wait_for('message', check=check, timeout=600)
             except asyncio.TimeoutError:
@@ -274,8 +299,8 @@ class Games(Cog):
 
             content = msg.content.lower()
 
-            if not self.d.check(content):
-                await ctx.reply("I don't think that's a real word.")
+            if content not in english_words_lower_set:
+                await msg.reply("I don't think that's a real word.")
                 continue
 
             for index, letter in enumerate(content):
@@ -313,7 +338,7 @@ class Games(Cog):
             y += 29
 
         if not success:
-            await sent.reply("You didn't guess it.")
+            await sent.reply(f"You didn't guess it. The word is ||{self.word}||")
             return
 
         await sent.reply(f'It took you {attempt} tries.')
