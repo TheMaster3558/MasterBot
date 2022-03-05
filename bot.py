@@ -10,7 +10,11 @@ import traceback
 import sys
 import logging
 import asyncio
-from fuzzywuzzy import fuzz
+import warnings
+
+with warnings.catch_warnings():
+    warnings.filterwarnings('ignore', category=UserWarning, module='fuzzywuzzy')
+    from fuzzywuzzy import fuzz
 
 
 MasterBotT = TypeVar('MasterBotT', bound='MasterBot')
