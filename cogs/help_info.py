@@ -33,14 +33,16 @@ class InviteView(View):
 
 
 class HelpAndInfo(slash_util.Cog):
+    mention_regex = None
+
     def __init__(self, bot: MasterBot):
         super().__init__(bot)
         self.slash_util_version = version('slash_util')
-        self.mention_regex = None
+        self.bot.loop.create_task(self.get_regex())
         print('Help and Info cog loaded')
 
-    @commands.Cog.listener()
-    async def on_ready(self):
+    async def get_regex(self):
+        await self.bot.wait_until_ready()
         self.mention_regex = re.compile(f'<@!?{self.bot.user.id}>')
 
     @commands.Cog.listener()
