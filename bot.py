@@ -10,6 +10,7 @@ import traceback
 import sys
 import logging
 import asyncio
+from fuzzywuzzy import fuzz
 
 
 MasterBotT = TypeVar('MasterBotT', bound='MasterBot')
@@ -21,7 +22,7 @@ intents.members = True
 
 
 class MasterBot(slash_util.Bot):
-    __version__ = '1.2.0'
+    __version__ = '1.2.1'
 
     def __init__(self, cr_api_key: str, weather_api_key: str, mongo_db: str, /) -> None:
         super().__init__(command_prefix=get_prefix,
@@ -72,7 +73,19 @@ class MasterBot(slash_util.Bot):
     async def on_command_error(self, context: commands.Context, exception: commands.errors.CommandError) -> None:
         if not context.command:
             return
-        if not hasattr(context.command.cog, 'on_command_error') and not context.command.has_error_handler():
+        if isinstance(exception, commands.CommandNotFound):
+            possibles = [cmd for cmd in self.all_commands if fuzz.ratio(
+                    context.message.content,
+                    cmd
+                ) > 60
+            ]
+            if len(possibles) > 0:
+                embed = discord.Embed(title="I couldn't find that command",
+                                      description='Maybe you meant\n{}'.format(
+                                          "\n".join(possibles)
+                                      ))
+                await context.reply(embed=embed, mention_author=False)
+        if not context.cog.has_error_handler() and not context.command.has_error_handler():
             traceback.print_exception(exception, file=sys.stderr)
 
     def run(self, token: str) -> None:
