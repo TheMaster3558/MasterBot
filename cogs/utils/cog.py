@@ -1,5 +1,6 @@
 import slash_util
 from cogs.utils.help_utils import HelpSingleton
+from typing import ClassVar
 
 
 class CogMeta(type(slash_util.Cog)):
@@ -11,5 +12,4 @@ class CogMeta(type(slash_util.Cog)):
 
 
 class Cog(slash_util.Cog, metaclass=CogMeta):
-    help_command: HelpSingleton
-
+    help_command: ClassVar[HelpSingleton]
