@@ -13,6 +13,7 @@ import random
 from cogs.utils.cog import Cog
 from PIL import Image, ImageDraw, ImageFont
 from io import BytesIO
+import enchant
 
 
 Num = Literal[0, 1, 2]
@@ -175,6 +176,7 @@ class Games(Cog):
 
     def __init__(self, bot: MasterBot):
         super().__init__(bot)
+        self.d = enchant.Dict('en_US')
         print('Games cog loaded')
 
     @commands.command()
@@ -271,6 +273,10 @@ class Games(Cog):
                 return
 
             content = msg.content.lower()
+
+            if not self.d.check(content):
+                await ctx.reply("I don't think that's a real word.")
+                continue
 
             for index, letter in enumerate(content):
                 if letter == self.word[index]:
