@@ -27,7 +27,6 @@ class Help(metaclass=HelpSingleton):
         return '\n'.join(help_list)
 
 
-UserT = TypeVar('UserT', bound=discord.User)
 N = TypeVar('N', int, float)
 
 
@@ -47,18 +46,21 @@ class StateGroup(app_commands.Group):
     @app_commands.command(description='Create the state')
     async def create(self, interaction, variables: str):
         variables, _ = self.cog.parse_for_vars(variables)
-        self.cog.states[interaction.user] = variables
+        self.cog.states[interaction.user.id] = variables
 
     @app_commands.command(description='Delete the state')
     async def delete(self, interaction):
-        del self.cog.states[interaction.user]
+        try:
+            del self.cog.states[interaction.user.id]
+        except KeyError:
+            pass
 
 
 class Math(Cog):
     def __init__(self, bot: MasterBot):
         super().__init__(bot)
         self.parse_regex = re.compile('\w *= *\d+')
-        self.states: Dict[UserT, Dict[str, N]] = {}
+        self.states: Dict[int, Dict[str, N]] = {}
         self.bot.tree.add_command(StateGroup(self))
         print('Math cog loaded')
 
@@ -79,8 +81,8 @@ class Math(Cog):
     @commands.command()
     async def math(self, ctx, *, expression: str):
         variables, expression = self.remove_vars(expression)
-        if ctx.author in self.states:
-            self.states[ctx.author].update(variables)
+        if ctx.author.id in self.states:
+            self.states[ctx.author.id].update(variables)
             variables = self.states[ctx.author]
         result = evaluate(expression, variables=variables)
         await ctx.reply(result, mention_author=False)
@@ -90,9 +92,9 @@ class Math(Cog):
     @app_commands.describe(expression='The math expression')
     async def _math(self, interaction, expression: str):
         variables, expression = self.remove_vars(expression)
-        if interaction.user in self.states:
+        if interaction.user.id in self.states:
             self.states[interaction.user].update(variables)
-            variables = self.states[interaction.user]
+            variables = self.states[interaction.user.id]
         result = evaluate(expression, variables=variables)
         await interaction.response.send_message(result)
 
@@ -110,11 +112,14 @@ class Math(Cog):
     @state.command()
     async def create(self, ctx, *, variables=''):
         variables, _ = self.parse_for_vars(variables)
-        self.states[ctx.author] = variables
+        self.states[ctx.author.id] = variables
 
     @state.command(aliases=['del', 'destroy'])
     async def delete(self, ctx):
-        del self.states[ctx.author]
+        try:
+            del self.states[ctx.author.id]
+        except KeyError:
+            pass
 
 
 def setup(bot: MasterBot):
