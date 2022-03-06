@@ -20,7 +20,7 @@ from datetime import time
 words = [word for word in english_words_lower_set if len(word) == 5]
 
 
-UserID = TypeVar('UserID', bound=Type[int])
+UserID = TypeVar('UserID', bound=Type[discord.abc.Snowflake])
 Num = Literal[1, 2, 3]
 
 
