@@ -1,4 +1,8 @@
 import discord
+from typing import TypeVar
+
+
+ItemT = TypeVar('ItemT', bound=discord.ui.Item)
 
 
 class View(discord.ui.View):
@@ -15,6 +19,6 @@ class View(discord.ui.View):
                 break
         await message.edit(view=self)
 
-    def add_item(self, item: discord.ui.Item):
+    def add_item(self, item: ItemT) -> ItemT:
         super().add_item(item)
         return item
