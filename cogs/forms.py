@@ -25,7 +25,7 @@ class Help(metaclass=HelpSingleton):
 
     def full_help(self):
         help_list = [self.form_help(), self.takeform_help()]
-        return '\n'.join(help_list) + '\nAvailable with message commands soon.'
+        return '\n'.join(help_list)
 
 
 class QuestionView(View):
