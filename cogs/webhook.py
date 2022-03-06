@@ -215,4 +215,4 @@ class Webhooks(Cog):
 
 
 def setup(bot: MasterBot):
-    bot.add_cog(Webhooks(bot))
+    Webhooks.setup(bot)

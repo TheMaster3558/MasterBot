@@ -225,13 +225,14 @@ class Games(Cog):
                 return
             await self.tictactoe(ctx, member=member)
 
+    @Cog.app_command
     @app_commands.command(name='tictactoe', description='Challenge a user to Tic Tac Toe!')
     @app_commands.describe(member='The member to challenge.')
-    async def _tictactoe(self, ctx, member: discord.Member):
-        view = TicTacToeView(ctx.author, member)
-        embed = discord.Embed(title=f'{ctx.author.display_name} vs {member.display_name}')
+    async def _tictactoe(self, interaction: discord.Interaction, member: discord.Member):
+        view = TicTacToeView(interaction.user, member)
+        embed = discord.Embed(title=f'{interaction.user.display_name} vs {member.display_name}')
         embed.set_footer(text='You have 3 minutes.')
-        msg = await ctx.send(embed=embed, view=view)
+        msg = await interaction.response.send_message(embed=embed, view=view)
         await view.wait()
         if view.winner:
             await msg.reply(f'The winner is {view.winner}!')
@@ -353,4 +354,4 @@ class Games(Cog):
 
 
 def setup(bot: MasterBot):
-    bot.add_cog(Games(bot))
+    Games.setup(bot)

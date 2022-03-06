@@ -167,6 +167,7 @@ class Weather(Cog):
             return await ctx.send(f'You forgot the flag arguments. `{ctx.prefix}units <flags_args>`. **Args:**\n`temp` `C` or `F`\n`speed` `mph` or `kph``')
         await ctx.send(f'New settings! Temp: `{self.temp_units[ctx.guild.id]}` Speed: `{self.speed_units[ctx.guild.id]}`')
 
+    @Cog.app_command
     @app_commands.command(name='units', description='Change the weather units')
     @app_commands.describe(temp='The temperature unit', speed='The speed unit')
     async def _units(self, interaction: discord.Interaction, temp: Literal["C", "F"] = None, speed: Literal["kph", "mph"] = None):
@@ -207,6 +208,7 @@ class Weather(Cog):
             return
         await ctx.send(embed=embed)
 
+    @Cog.app_command
     @app_commands.command(name='current', description='Get the current weather of a location')
     @app_commands.describe(location='The location')
     async def _current(self, interaction, location: str):
@@ -233,6 +235,7 @@ class Weather(Cog):
             return
         await ctx.send(embed=embed)
 
+    @Cog.app_command
     @app_commands.command(name='forecast', description='Get the forecast for a location')
     @app_commands.describe(days='The amount of days in the future', location='The location')
     async def _forecast(self, interaction, days: int = 1, *, location: str):
@@ -254,11 +257,12 @@ class Weather(Cog):
             error = discord.Embed(title='Error',
                                   description=data.get('error').get('message'))
             return await ctx.send(embed=error)
-        embed = await WeatherUtils.build_search_embed(data, ctx, index, ctx.message.created_at)
+        embed = await WeatherUtils.build_search_embed(data, ctx, index)
         if embed is None:
             return
         await ctx.send(embed=embed)
 
+    @Cog.app_command
     @app_commands.command(name='city', description='Search a city')
     @app_commands.describe(query='The query')
     async def _city(self, interaction, index: int = 1, *, query: str):
@@ -283,6 +287,7 @@ class Weather(Cog):
         embed = await WeatherUtils.build_tz_embed(data)
         await ctx.send(embed=embed)
 
+    @Cog.app_command
     @app_commands.command(name='timezone', description='Get the timezone of a location')
     @app_commands.describe(location='The location')
     async def _timezone(self, interaction, location: str):
@@ -296,4 +301,4 @@ class Weather(Cog):
 
 
 def setup(bot: MasterBot):
-    bot.add_cog(Weather(bot))
+    Weather.setup(bot)

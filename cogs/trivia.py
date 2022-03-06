@@ -117,6 +117,7 @@ class Trivia(Cog):
         else:
             raise type(error)(error)
 
+    @Cog.app_command
     @app_commands.command(name='trivia', description='Get trivia from opentdb.com!')
     async def _trivia(self, interaction: discord.Interaction):
         data = await self.http.trivia()
@@ -139,4 +140,4 @@ class Trivia(Cog):
 
 
 def setup(bot: MasterBot):
-    bot.add_cog(Trivia(bot))
+    Trivia.setup(bot)

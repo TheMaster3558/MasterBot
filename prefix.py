@@ -3,6 +3,7 @@ from __future__ import annotations
 import discord
 from discord.ext import commands, tasks
 import json
+from cogs.utils.cog import Cog
 
 from typing import List, TYPE_CHECKING
 
@@ -20,9 +21,9 @@ async def get_prefix(bot: MasterBot, msg: discord.Message) -> List[str]:
     return prefixes
 
 
-class Prefix(commands.Cog):
+class Prefix(Cog):
     def __init__(self, bot: MasterBot):
-        self.bot = bot
+        super().__init__(bot)
         self.update_prefixes.start()
 
     @commands.Cog.listener()

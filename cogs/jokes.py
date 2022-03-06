@@ -113,12 +113,6 @@ class BlacklistFlags(commands.FlagConverter):
     explicit: Optional[str] = None
 
 
-class SlashFlagObject:
-    def __init__(self, **options):
-        for k, v in options.items():
-            setattr(self, k, v)
-
-
 class JokeAPIHTTPClient(AsyncHTTPClient):
     def __init__(self, loop):
         super().__init__('https://v2.jokeapi.dev/joke/', loop=loop)
@@ -264,6 +258,7 @@ class Jokes(Cog):
             await ctx.send(embed=embed)
         self.used_jokes.append(joke_id)
 
+    @Cog.app_command
     @app_commands.command(name='joke', description='Let me tell you a joke!')
     async def _joke(self, interaction: discord.Interaction):
         view = CategoryView(interaction.user)
@@ -376,6 +371,7 @@ class Jokes(Cog):
         else:
             raise error
 
+    @Cog.app_command
     @app_commands.command(name='blacklist', description='Turn off some possible jokes.')
     @app_commands.describe(nsfw='NSFW jokes',
                            religious='Religious jokes',
@@ -465,4 +461,4 @@ class Jokes(Cog):
 
 
 def setup(bot: MasterBot):
-    bot.add_cog(Jokes(bot))
+    Jokes.setup(bot)

@@ -103,6 +103,7 @@ class Forms(Cog):
         for guild in self.bot.guilds:
             self.modal[guild.id] = []
 
+    @Cog.app_command
     @app_commands.command(description='Create a form for other users to take')
     @app_commands.describe(title='The title', expire='The hours it will expire in. Defaults to 3.')
     async def form(self,
@@ -157,6 +158,7 @@ class Forms(Cog):
             embed.add_field(name=k, value='\n'.join(v))
         await ctx.send(embed=embed)
 
+    @Cog.app_command
     @app_commands.command(description='Take a form from another user!')
     async def takeform(self, ctx):
         if not ctx.guild:
@@ -191,4 +193,4 @@ class Forms(Cog):
 
 
 def setup(bot: MasterBot):
-    bot.add_cog(Forms(bot))
+    Forms.setup(bot)

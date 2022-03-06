@@ -19,7 +19,6 @@ from cogs.math import Math
 
 import sys
 from async_google_trans_new import __version__ as agtn_version
-from importlib.metadata import version
 import aiohttp
 import fuzzywuzzy
 
@@ -34,12 +33,11 @@ class InviteView(View):
         self.add_item(discord.ui.Button(label='Click here!', url=url))
 
 
-class HelpAndInfo(Cog):
+class Help(Cog):
     mention_regex = None
 
     def __init__(self, bot: MasterBot):
         super().__init__(bot)
-        self.slash_util_version = version('slash_util')
         self.bot.loop.create_task(self.get_regex())
         print('Help and Info cog loaded')
 
@@ -57,6 +55,7 @@ class HelpAndInfo(Cog):
     async def ping(self, ctx):
         await ctx.send(f'Pong! `{str(round(self.bot.latency * 1000))}ms`')
 
+    @Cog.app_command
     @app_commands.command(name='ping', description='Pong!')
     async def _ping(self, interaction):
         await interaction.response.send_message(f'Pong! `{str(round(self.bot.latency * 1000))}ms`')
@@ -66,6 +65,7 @@ class HelpAndInfo(Cog):
         embed = discord.Embed(title=f'{self.bot.user.name} Invite')
         await ctx.author.send(embed=embed, view=InviteView(self.bot))
 
+    @Cog.app_command
     @app_commands.command(name='invite', description='Invite me!')
     async def _invite(self, interaction):
         await interaction.response.send_message('Check ur DMs.')
@@ -78,7 +78,6 @@ class HelpAndInfo(Cog):
         embed.add_field(name='Version Info', value=f'{self.bot.user.name} version {self.bot.__version__}\n'
                                                   f'[Python {sys.version.split(" ")[0]}](https://www.python.org)\n'
                                                   f'[discord.py {discord.__version__}](https://github.com/Rapptz/discord.py)\n'
-                                                  f'[slash_util {self.slash_util_version}](https://github.com/XuaTheGrate/slash_util)\n'
                                                   f'[async-google-trans-new {agtn_version}](https://github.com/Theelx/async-google-trans-new)\n'
                                                   f'[aiohttp {aiohttp.__version__}](https://docs.aiohttp.org/en/stable/)\n'
                                                   f'[fuzzywuzzy {fuzzywuzzy.__version__}](https://github.com/seatgeek/thefuzz)\n'
@@ -86,6 +85,7 @@ class HelpAndInfo(Cog):
         embed.add_field(name='Stats', value=f'Servers: {len(self.bot.guilds)}\nUnique Users: {len(set(self.bot.users))}')
         await ctx.send(embed=embed)
 
+    @Cog.app_command
     @app_commands.command(name='info', description='Get info about the bot')
     async def _info(self, interaction):
         embed = discord.Embed(title=f'{self.bot.user.name} Info')
@@ -213,5 +213,6 @@ class HelpAndInfo(Cog):
                               description=help_message)
         await ctx.send(embed=embed)
 
+
 def setup(bot: MasterBot):
-    bot.add_cog(HelpAndInfo(bot))
+    Help.setup(bot)

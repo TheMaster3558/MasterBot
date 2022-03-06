@@ -166,16 +166,6 @@ class ReactionRoles(Cog, help_command=Help):
         else:
             raise error
 
-    @app_commands.command(name='reactionrole', description='Learn about how to make a reaction role message.')
-    async def _reaction_role(self, interaction):
-        embed = discord.Embed(title="Sorry but this won't work",
-                              description="Slash Commands are different than normal commands." 
-                                          "The user input is much different. Message commands use flags." 
-                                          "Size Varying Flags don't really work well in Slash Commands" 
-                                          f"Use {self.bot.user.name} as the prefix and do the `rr` command." 
-                                          "Sorry but it's easier for both me and you.")
-        await interaction.response.send_message(embed=embed)
-
     @commands.command(aliases=['crr', 'customreactionrole'])
     @commands.has_permissions(administrator=True)
     @commands.bot_has_permissions(manage_roles=True)
@@ -300,4 +290,4 @@ class ReactionRoles(Cog, help_command=Help):
 
 
 def setup(bot: MasterBot):
-    bot.add_cog(ReactionRoles(bot))
+    ReactionRoles.setup(bot)

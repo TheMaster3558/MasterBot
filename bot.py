@@ -3,6 +3,7 @@ from __future__ import annotations
 import discord
 from discord import app_commands
 from discord.ext import commands
+from cogs.utils.cog import Cog
 from time import perf_counter
 from typing import Optional, Iterable, TypeVar
 from prefix import Prefix, get_prefix
@@ -23,6 +24,7 @@ CogT = TypeVar('CogT', bound=commands.Cog)
 
 class MasterBot(commands.Bot):
     __version__ = '1.3.0'
+    test_guild = discord.Object(id=878431847162466354)
 
     def __init__(self, cr_api_key: str, weather_api_key: str, mongo_db: str, /) -> None:
         intents = discord.Intents.default()
@@ -75,7 +77,7 @@ class MasterBot(commands.Bot):
         print('Logged in as {0} ID: {0.id}'.format(self.user))
         self.on_ready_time = perf_counter()
         print('Time taken to ready up:', round(self.on_ready_time - self.start_time, 1), 'seconds')
-        await self.tree.sync(guild=discord.Object(id=878431847162466354))
+        await self.tree.sync(guild=self.test_guild)
 
     async def on_command_error(self, context: commands.Context, exception: commands.errors.CommandError) -> None:
         if not context.command:
@@ -113,10 +115,8 @@ class MasterBot(commands.Bot):
         ]
         for cog in cogs:
             self.load_extension(cog)
-        for name, cog in self.cogs.items():
-            if name == 'Prefix':
-                continue
-            self.tree.add_command(cog, override=True)  # type: ignore
+        for cmd in Cog.app_commands_to_add:
+            self.tree.add_command(cmd, override=True, guild=self.test_guild)
         super().run(token)
 
     def restart(self):
