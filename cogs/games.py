@@ -176,7 +176,7 @@ class RockPaperScissors(View):
 
 
 class Games(Cog):
-    word = None
+    word = random.choice(words)
     font = ImageFont.truetype('arial.ttf', 15)
 
     def __init__(self, bot: MasterBot):
@@ -199,7 +199,8 @@ class Games(Cog):
         msg = await ctx.send(embed=embed, view=view)
         await view.wait()
         if view.winner:
-            await msg.reply(f'The winner is {view.winner}!')
+            winner = ctx.guild.get_member(view.winner)
+            await msg.reply(f'The winner is {winner.display_name}!')
             return
         await msg.reply("You couldn't finish in time.")
 
@@ -235,7 +236,8 @@ class Games(Cog):
         msg = await interaction.response.send_message(embed=embed, view=view)
         await view.wait()
         if view.winner:
-            await msg.reply(f'The winner is {view.winner}!')
+            winner = interaction.guild.get_member(view.winner)
+            await msg.reply(f'The winner is {winner.display_name}!')
             return
         await msg.reply("You couldn't finish in time.")
 

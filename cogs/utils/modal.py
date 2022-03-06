@@ -73,6 +73,8 @@ class Modal:
 
         self._response: asyncio.Future[Interaction] = asyncio.Future()
 
+        self.__discord_ui_modal__ = True
+
     @staticmethod
     def parse_interaction(interaction: Interaction) -> dict[str, str]:
         return dict(
@@ -122,7 +124,7 @@ class Modal:
         for item in self._items.values():
             data["components"].append({
                 "type": 1,
-                "components": [item.to_dict()]
+                "components": [item.to_component_dict()]  # type: ignore
             })
 
         return data

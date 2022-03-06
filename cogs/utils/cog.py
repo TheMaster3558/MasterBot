@@ -34,7 +34,7 @@ class Cog(commands.Cog, app_commands.Group, metaclass=CogMeta):
         self = cls(bot)
         bot.add_cog(self)
         if self.app_commands_group:
-            bot.tree.add_command(self)
+            bot.tree.add_command(self, guild=bot.test_guild)
 
     @classmethod
     def app_command(cls, func):

@@ -241,12 +241,6 @@ class Code(Cog):
 
     @git.command()
     @commands.is_owner()
-    async def remove(self, ctx, path):
-        __os__.system('git remove {}'.format(path))
-        await ctx.send('Files in {} were removed from the next commit.'.format(path))
-
-    @git.command()
-    @commands.is_owner()
     async def commit(self, ctx, *, message):
         __os__.system('git commit -m "{}"'.format(message))
         await ctx.send('Changes have been committed with the message {}'.format(message))
@@ -258,7 +252,7 @@ class Code(Cog):
         if force == 'force':
             command += ' -f'
         __os__.system(command)
-        await ctx.send('Files pushed. Force push = {}.'.format(force))
+        await ctx.send('Files pushed. Force push = {}.'.format(force == 'force'))
 
     @commands.command(name='code')
     async def _code(self, ctx, file_path, lines=None):
@@ -299,6 +293,13 @@ class Code(Cog):
         code = await file.read()
         code = SlashCodeBlock(code.decode('utf-8'))
         await self._eval(ctx, code=code)
+
+    @commands.command()
+    async def sync(self, ctx, guild: bool = None):
+        if guild:
+            guild = self.bot.test_guild
+        data = await self.bot.tree.sync(guild=guild)
+        await ctx.send(data)
 
 
 def setup(bot: MasterBot):
