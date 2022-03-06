@@ -21,7 +21,7 @@ words = [word for word in english_words_lower_set if len(word) == 5]
 
 
 UserID = TypeVar('UserID', bound=Type[int])
-Num = TypeVar('Num', bound=Literal[0, 1, 2])
+Num = Literal[1, 2, 3]
 
 
 class TicTacToeButton(discord.ui.Button['TicTacToeView']):
