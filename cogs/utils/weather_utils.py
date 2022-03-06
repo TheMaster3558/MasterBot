@@ -3,13 +3,13 @@ import pytz
 from datetime import datetime
 import time
 from typing import Optional
+from discord.ext import commands
 
 
 class WeatherUtils:
     @staticmethod
     async def build_current_embed(data, ctx, self) -> discord.Embed:
-        embed = discord.Embed(title=f'{data.get("location").get("name")}, {data.get("location").get("region")}, {data.get("location").get("country")}',
-                              timestamp=ctx.message.created_at)
+        embed = discord.Embed(title=f'{data.get("location").get("name")}, {data.get("location").get("region")}, {data.get("location").get("country")}',)
         tz = pytz.timezone(data['location']['tz_id'])
         local_time = datetime.fromtimestamp(data['location']["localtime_epoch"], tz)
         local_time = local_time.strftime('%H:%M')
@@ -46,12 +46,14 @@ class WeatherUtils:
     async def build_forecast_embed(data, ctx, self, days) -> Optional[discord.Embed]:
         days -= 1
         embed = discord.Embed(
-            title=f'{data.get("location").get("name")}, {data.get("location").get("region")}, {data.get("location").get("country")}',
-            timestamp=ctx.message.created_at)
+            title=f'{data.get("location").get("name")}, {data.get("location").get("region")}, {data.get("location").get("country")}')
         try:
             data = data.get('forecast').get('forecastday')[days]
         except IndexError:
-            await ctx.send(f"I couldn't find anything for {days} days away. Try another number.")
+            if isinstance(ctx, commands.Context):
+                await ctx.send(f"I couldn't find anything for {days} days away. Try another number.")
+            else:
+                await ctx.response.send_message(f"I couldn't find anything for {days} days away. Try another number.")
             return
         date = round(time.mktime(datetime.fromtimestamp(data.get('date_epoch')).timetuple()))
         embed.add_field(name='Forecast Date', value=f'<t:{date}:D>')
@@ -93,14 +95,17 @@ class WeatherUtils:
         return embed
 
     @staticmethod
-    async def build_search_embed(data: dict, ctx, index, timestamp) -> Optional[discord.Embed]:
+    async def build_search_embed(data: dict, ctx, index) -> Optional[discord.Embed]:
         index -= 1
         try:
             data = data[index]
         except KeyError:
-            await ctx.send("I couldn't find that result. Make sure that city exists.")
+            if isinstance(ctx, commands.Context):
+                await ctx.send("I couldn't find that result. Make sure that city exists.")
+            else:
+                ctx.response.send_message("I couldn't find that result. Make sure that city exists.")
             return
-        embed = discord.Embed(title=data.get('name'), timestamp=timestamp)
+        embed = discord.Embed(title=data.get('name'))
         embed.add_field(name='Region', value=data.get('region'), inline=False)
         embed.add_field(name='Country', value=data.get('country'))
         embed.add_field(name='Latitude', value=data.get('lat'), inline=False)

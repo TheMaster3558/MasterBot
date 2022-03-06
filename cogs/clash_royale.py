@@ -1,6 +1,6 @@
 import discord
+from discord import app_commands
 from discord.ext import commands
-import slash_util
 from typing import Optional, Union
 from cogs.utils.http import AsyncHTTPClient
 from requests.structures import CaseInsensitiveDict
@@ -36,7 +36,8 @@ class Help(metaclass=HelpSingleton):
         return message
 
     def full_help(self):
-        help_list = [self.crlocations_help(), self.stats_help(), self.clan_help(), self.card_help(), self.search_clan_help()]
+        help_list = [self.crlocations_help(), self.stats_help(), self.clan_help(), self.card_help(),
+                     self.search_clan_help()]
         return '\n'.join(help_list)
 
 
@@ -111,9 +112,9 @@ class ClashRoyale(Cog):
     async def crlocations(self, ctx):
         await ctx.author.send(embed=cr_locations_embed)
 
-    @slash_util.slash_command(name='crlocations', description='Get a list of locations to use.')
-    async def _crlocations(self, ctx):
-        await self.crlocations(ctx)
+    @app_commands.command(name='crlocations', description='Get a list of locations to use.')
+    async def _crlocations(self, interaction):
+        await interaction.user.send(embed=cr_locations_embed)
 
     @commands.command()
     @commands.cooldown(1, 30, commands.BucketType.user)
@@ -135,8 +136,8 @@ class ClashRoyale(Cog):
         else:
             raise error
 
-    @slash_util.slash_command(name='stats', description='Get clash royale player stats.')
-    @slash_util.describe(tag='The player tag')
+    @app_commands.command(name='stats', description='Get clash royale player stats.')
+    @app_commands.describe(tag='The player tag')
     async def _stats(self, ctx, tag: str):
         if tag.startswith('#'):
             tag = tag[1:]
@@ -162,8 +163,8 @@ class ClashRoyale(Cog):
         else:
             raise error
 
-    @slash_util.slash_command(name='card', description='Get a clash royale card.')
-    @slash_util.describe(name='The card name')
+    @app_commands.command(name='card', description='Get a clash royale card.')
+    @app_commands.describe(name='The card name')
     async def _card(self, ctx, name: str):
         cards = await self.http.cards_request()
         try:
@@ -193,8 +194,8 @@ class ClashRoyale(Cog):
         else:
             raise error
 
-    @slash_util.slash_command(name='clan', desription='Get clash royale clan stats')
-    @slash_util.describe(tag='The clan tag')
+    @app_commands.command(name='clan', description='Get clash royale clan stats')
+    @app_commands.describe(tag='The clan tag')
     async def _clan(self, ctx, tag: str):
         if tag.startswith('#'):
             tag = tag[1:]
@@ -227,7 +228,8 @@ class ClashRoyale(Cog):
 
     @search_clan.error
     async def error(self, ctx, error):
-        if isinstance(error, (commands.MissingRequiredArgument, commands.MissingFlagArgument, commands.MissingRequiredFlag)):
+        if isinstance(error,
+                      (commands.MissingRequiredArgument, commands.MissingFlagArgument, commands.MissingRequiredFlag)):
             embed = discord.Embed(title='You missed a flag argument dummy.')
             await ctx.send(embed=embed)
         elif isinstance(error, commands.CommandInvokeError):
@@ -242,13 +244,13 @@ class ClashRoyale(Cog):
         else:
             raise error
 
-    @slash_util.slash_command(name='searchclan', description='Search up a clan in clash royale')
-    @slash_util.describe(name='The clans name',
-                         location='The clan location',
-                         min='The minimum amount of members',
-                         max='The maximum amount of members',
-                         score='The minimum clan score',
-                         result='The result to give back')
+    @app_commands.command(name='searchclan', description='Search up a clan in clash royale')
+    @app_commands.describe(name='The clans name',
+                           location='The clan location',
+                           min='The minimum amount of members',
+                           max='The maximum amount of members',
+                           score='The minimum clan score',
+                           result='The result to give back')
     async def _search_clan(self,
                            ctx,
                            name: str = None,
@@ -256,7 +258,7 @@ class ClashRoyale(Cog):
                            min: int = None,
                            max: int = None,
                            score: int = None,
-                           result: slash_util.Range[1, 10] = 1
+                           result: app_commands.Range[int, 1, 10] = 1
                            ):
         if not location and not name and not min and not max and not score:
             return await ctx.send('You must give me an argument. (other than result)', ephemeral=True)
@@ -277,10 +279,16 @@ class ClashRoyale(Cog):
                                               maxMembers=max,
                                               minScore=score)
         try:
-            clan = clans[result - 1]
+            clan = clans[result - 1]  # type: ignore
         except IndexError:
             return await ctx.send('Not enough clans were found.')
-        await self._clan.func(self, ctx, clan.get('tag'))
+        self, ctx, clan.get('tag')
+        if clan.get('tag').startswith('#'):
+            clan['tag'] = clan['tag'][1:]
+        clan = await self.http.clan_tag_request(clan.get('tag'))
+
+        embed = await ClashRoyaleUtils.build_clan_embed(clan)
+        await ctx.send(embed=embed)
 
 
 def setup(bot: MasterBot):

@@ -1,7 +1,8 @@
 import discord
+from discord import app_commands
 from discord.ext import commands
-import slash_util
 from bot import MasterBot
+
 import re
 
 from cogs.reaction_roles import ReactionRoles
@@ -23,6 +24,7 @@ import aiohttp
 import fuzzywuzzy
 
 from cogs.utils.view import View
+from cogs.utils.cog import Cog
 
 
 class InviteView(View):
@@ -32,7 +34,7 @@ class InviteView(View):
         self.add_item(discord.ui.Button(label='Click here!', url=url))
 
 
-class HelpAndInfo(slash_util.Cog):
+class HelpAndInfo(Cog):
     mention_regex = None
 
     def __init__(self, bot: MasterBot):
@@ -55,19 +57,20 @@ class HelpAndInfo(slash_util.Cog):
     async def ping(self, ctx):
         await ctx.send(f'Pong! `{str(round(self.bot.latency * 1000))}ms`')
 
-    @slash_util.slash_command(name='ping', description='Pong!')
-    async def _ping(self, ctx):
-        await self.ping(ctx)
+    @app_commands.command(name='ping', description='Pong!')
+    async def _ping(self, interaction):
+        await interaction.response.send_message(f'Pong! `{str(round(self.bot.latency * 1000))}ms`')
 
     @commands.command()
     async def invite(self, ctx):
         embed = discord.Embed(title=f'{self.bot.user.name} Invite')
         await ctx.author.send(embed=embed, view=InviteView(self.bot))
 
-    @slash_util.slash_command(name='invite', description='Invite me!')
-    async def _invite(self, ctx):
-        await ctx.send('Check ur DMs.')
-        await self.invite(ctx)
+    @app_commands.command(name='invite', description='Invite me!')
+    async def _invite(self, interaction):
+        await interaction.response.send_message('Check ur DMs.')
+        embed = discord.Embed(title=f'{self.bot.user.name} Invite')
+        await interaction.user.send(embed=embed, view=InviteView(self.bot))
 
     @commands.command()
     async def info(self, ctx):
@@ -83,9 +86,20 @@ class HelpAndInfo(slash_util.Cog):
         embed.add_field(name='Stats', value=f'Servers: {len(self.bot.guilds)}\nUnique Users: {len(set(self.bot.users))}')
         await ctx.send(embed=embed)
 
-    @slash_util.slash_command(name='info', description='Get info about the bot')
-    async def _info(self, ctx):
-        await self.info(ctx)
+    @app_commands.command(name='info', description='Get info about the bot')
+    async def _info(self, interaction):
+        embed = discord.Embed(title=f'{self.bot.user.name} Info')
+        embed.add_field(name='Version Info', value=f'{self.bot.user.name} version {self.bot.__version__}\n'
+                                                   f'[Python {sys.version.split(" ")[0]}](https://www.python.org)\n'
+                                                   f'[discord.py {discord.__version__}](https://github.com/Rapptz/discord.py)\n'
+                                                   f'[slash_util {self.slash_util_version}](https://github.com/XuaTheGrate/slash_util)\n'
+                                                   f'[async-google-trans-new {agtn_version}](https://github.com/Theelx/async-google-trans-new)\n'
+                                                   f'[aiohttp {aiohttp.__version__}](https://docs.aiohttp.org/en/stable/)\n'
+                                                   f'[fuzzywuzzy {fuzzywuzzy.__version__}](https://github.com/seatgeek/thefuzz)\n'
+                                                   f'Platform {sys.platform}')
+        embed.add_field(name='Stats',
+                        value=f'Servers: {len(self.bot.guilds)}\nUnique Users: {len(set(self.bot.users))}')
+        await interaction.response.send_message(embed=embed)
 
     @commands.group(name='help')
     async def _help(self, ctx):

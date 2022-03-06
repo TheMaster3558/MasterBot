@@ -1,10 +1,10 @@
 import discord
+from discord import app_commands
 from discord.ext import commands, tasks
 import asyncio
 from typing import Tuple, Optional, Union
 import json
 from copy import deepcopy
-import slash_util
 from bot import MasterBot
 from cogs.utils.help_utils import HelpSingleton
 from cogs.utils.cog import Cog
@@ -61,8 +61,7 @@ class ReactionRoles(Cog, help_command=Help):
 
     async def convert_all(self, message):
         ctx = await self.bot.get_context(message)
-        copy = deepcopy(self.role_dict)
-        copy = copy[str(message.id)]
+        copy = deepcopy(self.role_dict[str(message.id)])
         copy: dict = copy.get('emojis')
         original_keys = list(copy.keys())
         for i in range(len(copy)):
@@ -167,15 +166,15 @@ class ReactionRoles(Cog, help_command=Help):
         else:
             raise error
 
-    @slash_util.slash_command(name='reactionrole', description='Learn about how to make a reaction role message.')
-    async def _reaction_role(self, ctx: slash_util.Context):
+    @app_commands.command(name='reactionrole', description='Learn about how to make a reaction role message.')
+    async def _reaction_role(self, interaction):
         embed = discord.Embed(title="Sorry but this won't work",
                               description="Slash Commands are different than normal commands." 
                                           "The user input is much different. Message commands use flags." 
                                           "Size Varying Flags don't really work well in Slash Commands" 
-                                          f"Use {ctx.bot.name} as the prefix and do the `rr` command." 
+                                          f"Use {self.bot.user.name} as the prefix and do the `rr` command." 
                                           "Sorry but it's easier for both me and you.")
-        await ctx.send(embed=embed)
+        await interaction.response.send_message(embed=embed)
 
     @commands.command(aliases=['crr', 'customreactionrole'])
     @commands.has_permissions(administrator=True)

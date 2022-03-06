@@ -1,6 +1,6 @@
 import discord
+from discord import app_commands
 from discord.ext import commands
-import slash_util
 import expr
 from bot import MasterBot
 import re
@@ -39,11 +39,27 @@ def evaluate(expression: str, /, *, cls: Type[expr.core.C] = expr.builtin.Decima
     return result
 
 
+class StateGroup(app_commands.Group):
+    def __init__(self, cog):
+        self.cog = cog
+        super().__init__(name='state', description='Modify a state to save variables.')
+
+    @app_commands.command(description='Create the state')
+    async def create(self, interaction, variables: str):
+        variables, _ = self.cog.parse_for_vars(variables)
+        self.cog.states[interaction.user] = variables
+
+    @app_commands.command(description='Delete the state')
+    async def delete(self, interaction):
+        del self.cog.states[interaction.user]
+
+
 class Math(Cog):
     def __init__(self, bot: MasterBot):
         super().__init__(bot)
         self.parse_regex = re.compile('\w *= *\d+')
         self.states: Dict[UserT, Dict[str, N]] = {}
+        self.bot.tree.add_command(StateGroup(self))
         print('Math cog loaded')
 
     def parse_for_vars(self, expression):
@@ -69,10 +85,15 @@ class Math(Cog):
         result = evaluate(expression, variables=variables)
         await ctx.reply(result, mention_author=False)
 
-    @slash_util.slash_command(name='math', description="I'll do some math for you!")
-    @slash_util.describe(expression='The math expression')
-    async def _math(self, ctx, expression: str):
-        await self.math(ctx, expression=expression)
+    @app_commands.command(name='math', description="I'll do some math for you!")
+    @app_commands.describe(expression='The math expression')
+    async def _math(self, interaction, expression: str):
+        variables, expression = self.remove_vars(expression)
+        if interaction.user in self.states:
+            self.states[interaction.user].update(variables)
+            variables = self.states[interaction.user]
+        result = evaluate(expression, variables=variables)
+        await interaction.response.send_message(result)
 
     @math.error
     async def error(self, ctx, error):
@@ -93,14 +114,6 @@ class Math(Cog):
     @state.command(aliases=['del', 'destroy'])
     async def delete(self, ctx):
         del self.states[ctx.author]
-
-    @slash_util.slash_command(name='state', description='Create a state to save variables when using /math')
-    @slash_util.describe(option='"create" or "delete"', variables='Preset variables for your state')
-    async def _state(self, ctx, option: Literal["create", "delete"], variables: str = ''):
-        if option == 'create':
-            await self.create(ctx, variables=variables)
-        else:
-            await self.delete(ctx)
 
 
 def setup(bot: MasterBot):

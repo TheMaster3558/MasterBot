@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 import discord
+from discord import app_commands
 from discord.ext import commands, tasks
-import slash_util
 from bot import MasterBot
 from cogs.utils.view import View
 from typing import Literal, Optional, TypeVar, Type
@@ -225,10 +225,18 @@ class Games(Cog):
                 return
             await self.tictactoe(ctx, member=member)
 
-    @slash_util.slash_command(name='tictactoe', description='Challenge a user to Tic Tac Toe!')
-    @slash_util.describe(member='The member to challenge.')
+    @app_commands.command(name='tictactoe', description='Challenge a user to Tic Tac Toe!')
+    @app_commands.describe(member='The member to challenge.')
     async def _tictactoe(self, ctx, member: discord.Member):
-        await self.tictactoe(ctx, member=member)
+        view = TicTacToeView(ctx.author, member)
+        embed = discord.Embed(title=f'{ctx.author.display_name} vs {member.display_name}')
+        embed.set_footer(text='You have 3 minutes.')
+        msg = await ctx.send(embed=embed, view=view)
+        await view.wait()
+        if view.winner:
+            await msg.reply(f'The winner is {view.winner}!')
+            return
+        await msg.reply("You couldn't finish in time.")
 
     @commands.command(aliases=['rps'])
     async def rock_paper_scissors(self, ctx: commands.Context, member: discord.Member = None):

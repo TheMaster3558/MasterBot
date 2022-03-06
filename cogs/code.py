@@ -1,11 +1,11 @@
 import sys
 import discord
+from discord import app_commands
 from discord.ext import commands
 from typing import Optional, Union
 import re
 import os as __os__  # to keep eval command safe
 import sys as __sys__
-import slash_util
 from bot import MasterBot
 from cogs.utils.help_utils import HelpSingleton
 import aiofiles
@@ -124,8 +124,9 @@ class Code(Cog):
 
         sys.stdout = sys.__stdout__
 
-        if isinstance(ctx, slash_util.Context):
-            return await ctx.send(f'```\n{temp_out.getvalue()}\n```')
+        if isinstance(ctx, discord.Interaction):
+            await ctx.response.send_message(f'```\n{temp_out.getvalue()}\n```')
+            return
         await ctx.reply(f'```\n{temp_out.getvalue()}\n```', mention_author=False)
 
     @_eval.error
@@ -168,20 +169,22 @@ class Code(Cog):
         returned = re.search(regex, text)
         await ctx.send(returned)
 
-    @slash_util.slash_command(name='search', description='Use regex to search text')
-    @slash_util.describe(regex='The regular expression', text='The text to search.')
-    async def _search(self, ctx, regex: str, text: str):
-        await self.search(ctx=ctx, what=regex, text=text)
+    @app_commands.command(name='search', description='Use regex to search text')
+    @app_commands.describe(regex='The regular expression', text='The text to search.')
+    async def _search(self, interaction, regex: str, text: str):
+        returned = re.search(regex, text)
+        await interaction.response.send_message(returned)
 
     @commands.command()
     async def match(self, ctx, regex, *, text):
         returned = re.fullmatch(regex, text)
         await ctx.send(returned)
 
-    @slash_util.slash_command(name='match', description='Use regex to match text')
-    @slash_util.describe(regex='The regular expression', text='The text to match.')
-    async def _match(self, ctx, regex: str, text: str):
-        await self.match(ctx=ctx, what=regex, text=text)
+    @app_commands.command(name='match', description='Use regex to match text')
+    @app_commands.describe(regex='The regular expression', text='The text to match.')
+    async def _match(self, interaction, regex: str, text: str):
+        returned = re.match(regex, text)
+        await interaction.response.send_message(returned)
 
     @commands.command()
     @commands.is_owner()
@@ -286,7 +289,7 @@ class Code(Cog):
         else:
             raise error
 
-    @slash_util.slash_command(name='eval', description='Run a Python file')
+    @app_commands.command(name='eval', description='Run a Python file')
     async def __eval(self, ctx, file: discord.Attachment):
         if not file.filename.endswith('.py'):
             return await ctx.send('It must be a `python` file.')

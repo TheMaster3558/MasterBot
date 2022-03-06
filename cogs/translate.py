@@ -1,8 +1,8 @@
 import discord
+from discord import app_commands
 from discord.ext import commands
 from async_google_trans_new import AsyncTranslator
 from async_google_trans_new.constant import LANGUAGES
-import slash_util
 from bot import MasterBot
 from cogs.utils.help_utils import HelpSingleton
 from static_embeds import lang_bed
@@ -84,28 +84,42 @@ class Translator(Cog):
     async def languages(self, ctx):
         await ctx.author.send(embed=lang_bed)
 
-    @slash_util.slash_command(name='translate', description='Translate using google translate!')
-    @slash_util.describe(lang='The language to translate to. Use /languages for a list.')
-    async def _translate(self, ctx, lang: str, text: str):
+    @app_commands.command(name='translate', description='Translate using google translate!')
+    @app_commands.describe(lang='The language to translate to. Use /languages for a list.')
+    async def _translate(self, interaction, lang: str, text: str):
         if lang in LANGUAGES.keys() or lang in LANGUAGES.values():
             if lang in LANGUAGES.values():
                 lang = {v: k for k, v in LANGUAGES.items()}
         else:
-            return await ctx.send('Use /languages for a valid list of languages.')
+            await interaction.response.send_message('Use /languages for a valid list of languages.')
+            return
         result = await self.translator.translate(text=text, lang_tgt=lang)
         embed = discord.Embed(description=f'Original: {text}\nTranslated: {result}')
         embed.set_footer(text=f'Text successfully translated to {LANGUAGES.get(lang)}')
-        await ctx.send(embed=embed)
+        await interaction.response.send_message(embed=embed)
 
-    @slash_util.slash_command(name='languages', description='Get a valid list of languages.')
-    async def _languages(self, ctx):
-        await self.languages(ctx)
-        await ctx.send('Check ur DMs')
+    @app_commands.command(name='languages', description='Get a valid list of languages.')
+    async def _languages(self, interaction):
+        await self.languages(interaction)
+        await interaction.response.send_message('Check ur DMs')
 
-    @slash_util.slash_command(name='detect', description='Detect the language of your text.')
-    @slash_util.describe(text='The text to detect the language of.')
-    async def _detect(self, ctx, text: str):
-        await self.detect(ctx, text)
+    @app_commands.command(name='detect', description='Detect the language of your text.')
+    @app_commands.describe(text='The text to detect the language of.')
+    async def _detect(self, interaction, text: str):
+        result = await self.translator.detect(text)
+        embed = discord.Embed(title=f'I detected the language as {result[1]}',
+                              description=f'Text: {text}')
+        embed.set_footer(text='Google translate did its best')
+        await interaction.response.send_message(embed=embed)
+
+    #  the following commands cannot be used in a cog until context menus in cogs are supported
+    # @app_commands.context_menu(name='detect')
+    # async def __detect(self, interaction: discord.Interaction, message: discord.Message):
+    #     await self._detect._callback(interaction, message.content)
+
+    # @app_commands.context_menu(name='translate')
+    # async def __translate(self, interaction: discord.Interaction, message: discord.Message):
+    #     await self._translate._callback(interaction, message.content)
 
 
 def setup(bot: MasterBot):

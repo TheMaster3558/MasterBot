@@ -1,9 +1,9 @@
 import discord
+from discord import app_commands
 from discord.ext import commands
 from cogs.utils.http import AsyncHTTPClient
 import random
 from html import unescape
-import slash_util
 from cogs.utils.view import View
 from bot import MasterBot
 from cogs.utils.help_utils import HelpSingleton
@@ -117,9 +117,25 @@ class Trivia(Cog):
         else:
             raise type(error)(error)
 
-    @slash_util.slash_command(name='trivia', description='Get trivia from opentdb.com!')
-    async def _trivia(self, ctx: slash_util.Context):
-        await self.trivia(ctx)
+    @app_commands.command(name='trivia', description='Get trivia from opentdb.com!')
+    async def _trivia(self, interaction: discord.Interaction):
+        data = await self.http.trivia()
+        if data.get('response_code') != 0:
+            await interaction.response.send_message('We encountered an unexpected error. Try again later.')
+            return
+        data = data.get('results')[0]
+        question = unescape(data.get('question'))
+        embed = discord.Embed(title=question)
+        embed.set_footer(text='The difficulty is {}'.format(data.get('difficulty')))
+        my_view = MultipleChoice(data.get('correct_answer'), data.get('incorrect_answers'))
+        message = await interaction.response.send_message(embed=embed, view=my_view)
+        await my_view.wait()
+        if my_view.done is False:
+            await my_view.disable_all(message=message)
+            embed = discord.Embed(title='No one got it right in time.',
+                                  description='The answer was {}'.format(unescape(data.get('correct_answer'))))
+            embed.add_field(name='Wrong guesses', value='\n'.join(f'{k}: {v}' for k, v in my_view.tries.items()) or 'No guesses')
+            await message.reply(embed=embed)
 
 
 def setup(bot: MasterBot):

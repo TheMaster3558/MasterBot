@@ -1,8 +1,8 @@
 import discord
+from discord import app_commands
 from discord.ext import commands, tasks
 from cogs.utils.http import AsyncHTTPClient
 from cogs.utils.view import View
-import slash_util
 import asyncio
 from typing import Optional, Union, Iterable
 from bot import MasterBot
@@ -65,6 +65,12 @@ class BlacklistView(View):
         self.choice = False
         await self.disable_all(interaction.message)
         self.stop()
+
+
+class QuickObject:
+    def __init__(self, **attrs):
+        for k, v in attrs:
+            setattr(self, k, v)
 
 
 class CategorySelect(discord.ui.Select):
@@ -258,21 +264,50 @@ class Jokes(Cog):
             await ctx.send(embed=embed)
         self.used_jokes.append(joke_id)
 
-    @slash_util.slash_command(name='joke', description='Let me tell you a joke!')
-    async def _joke(self, ctx: slash_util.Context):
-        view = CategoryView(ctx.author)
-        await ctx.send(embed=joke_category_embed, view=view)
+    @app_commands.command(name='joke', description='Let me tell you a joke!')
+    async def _joke(self, interaction: discord.Interaction):
+        view = CategoryView(interaction.user)
+        await interaction.response.send_message(embed=joke_category_embed, view=view)
         await view.wait()
         categories = view.item.values
         if len(categories) > 1 and 'Any' in categories:
-            return await ctx.send(f'{ctx.author.mention} You cannot select **Any** and other categories.')
+            await interaction.followup.send(f'{interaction.user.mention} You cannot select **Any** and other categories.')
+            return
         if len(categories) == 0:
-            return await ctx.send("You didn't select anything =(")
-        await self.joke(ctx, *categories)
+            await interaction.followup.send("You didn't select anything =(")
+        for category in categories:
+            if category.lower() not in self.categories:
+                await interaction.followup.send(f"That isn't a category! The categories are `{'`, `'.join(self.categories)}`.")
+                return
+        blacklist = self.blacklist.get(interaction.guild.id)
+        if blacklist:
+            blacklist_flags = [k for k, v in blacklist.items() if not v]
+        else:
+            blacklist_flags = None
+        joke_id = 12345
+        data = {}  # to make pycharm stop complaining
+        while joke_id in self.used_jokes:
+            data: dict = await self.http.get_joke(categories, blacklist_flags)
+            joke_id = data.get('id')
+        if data.get('error') is True:
+            await interaction.followup.send('An unexpected error occurred :( Try again later.')
+            return
+        if data.get('type') == 'twopart':
+            embed = discord.Embed(title=data.get('setup'))
+            embed.set_footer(text=f'Category: {data.get("category")}')
+            msg = await interaction.followup.send(embed=embed)
+            await asyncio.sleep(5)
+            embed2 = discord.Embed(title=data.get('delivery'))
+            await msg.reply(embed=embed2)
+        elif data.get('type') == 'single':
+            embed = discord.Embed(title=data.get('joke'))
+            embed.set_footer(text=f'Category: {data.get("category")}')
+            await interaction.followup.send(embed=embed)
+        self.used_jokes.append(joke_id)
 
     @commands.command(name='blacklist')
     @commands.has_permissions(administrator=True)
-    async def _blacklist(self, ctx, *, flags: Union[BlacklistFlags, SlashFlagObject]):
+    async def _blacklist(self, ctx, *, flags: BlacklistFlags):
         for k, v in vars(flags).items():
             if v is None:
                 guild = self.blacklist.get(ctx.guild.id)
@@ -341,15 +376,15 @@ class Jokes(Cog):
         else:
             raise error
 
-    @slash_util.slash_command(name='blacklist', description='Turn off some possible jokes.')
-    @slash_util.describe(nsfw='NSFW jokes',
-                         religious='Religious jokes',
-                         political='Political jokes',
-                         sexist='Sexist jokes',
-                         racist='Racist jokes',
-                         explicit='Explicit jokes')
+    @app_commands.command(name='blacklist', description='Turn off some possible jokes.')
+    @app_commands.describe(nsfw='NSFW jokes',
+                           religious='Religious jokes',
+                           political='Political jokes',
+                           sexist='Sexist jokes',
+                           racist='Racist jokes',
+                           explicit='Explicit jokes')
     async def __blacklist(self,
-                          ctx: slash_util.Context,
+                          interaction: discord.Interaction,
                           nsfw: str = None,
                           religious: str = None,
                           political: str = None,
@@ -357,15 +392,76 @@ class Jokes(Cog):
                           racist: str = None,
                           explicit: str = None):
 
-        if not ctx.author.guild_permissions.administrator:
-            return await ctx.send('You need admin perms to run this!!')
-        flags = SlashFlagObject(nsfw=nsfw,
-                                religious=religious,
-                                political=political,
-                                sexist=sexist,
-                                racist=racist,
-                                explicit=explicit)
-        await self._blacklist(ctx, flags=flags)
+        if not interaction.user.guild_permissions.administrator:
+            await interaction.response.send_message('You need admin perms to run this!!')
+        flags = QuickObject(
+            nsfw=nsfw,
+            religious=religious,
+            political=political,
+            sexist=sexist,
+            racist=racist,
+            explicit=explicit
+        )
+        for k, v in vars(flags).items():
+            if v is None:
+                guild = self.blacklist.get(interaction.guild.id)
+                if guild:
+                    setattr(flags, k, guild.get(k))
+                else:
+                    if k in ('religious', 'sexist', 'racist'):
+                        setattr(flags, k, False)
+                    else:
+                        setattr(flags, k, True)
+            else:
+                new = v.capitalize()
+                if new == 'True':
+                    new = True
+                elif new == 'False':
+                    new = False
+                setattr(flags, k, new)
+        options = vars(flags)
+        embed = discord.Embed(title='New Joke Blacklist Settings',
+                              description='**True = Turned on**\n' + '\n'.join(f'{k}: {v}' for k, v in options.items()))
+        embed.set_footer(text='Choose an option')
+        view = BlacklistView(interaction.user)
+        msg = await interaction.response.send_message(embed=embed, view=view)
+        secondary = False
+        if options.get('nsfw') is True:
+            await asyncio.sleep(0.4)
+            await msg.reply(embed=nsfw_embed)
+            secondary = True
+        if options.get('religious') is True:
+            await asyncio.sleep(0.4)
+            await msg.reply(embed=religious_embed)
+            secondary = True
+        if options.get('political') is True:
+            await asyncio.sleep(0.4)
+            await msg.reply(embed=political_embed)
+            secondary = True
+        if options.get('sexist') is True:
+            await asyncio.sleep(0.4)
+            await msg.reply(embed=sexist_embed)
+            secondary = True
+        if options.get('racist') is True:
+            await asyncio.sleep(0.4)
+            await msg.reply(embed=racist_embed)
+            secondary = True
+        if options.get('explicit') is True:
+            await asyncio.sleep(0.4)
+            await msg.reply(embed=explicit_embed)
+            secondary = True
+        if secondary is True:
+            await asyncio.sleep(0.4)
+            await msg.reply(embed=alert_bed)
+        await view.wait()
+        if view.choice is None:
+            await msg.reply(embed=discord.Embed(title='Cancelled'))
+            await view.disable_all(msg)
+        elif view.choice is True:
+            await msg.reply(emebed=confirm_bed)
+        elif view.choice is False:
+            await msg.reply(embed=cancel_bed)
+        self.blacklist[interaction.guild.id] = options
 
 
 def setup(bot: MasterBot):

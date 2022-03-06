@@ -1,15 +1,14 @@
 import discord
+from discord import app_commands
 from discord.ext import commands
 from typing import Optional, Union
-import slash_util
-import aiohttp
 import asyncio
 from motor import motor_asyncio
 from pymongo.errors import DuplicateKeyError, OperationFailure
-import datetime
 from bot import MasterBot
 from cogs.utils.help_utils import HelpSingleton
 from cogs.utils.cog import Cog
+import datetime
 
 
 class Help(metaclass=HelpSingleton):
@@ -74,29 +73,6 @@ class Help(metaclass=HelpSingleton):
                      self.timeout_help(), self.addrole_help(), self.removerole_help(), self.lock_help(),
                      self.unlock_help()]
         return '\n'.join(help_list) + '\n**Most commands not available with Slash Commands**'
-
-
-async def timeout_user(member: discord.Member, until, bot: commands.Bot, *, reason=None):
-    """Not working for some reason
-    :param member: the `discord.Member` object to timeout
-    :param until: the time to "untimeout" the member
-    :param bot: the bot so we can be authorized into the discord API
-    :param reason:  the reason
-    :return: NoneType
-    """
-    headers = {'Authorization': f'Bot {bot.http.token}',
-               'X-Audit-Log-Reason': reason or 'Reason not provided'}
-    url = "https://discord.com/api/v9/guilds/{guild_id}/members/{user_id}".format(guild_id=member.guild.id,
-                                                                                  user_id=member.id)
-    _timeout = (discord.utils.utcnow() + datetime.timedelta(minutes=until))
-    _timeout = _timeout.astimezone(datetime.timezone.utc).isoformat()
-    json_data = {'communication_disabled_until': _timeout}
-    async with aiohttp.ClientSession(headers=headers) as session:
-        async with session.patch(url, json=json_data) as resp:
-            if resp.status in range(200, 299):
-                return member
-            resp.raise_for_status()
-
 
 class Moderation(Cog):
     """Will be changed to cache instead of db call in v2 or earlier"""
@@ -240,7 +216,7 @@ class Moderation(Cog):
         if log:
             channel = self.bot.get_channel(int(log.get('channel')))
             embed = discord.Embed(title=f'The following members were banned by {ctx.author}',
-                                  description='{0}\n{1}'.format('\n'.join(members), reason or 'Reason not provided'))
+                                  description='{0}\n{1}'.format('\n'.join(members), reason or 'Reason not provided'))  # type: ignore
             await channel.send(embed=embed)
 
     @massban.error
@@ -333,7 +309,8 @@ class Moderation(Cog):
                 "I can't let you do that. Your top role is lower or equal to theirs in the hierarchy.")
         if minutes > 40320:
             return await ctx.send("You can't timeout for 28 days or more sadly.")
-        await timeout_user(member, minutes, self.bot, reason=reason)
+        timed_out_until = discord.utils.utcnow() + datetime.timedelta(minutes=minutes)
+        await member.edit(timed_out_until=timed_out_until, reason=reason)
         await ctx.send(f"{member} got a timeout! I'll let them back in {minutes} minutes.")
         log = await self.log.find_one({'_id': str(ctx.guild.id)})
         if log:
@@ -343,12 +320,28 @@ class Moderation(Cog):
                                   timestamp=ctx.message.created_at)
             await channel.send(embed=embed)
 
-    @slash_util.slash_command(name='timeout', description='Put a user on timeout!')
-    @slash_util.describe(member='The member', minutes='The time', reason='Optional reason')
-    async def _timeout(self, ctx: slash_util.Context, member: discord.Member, minutes: int, reason: str = None):
-        if ctx.author.guild_permissions.moderatate_members:
-            return await self.timeout(ctx, member, minutes, reason)
-        await ctx.send("You can't use this")
+    @app_commands.command(name='timeout', description='Put a user on timeout!')
+    @app_commands.describe(member='The member', minutes='The time', reason='Optional reason')
+    async def _timeout(self, interaction: discord.Interaction, member: discord.Member, minutes: int, reason: str = None):
+        if interaction.user.guild_permissions.moderate_members:
+            if interaction.user.top_role.position <= member.top_role.position:
+                await interaction.response.send_message(
+                    "I can't let you do that. Your top role is lower or equal to theirs in the hierarchy.")
+                return
+            if minutes > 40320:
+                await interaction.response.send_message("You can't timeout for 28 days or more sadly.")
+                return
+            timed_out_until = discord.utils.utcnow() + datetime.timedelta(minutes=minutes)
+            await member.edit(timed_out_until=timed_out_until, reason=reason)
+            await interaction.response.send_message(f"{member} got a timeout! I'll let them back in {minutes} minutes.")
+            log = await self.log.find_one({'_id': str(interaction.guild.id)})
+            if log:
+                channel = self.bot.get_channel(int(log.get('channel')))
+                embed = discord.Embed(title=f'{member} was put on timeout by {interaction.user}',
+                                      description=reason or 'Reason not provided',
+                                      timestamp=discord.utils.utcnow())
+                await channel.send(embed=embed)
+        await interaction.response.send_message("You can't use this")
 
     @timeout.error
     async def error(self, ctx, error):
@@ -362,7 +355,7 @@ class Moderation(Cog):
     @commands.command()
     @commands.has_permissions(administrator=True)
     async def mute(self, ctx):
-        await ctx.send(f'This command has been removed because of the timeout feature. Try {ctx.prefix}timeout instead')
+        await ctx.send(f'This command has been removed because of the timeout feature. Try {ctx.clean_prefix}timeout instead')
 
     @commands.command()
     @commands.has_permissions(manage_roles=True)

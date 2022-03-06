@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-import slash_util
 import discord
+from discord import app_commands
 from discord.ext import commands
 from time import perf_counter
 from typing import Optional, Iterable, TypeVar
@@ -21,14 +21,14 @@ MasterBotT = TypeVar('MasterBotT', bound='MasterBot')
 CogT = TypeVar('CogT', bound=commands.Cog)
 
 
-intents = discord.Intents.default()
-intents.members = True
-
-
-class MasterBot(slash_util.Bot):
-    __version__ = '1.2.1'
+class MasterBot(commands.Bot):
+    __version__ = '1.3.0'
 
     def __init__(self, cr_api_key: str, weather_api_key: str, mongo_db: str, /) -> None:
+        intents = discord.Intents.default()
+        intents.members = True
+        intents.message_content = True
+
         super().__init__(command_prefix=get_prefix,
                          intents=intents,
                          help_command=None,
@@ -55,6 +55,8 @@ class MasterBot(slash_util.Bot):
 
         self.locks: dict[CogT, asyncio.Lock] = {}
 
+        self.tree = app_commands.CommandTree(self)
+
     def acquire_lock(self, cog: CogT) -> asyncio.Lock:
         if cog not in self.locks:
             self.locks[cog] = asyncio.Lock()
@@ -73,6 +75,7 @@ class MasterBot(slash_util.Bot):
         print('Logged in as {0} ID: {0.id}'.format(self.user))
         self.on_ready_time = perf_counter()
         print('Time taken to ready up:', round(self.on_ready_time - self.start_time, 1), 'seconds')
+        await self.tree.sync(guild=discord.Object(id=878431847162466354))
 
     async def on_command_error(self, context: commands.Context, exception: commands.errors.CommandError) -> None:
         if not context.command:
@@ -110,6 +113,10 @@ class MasterBot(slash_util.Bot):
         ]
         for cog in cogs:
             self.load_extension(cog)
+        for name, cog in self.cogs.items():
+            if name == 'Prefix':
+                continue
+            self.tree.add_command(cog, override=True)  # type: ignore
         super().run(token)
 
     def restart(self):
