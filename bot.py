@@ -3,6 +3,7 @@ from __future__ import annotations
 import discord
 from discord import app_commands
 from discord.ext import commands
+from discord.http import Route
 from cogs.utils.cog import Cog
 from time import perf_counter
 from typing import Optional, Iterable, TypeVar
@@ -23,7 +24,7 @@ CogT = TypeVar('CogT', bound=commands.Cog)
 
 
 class MasterBot(commands.Bot):
-    __version__ = '1.3.1'
+    __version__ = '1.3.2'
     test_guild = discord.Object(id=878431847162466354)
 
     def __init__(self, cr_api_key: str, weather_api_key: str, mongo_db: str, /) -> None:
@@ -72,6 +73,9 @@ class MasterBot(commands.Bot):
         for k, v in options:
             setattr(self, k, v)
         return self
+
+    async def delete_app_commands(self):
+        await self.http.bulk_upsert_global_commands(self.application_id, payload=[])
 
     async def on_ready(self) -> None:
         print('Logged in as {0} ID: {0.id}'.format(self.user))
