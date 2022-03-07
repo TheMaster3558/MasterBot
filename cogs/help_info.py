@@ -102,7 +102,7 @@ class Help(Cog):
         if ctx.invoked_subcommand is None:
             embed = discord.Embed(title=f'{self.bot.user.name} Help Menu')
             embed.add_field(name='Categories',
-                            value='`reactions`\n`moderation`\n`code`\n`translation`\n`trivia`\n`cr`(Clash Royale)\n`jokes`\n`webhook`\n`weather`\n`forms`\n`weather`')
+                            value='`reactions`\n`moderation`\n`code`\n`translation`\n`trivia`\n`clashroyale`\n`jokes`\n`webhook`\n`weather`\n`forms`\n`weather`')
             embed.add_field(name='Info', value=f'`{ctx.clean_prefix}info`')
             await ctx.send(embed=embed)
 
@@ -154,7 +154,7 @@ class Help(Cog):
         await ctx.send(embed=embed)
 
     @_help.command()
-    async def cr(self, ctx):
+    async def clashroyale(self, ctx):
         prefix = ctx.clean_prefix
         h = ClashRoyale.help_command(prefix)
         help_message = h.full_help()
