@@ -167,24 +167,24 @@ class Code(Cog):
     @commands.command()
     async def search(self, ctx, regex, *, text):
         returned = re.search(regex, text)
-        await ctx.send(returned)
+        await ctx.send(str(returned))
 
     @app_commands.command(name='search', description='Use regex to search text')
     @app_commands.describe(regex='The regular expression', text='The text to search.')
     async def _search(self, interaction, regex: str, text: str):
         returned = re.search(regex, text)
-        await interaction.response.send_message(returned)
+        await interaction.response.send_message(str(returned))
 
     @commands.command()
     async def match(self, ctx, regex, *, text):
         returned = re.fullmatch(regex, text)
-        await ctx.send(returned)
+        await ctx.send(str(returned))
 
     @app_commands.command(name='match', description='Use regex to match text')
     @app_commands.describe(regex='The regular expression', text='The text to match.')
     async def _match(self, interaction, regex: str, text: str):
         returned = re.match(regex, text)
-        await interaction.response.send_message(returned)
+        await interaction.response.send_message(str(returned))
 
     @commands.command()
     @commands.is_owner()
