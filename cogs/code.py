@@ -136,6 +136,8 @@ class Code(Cog):
                 await ctx.reinvoke()
                 return
             await ctx.send('Patience. Wait {:.1f} seconds'.format(error.retry_after))
+        elif isinstance(error, commands.BadArgument):
+            await ctx.send(str(error))
         else:
             await ctx.send('Command raised an exception\n```\n{}\n```'.format(error))
 
