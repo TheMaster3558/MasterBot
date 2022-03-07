@@ -55,7 +55,6 @@ class Help(Cog):
     async def ping(self, ctx):
         await ctx.send(f'Pong! `{str(round(self.bot.latency * 1000))}ms`')
 
-    @Cog.app_command
     @app_commands.command(name='ping', description='Pong!')
     async def _ping(self, interaction):
         await interaction.response.send_message(f'Pong! `{str(round(self.bot.latency * 1000))}ms`')
@@ -65,7 +64,6 @@ class Help(Cog):
         embed = discord.Embed(title=f'{self.bot.user.name} Invite')
         await ctx.author.send(embed=embed, view=InviteView(self.bot))
 
-    @Cog.app_command
     @app_commands.command(name='invite', description='Invite me!')
     async def _invite(self, interaction):
         await interaction.response.send_message('Check ur DMs.')
@@ -85,14 +83,12 @@ class Help(Cog):
         embed.add_field(name='Stats', value=f'Servers: {len(self.bot.guilds)}\nUnique Users: {len(set(self.bot.users))}')
         await ctx.send(embed=embed)
 
-    @Cog.app_command
     @app_commands.command(name='info', description='Get info about the bot')
     async def _info(self, interaction):
         embed = discord.Embed(title=f'{self.bot.user.name} Info')
         embed.add_field(name='Version Info', value=f'{self.bot.user.name} version {self.bot.__version__}\n'
                                                    f'[Python {sys.version.split(" ")[0]}](https://www.python.org)\n'
                                                    f'[discord.py {discord.__version__}](https://github.com/Rapptz/discord.py)\n'
-                                                   f'[slash_util {self.slash_util_version}](https://github.com/XuaTheGrate/slash_util)\n'
                                                    f'[async-google-trans-new {agtn_version}](https://github.com/Theelx/async-google-trans-new)\n'
                                                    f'[aiohttp {aiohttp.__version__}](https://docs.aiohttp.org/en/stable/)\n'
                                                    f'[fuzzywuzzy {fuzzywuzzy.__version__}](https://github.com/seatgeek/thefuzz)\n'

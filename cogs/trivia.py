@@ -117,7 +117,6 @@ class Trivia(Cog):
         else:
             raise type(error)(error)
 
-    @Cog.app_command
     @app_commands.command(name='trivia', description='Get trivia from opentdb.com!')
     async def _trivia(self, interaction: discord.Interaction):
         data = await self.http.trivia()

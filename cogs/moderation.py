@@ -320,7 +320,6 @@ class Moderation(Cog):
                                   timestamp=ctx.message.created_at)
             await channel.send(embed=embed)
 
-    @Cog.app_command
     @app_commands.command(name='timeout', description='Put a user on timeout!')
     @app_commands.describe(member='The member', minutes='The time', reason='Optional reason')
     async def _timeout(self, interaction: discord.Interaction, member: discord.Member, minutes: int, reason: str = None):

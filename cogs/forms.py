@@ -171,7 +171,6 @@ class Forms(Cog):
             embed.add_field(name=k, value='\n'.join(v))
         await ctx.author.send(embed=embed)
 
-    @Cog.app_command
     @app_commands.command(name='form', description='Create a form for other users to take')
     @app_commands.describe(title='The title', expire='The hours it will expire in. Defaults to 3.')
     async def _form(self,
@@ -264,7 +263,6 @@ class Forms(Cog):
         self.results[modal].append(response)
         await view.interaction.response.send_message('Your response has been recorded.')
 
-    @Cog.app_command
     @app_commands.command(name='takeform', description='Take a form from another user!')
     async def _takeform(self, interaction):
         if not interaction.guild:

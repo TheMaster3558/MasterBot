@@ -226,7 +226,6 @@ class Games(Cog):
                 return
             await self.tictactoe(ctx, member=member)
 
-    @Cog.app_command
     @app_commands.command(name='tictactoe', description='Challenge a user to Tic Tac Toe!')
     @app_commands.describe(member='The member to challenge.')
     async def _tictactoe(self, interaction: discord.Interaction, member: discord.Member):

@@ -84,7 +84,6 @@ class Translator(Cog):
     async def languages(self, ctx):
         await ctx.author.send(embed=lang_bed)
 
-    @Cog.app_command
     @app_commands.command(name='translate', description='Translate using google translate!')
     @app_commands.describe(lang='The language to translate to. Use /languages for a list.')
     async def _translate(self, interaction, lang: str, text: str):
@@ -99,13 +98,11 @@ class Translator(Cog):
         embed.set_footer(text=f'Text successfully translated to {LANGUAGES.get(lang)}')
         await interaction.response.send_message(embed=embed)
 
-    @Cog.app_command
     @app_commands.command(name='languages', description='Get a valid list of languages.')
     async def _languages(self, interaction):
         await self.languages(interaction)
         await interaction.response.send_message('Check ur DMs')
 
-    @Cog.app_command
     @app_commands.command(name='detect', description='Detect the language of your text.')
     @app_commands.describe(text='The text to detect the language of.')
     async def _detect(self, interaction, text: str):

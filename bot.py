@@ -119,11 +119,6 @@ class MasterBot(commands.Bot):
         ]
         for cog in cogs:
             self.load_extension(cog)
-        for cmd in Cog.app_commands_to_add:
-            try:
-                self.tree.add_command(cmd, guild=self.test_guild)
-            except discord.app_commands.CommandAlreadyRegistered:
-                pass
         super().run(token)
 
     def restart(self):

@@ -87,7 +87,6 @@ class Math(Cog):
         result = evaluate(expression, variables=variables)
         await ctx.reply(result, mention_author=False)
 
-    @Cog.app_command
     @app_commands.command(name='math', description="I'll do some math for you!")
     @app_commands.describe(expression='The math expression')
     async def _math(self, interaction, expression: str):

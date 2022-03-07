@@ -258,7 +258,6 @@ class Jokes(Cog):
             await ctx.send(embed=embed)
         self.used_jokes.append(joke_id)
 
-    @Cog.app_command
     @app_commands.command(name='joke', description='Let me tell you a joke!')
     async def _joke(self, interaction: discord.Interaction):
         view = CategoryView(interaction.user)
@@ -371,7 +370,6 @@ class Jokes(Cog):
         else:
             raise error
 
-    @Cog.app_command
     @app_commands.command(name='blacklist', description='Turn off some possible jokes.')
     @app_commands.describe(nsfw='NSFW jokes',
                            religious='Religious jokes',

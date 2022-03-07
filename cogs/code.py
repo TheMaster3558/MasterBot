@@ -169,7 +169,6 @@ class Code(Cog):
         returned = re.search(regex, text)
         await ctx.send(returned)
 
-    @Cog.app_command
     @app_commands.command(name='search', description='Use regex to search text')
     @app_commands.describe(regex='The regular expression', text='The text to search.')
     async def _search(self, interaction, regex: str, text: str):
@@ -181,7 +180,6 @@ class Code(Cog):
         returned = re.fullmatch(regex, text)
         await ctx.send(returned)
 
-    @Cog.app_command
     @app_commands.command(name='match', description='Use regex to match text')
     @app_commands.describe(regex='The regular expression', text='The text to match.')
     async def _match(self, interaction, regex: str, text: str):
@@ -285,7 +283,6 @@ class Code(Cog):
         else:
             raise error
 
-    @Cog.app_command
     @app_commands.command(name='eval', description='Run a Python file')
     async def __eval(self, ctx, file: discord.Attachment):
         if not file.filename.endswith('.py'):
