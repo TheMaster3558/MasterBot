@@ -304,19 +304,27 @@ class Moderation(Cog, help_command=Help):
     @commands.guild_only()
     @commands.has_permissions(moderate_members=True)
     @commands.bot_has_permissions(moderate_members=True)
-    async def timeout(self, ctx, member: discord.Member, minutes: int, *, reason: str = None):
+    async def timeout(self, ctx, member: discord.Member, minutes: int = None, *, reason: str = None):
         if ctx.author.top_role.position <= member.top_role.position:
-            return await ctx.send(
+            await ctx.send(
                 "I can't let you do that. Your top role is lower or equal to theirs in the hierarchy.")
-        if minutes > 40320:
-            return await ctx.send("You can't timeout for 28 days or more sadly.")
-        timed_out_until = discord.utils.utcnow() + datetime.timedelta(minutes=minutes)
+            return
+        if minutes:
+            if minutes > 40320:
+                await ctx.send("You can't timeout for 28 days or more sadly.")
+                return
+            timed_out_until = discord.utils.utcnow() + datetime.timedelta(minutes=minutes)
+            await ctx.send(f"{member.display_name} got a timeout! I'll let them back in {minutes} minutes.")
+            message = 'was put on timeout by'
+        else:
+            timed_out_until = None
+            await ctx.send(f'{member.display_name} was removed from timeout.')
+            message = 'was removed from timeout by'
         await member.edit(timed_out_until=timed_out_until, reason=reason)
-        await ctx.send(f"{member} got a timeout! I'll let them back in {minutes} minutes.")
         log = await self.log.find_one({'_id': str(ctx.guild.id)})
         if log:
             channel = self.bot.get_channel(int(log.get('channel')))
-            embed = discord.Embed(title=f'{member} was put on timeout by {ctx.author}',
+            embed = discord.Embed(title=f'{member} {message} by {ctx.author}',
                                   description=reason or 'Reason not provided',
                                   timestamp=ctx.message.created_at)
             await channel.send(embed=embed)
