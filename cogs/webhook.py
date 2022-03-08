@@ -33,7 +33,7 @@ class WebhookUserFlags(commands.FlagConverter):
     avatar: Optional[str] = None
 
 
-class Webhooks(Cog):
+class Webhooks(Cog, help_command=Help):
     def __init__(self, bot: MasterBot):
         super().__init__(bot)
         self.session = None

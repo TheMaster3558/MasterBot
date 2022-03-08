@@ -70,7 +70,7 @@ class WeatherAPIHTTPClient(AsyncHTTPClient):
         return await self.request('timezone.json', q=location)
 
 
-class Weather(Cog):
+class Weather(Cog, help_command=Help):
     metric = {'temp': 'C', 'speed': 'kph'}
     customary = {'temp': 'F', 'speed': 'mph'}
 

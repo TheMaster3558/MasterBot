@@ -31,7 +31,7 @@ class Help(metaclass=HelpSingleton):
         return '\n'.join(help_list)
 
 
-class Translator(Cog):
+class Translator(Cog, help_command=Help):
     def __init__(self, bot: MasterBot):
         super().__init__(bot)
         self.translator = AsyncTranslator(url_suffix='com')

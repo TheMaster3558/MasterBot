@@ -73,9 +73,10 @@ class CodeBlock:
 class SlashCodeBlock:
     def __init__(self, argument):
         self.source = argument
+        type()
 
 
-class Code(Cog):
+class Code(Cog, help_command=Help):
     """
     Many of the commands are owner only
     """

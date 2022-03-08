@@ -83,7 +83,7 @@ class MultipleChoice(View):
         return True
 
 
-class Trivia(Cog):
+class Trivia(Cog, help_command=Help):
     def __init__(self, bot: MasterBot):
         super().__init__(bot)
         self.http = OpenTDBHTTPClient(self.bot.loop)

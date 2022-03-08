@@ -4,7 +4,7 @@ from discord.ext import commands, tasks
 from cogs.utils.http import AsyncHTTPClient
 from cogs.utils.view import View
 import asyncio
-from typing import Optional, Union, Iterable
+from typing import Optional, Union
 from bot import MasterBot
 import aiosqlite
 from sqlite3 import IntegrityError
@@ -126,7 +126,7 @@ class JokeAPIHTTPClient(AsyncHTTPClient):
         return await self.request(','.join(categories))
 
 
-def decode_sql_bool(data: Iterable[int]) -> Iterable[bool]:
+def decode_sql_bool(data: Union[tuple, list]) -> list[bool]:
     converted = []
     for num in data:
         if num == 1:
@@ -136,7 +136,7 @@ def decode_sql_bool(data: Iterable[int]) -> Iterable[bool]:
     return converted
 
 
-class Jokes(Cog):
+class Jokes(Cog, help_command=Help):
     default_options = {'nsfw': True, 'religious': True, 'political': True, 'sexist': True, 'racist': True,
                        'explicit': True}
     categories = ["any", "misc", "programming", "dark", "pun", "spooky", "christmas"]

@@ -101,7 +101,7 @@ class ClanSearchFlags(commands.FlagConverter):
     result: Optional[int] = 1
 
 
-class ClashRoyale(Cog, app_commands_group=True):
+class ClashRoyale(Cog, app_commands_group=True, help_command=Help):
     def __init__(self, bot: MasterBot):
         super().__init__(bot)
         self.api_key = self.bot.clash_royale
