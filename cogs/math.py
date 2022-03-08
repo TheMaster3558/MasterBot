@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import discord
 from discord import app_commands
 from discord.ext import commands
@@ -41,9 +39,8 @@ def evaluate(expression: str, /, *, cls: Type[expr.core.C] = expr.builtin.Decima
 
 
 class StateGroup(app_commands.Group):
-    def __init__(self, cog: Math):
+    def __init__(self, cog):
         self.cog = cog
-        cog.bot.tree.add_command(self)
         super().__init__(name='state', description='Modify a state to save variables.')
 
     @app_commands.command(description='Create the state')
@@ -64,6 +61,7 @@ class Math(Cog, help_command=Help):
         super().__init__(bot)
         self.parse_regex = re.compile('\w *= *\d+')
         self.states: Dict[int, Dict[str, N]] = {}
+        self.bot.tree.add_command(StateGroup(self))
         print('Math cog loaded')
 
     def parse_for_vars(self, expression):
