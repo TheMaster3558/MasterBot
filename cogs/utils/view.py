@@ -5,6 +5,12 @@ from typing import TypeVar
 ItemT = TypeVar('ItemT', bound=discord.ui.Item)
 
 
+async def smart_send(interaction: discord.Interaction, content=discord.utils.MISSING, **kwargs):
+    if interaction.response.is_done():
+        return await interaction.followup.send(content=content, **kwargs)
+    return await interaction.response.send_message(content=content, **kwargs)
+
+
 class View(discord.ui.View):
     async def disable_all(self, message) -> None:
         for child in self.children:

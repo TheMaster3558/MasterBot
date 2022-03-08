@@ -1,4 +1,7 @@
+from __future__ import annotations
+
 import discord
+from discord import app_commands
 from discord.ext import commands, tasks
 import aiohttp
 from typing import Optional
@@ -8,6 +11,7 @@ import aiosqlite
 from sqlite3 import IntegrityError
 from cogs.utils.help_utils import HelpSingleton
 from cogs.utils.cog import Cog
+from cogs.utils.view import View, smart_send
 
 
 class Help(metaclass=HelpSingleton):
@@ -20,7 +24,7 @@ class Help(metaclass=HelpSingleton):
         return message
 
     def delete_help(self):
-        message = f'`{self.prefix}wdelete`: Delete the data of your webhook user.'
+        message = f'`{self.prefix}webhook delete`: Delete the data of your webhook user.'
         return message
 
     def full_help(self):
@@ -33,6 +37,76 @@ class WebhookUserFlags(commands.FlagConverter):
     avatar: Optional[str] = None
 
 
+class ConfirmView(View):
+    def __init__(self):
+        self.value: Optional[bool] = None
+        super().__init__(timeout=60)
+
+    @discord.ui.button(emoji='✅', style=discord.ButtonStyle.grey)
+    async def yes(self, button, interaction: discord.Interaction):
+        self.value = True
+        await self.disable_all(interaction.message)
+        self.stop()
+
+    @discord.ui.button(emoji='❌', style=discord.ButtonStyle.grey)
+    async def no(self, button, interaction):
+        self.value = False
+        await self.disable_all(interaction.message)
+        self.stop()
+
+
+class WebhookGroup(app_commands.Group):
+    def __init__(self, cog: Webhooks):
+        self.cog = cog
+        super().__init__(name='webhook', description='A group command to make your own webhook!')
+
+    @app_commands.command(description='Create a webhook user.')
+    async def create(self, interaction: discord.Interaction, name: str, avatar: str = None):
+        if self.cog.users.get(interaction.user.id):
+            view = ConfirmView()
+            await interaction.response.send_message('Are you sure you would like to replace your old webhook users?',
+                                                    view=view)
+            await view.wait()
+            if view.value is True:
+                pass
+            elif view.value is False:
+                await interaction.followup.send('Cancelling.')
+                return
+            else:
+                await interaction.followup.send('You did not click a button in time.')
+                return
+        if name.lower() == 'clyde':
+            await smart_send(interaction, f'The name cannot be `{name}`')
+            return
+        embed = discord.Embed(title='New Webhook User!')
+        embed.add_field(name='Name', value=name)
+        if avatar is not None:
+            if not avatar.startswith('http://') and not avatar.startswith('https://'):
+                await smart_send(interaction, 'Avatar must be a url starting with `http://` or `https://`')
+                return
+            embed.set_thumbnail(url=avatar)
+        self.cog.users[interaction.user.id] = {'name': name, 'avatar': avatar}
+        await smart_send(interaction, embed=embed)
+
+    @app_commands.command(description='Send a message with your webhook.')
+    async def send(self, interaction: discord.Interaction, content: str):
+        data = self.cog.users.get(interaction.user.id)
+        if data is None:
+            embed = discord.Embed(title="You don't have a user",
+                                  description=f'Use `/webhook create` to create one')
+            await interaction.response.send_message(embed=embed)
+            return
+        try:
+            webhook = self.cog.webhooks[interaction.channel.id]
+        except KeyError:
+            webhook = await interaction.channel.create_webhook(name='MasterBotWebhook')
+            self.cog.webhooks[interaction.channel.id] = webhook
+        await webhook.send(content=content,
+                           username=data['name'],
+                           avatar_url=data['avatar'])
+        await interaction.response.send_message(f'Sending message:\n{content}', ephemeral=True)
+
+
 class Webhooks(Cog, help_command=Help):
     def __init__(self, bot: MasterBot):
         super().__init__(bot)
@@ -40,6 +114,7 @@ class Webhooks(Cog, help_command=Help):
         self.webhooks: dict[int, discord.Webhook] = {}
         self.users: dict[int, dict[str, Optional[str]]] = {}
         self.db = None
+        self.bot.tree.add_command(WebhookGroup(self), guild=self.bot.test_guild)
         self.update_db.start()
         print('Webhook cog loaded')
 
@@ -186,7 +261,7 @@ class Webhooks(Cog, help_command=Help):
         data = self.users.get(ctx.author.id)
         if data is None:
             embed = discord.Embed(title="You don't have a user",
-                                  description=f'Use `{await self.bot.get_prefix(ctx.message)}create` to create one')
+                                  description=f'Use `{ctx.clean_prefix}webhook create` to create one')
             return await ctx.reply(embed=embed)
         try:
             webhook = self.webhooks[ctx.channel.id]
@@ -206,8 +281,8 @@ class Webhooks(Cog, help_command=Help):
         else:
             raise error
 
-    @commands.command()
-    async def wdelete(self, ctx):
+    @webhook.command()
+    async def delete(self, ctx):
         if not self.users.get(ctx.author.id):
             return await ctx.send("You don't even have one...")
         del self.users[ctx.author.id]
