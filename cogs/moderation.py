@@ -330,8 +330,10 @@ class Moderation(Cog, help_command=Help):
             await channel.send(embed=embed)
 
     @app_commands.command(name='timeout', description='Put a user on timeout!')
-    @app_commands.describe(member='The member', minutes='The time', reason='Optional reason')
-    async def _timeout(self, interaction: discord.Interaction, member: discord.Member, minutes: int, reason: str = None):
+    @app_commands.describe(member='The member', minutes='The time. If not provided then will removed timeout',
+                           reason='Optional reason')
+    async def _timeout(self, interaction: discord.Interaction, member: discord.Member, minutes: int, reason: str = None
+                       ) -> None:
         if interaction.user.guild_permissions.moderate_members:
             if interaction.user.top_role.position <= member.top_role.position:
                 await interaction.response.send_message(
