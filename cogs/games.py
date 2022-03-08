@@ -280,7 +280,7 @@ class Games(Cog):
         view = RockPaperScissors(interaction.user, member)
         member = member or interaction.guild.me
         embed = discord.Embed(title=f'{interaction.user.display_name} vs {member.display_name}')
-        msg = await interaction.response.send(member.mention, embed=embed, view=view)
+        await interaction.response.send(member.mention, embed=embed, view=view)
         await view.wait()
         winner = None
         v1 = view.value1
