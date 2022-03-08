@@ -35,9 +35,7 @@ class WeatherUtils:
         embed.add_field(name='Wind Direction', value=data.get('wind_dir'))
         embed.add_field(name='Wind Speed', value=f'{speed} {speed_unit}')
         embed.add_field(name='Visibility', value=visibility)
-        last_updated_at = data.get('last_updated_epoch')
-        last_updated_at = datetime.fromtimestamp(last_updated_at)
-        last_updated_at = round(time.mktime(last_updated_at.timetuple()))
+        last_updated_at = int(data.get('last_updated_epoch'))
         embed.add_field(name='Last Updated At', value=f'<t:{last_updated_at}:R>')
         embed.set_thumbnail(url='https:' + data.get('condition').get('icon'))
         return embed
