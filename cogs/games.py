@@ -20,6 +20,7 @@ from datetime import time
 words = [word for word in english_words_lower_set if len(word) == 5]
 
 
+UserT = TypeVar('UserT', bound=discord.User)
 UserID = TypeVar('UserID', bound=Type[int])
 Num = Literal[1, 2, 3]
 
@@ -167,7 +168,7 @@ class RockPaperScissors(View):
                 return True
         return False
 
-    def get_value(self, player: discord.User):
+    def get_value(self, player: UserT):
         if player == self.p1:
             return self.value1
         elif player == self.p2:
@@ -245,7 +246,7 @@ class Games(Cog):
         view = RockPaperScissors(ctx.author, member)
         member = member or ctx.me
         embed = discord.Embed(title=f'{ctx.author.display_name} vs {member.display_name}')
-        msg = await ctx.send(embed=embed, view=view)
+        msg = await ctx.send(member.mention, embed=embed, view=view)
         await view.wait()
         winner = None
         v1 = view.value1
@@ -267,10 +268,45 @@ class Games(Cog):
                 winner = ctx.author
         if winner is None:
             await msg.reply('Tie. They both picked the same thing LOL.')
+            return
         loser = ctx.author if winner is not ctx.author else member
         embed = discord.Embed(title=f'The winner is {winner.display_name}!',
                               description=f'{view.get_value(winner)} beats {view.get_value(loser)}')
         await msg.reply(embed=embed)
+
+    @app_commands.command(name='rockpaperscissors', description='Play a quick game of rock paper scissors')
+    @app_commands.describe(member='If you want you can challenge a member')
+    async def _rock_paper_scissors(self, interaction, member: discord.Member = None):
+        view = RockPaperScissors(interaction.user, member)
+        member = member or interaction.guild.me
+        embed = discord.Embed(title=f'{interaction.user.display_name} vs {member.display_name}')
+        msg = await interaction.response.send(member.mention, embed=embed, view=view)
+        await view.wait()
+        winner = None
+        v1 = view.value1
+        v2 = view.value2
+        if v1 == 'Rock':
+            if v2 == 'Scissors':
+                winner = interaction.user
+            elif v2 == 'Paper':
+                winner = member
+        elif v1 == 'Paper':
+            if v2 == 'Scissors':
+                winner = member
+            elif v2 == 'Rock':
+                winner = interaction.user
+        else:
+            if v2 == 'Rock':
+                winner = member
+            elif v2 == 'Paper':
+                winner = interaction.user
+        if winner is None:
+            await interaction.followup.send('Tie. They both picked the same thing LOL.')
+            return
+        loser = interaction.user if winner is not interaction.user else member
+        embed = discord.Embed(title=f'The winner is {winner.display_name}!',
+                              description=f'{view.get_value(winner)} beats {view.get_value(loser)}')  # type: ignore
+        await interaction.followup.send(embed=embed)
 
     @staticmethod
     def convert(seconds):
