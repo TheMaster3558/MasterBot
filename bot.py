@@ -3,7 +3,6 @@ from __future__ import annotations
 import discord
 from discord import app_commands
 from discord.ext import commands
-from discord.http import Route
 from cogs.utils.cog import Cog
 from time import perf_counter
 from typing import Optional, Iterable, TypeVar
@@ -20,11 +19,11 @@ with warnings.catch_warnings():
 
 
 MasterBotT = TypeVar('MasterBotT', bound='MasterBot')
-CogT = TypeVar('CogT', bound=commands.Cog)
+CogT = TypeVar('CogT', bound=Cog)
 
 
 class MasterBot(commands.Bot):
-    __version__ = '1.3.3'
+    __version__ = '1.3.4'
     test_guild = discord.Object(id=878431847162466354)
 
     def __init__(self, cr_api_key: str, weather_api_key: str, mongo_db: str, /) -> None:
@@ -84,8 +83,6 @@ class MasterBot(commands.Bot):
         await self.tree.sync(guild=self.test_guild)
 
     async def on_command_error(self, context: commands.Context, exception: commands.errors.CommandError) -> None:
-        if not context.command:
-            return
         if isinstance(exception, commands.CommandNotFound):
             possibles = [cmd for cmd in self.all_commands if fuzz.ratio(
                     context.message.content,
@@ -94,10 +91,9 @@ class MasterBot(commands.Bot):
             ]
             if len(possibles) > 0:
                 embed = discord.Embed(title="I couldn't find that command",
-                                      description='Maybe you meant\n{}'.format(
-                                          "\n".join(possibles)
-                                      ))
+                                      description='Maybe you meant:\n`{}`'.format("`\n`".join(possibles)))
                 await context.reply(embed=embed, mention_author=False)
+            return
         if not context.cog.has_error_handler() and not context.command.has_error_handler():
             traceback.print_exception(exception, file=sys.stderr)
 
