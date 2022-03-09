@@ -5,13 +5,13 @@ from discord.ext import commands, tasks
 import json
 from cogs.utils.cog import Cog
 
-from typing import List, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from bot import MasterBot
 
 
-async def get_prefix(bot: MasterBot, msg: discord.Message) -> List[str]:
+async def get_prefix(bot: MasterBot, msg: discord.Message) -> list[str]:
     prefixes = commands.when_mentioned(bot, msg)
     if msg.guild:
         _prefix = bot.prefixes.get(str(msg.guild.id), '!')
