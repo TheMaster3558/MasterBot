@@ -121,7 +121,8 @@ class MasterBot(commands.Bot):
             'cogs.webhook',
             'cogs.forms',
             'cogs.math',
-            'cogs.games'
+            'cogs.games',
+            'cogs.fbi'
         ]
         for cog in cogs:
             self.load_extension(cog)
