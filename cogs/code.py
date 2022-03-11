@@ -108,7 +108,7 @@ class Code(Cog, help_command=Help):
     Many of the commands are owner only
     """
     forbidden_imports = ['os', 'sys', 'subprocess']
-    forbidden_words = ['ctx', '__os__', '__sys__', 'bot', 'open(']
+    forbidden_words = ['ctx', '__os__', '__sys__', 'self', 'open(', 'sys']
 
     def __init__(self, bot: MasterBot):
         super().__init__(bot)
@@ -164,8 +164,10 @@ class Code(Cog, help_command=Help):
                     return
     
                 sys.stdout = sys.__stdout__
-    
-            await ctx.reply(f'```\n{temp_out.getvalue()}\n```')
+            value = temp_out.getvalue()
+
+            value = value or 'No output'
+            await ctx.reply(f'```\n{value}\n```')
 
     @_eval.error
     async def error(self, ctx: commands.Context, error):
@@ -330,7 +332,6 @@ class Code(Cog, help_command=Help):
 
     @app_commands.command(name='eval', description='Run a Python file')
     async def __eval(self, interaction: discord.Interaction, file: discord.Attachment):
-        await interaction.response.defer(thinking=True)
         if not file.filename.endswith('.py'):
             await interaction.response.send_message('It must be a `python` file.')
             return
@@ -348,7 +349,12 @@ class Code(Cog, help_command=Help):
             await interaction.response.send_message("You can't import that.")
             return
 
+        await interaction.response.defer(thinking=True)
+
+        msg = await interaction.channel.send('waiting for other evals to finish...')
         async with self.bot.acquire_lock(self):
+            await msg.delete()
+
             temp_out = io.StringIO()
             sys.stdout = temp_out
 
@@ -366,7 +372,9 @@ class Code(Cog, help_command=Help):
 
             sys.stdout = sys.__stdout__
 
-        await interaction.followup.send(f'```\n{temp_out.getvalue()}\n```')
+        value = temp_out.getvalue()
+        value = value or 'No output'
+        await interaction.followup.send(f'```\n{value}\n```')
 
     @commands.command()
     async def sync(self, ctx, guild: bool = None):
