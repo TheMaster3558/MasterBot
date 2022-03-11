@@ -29,7 +29,7 @@ class Cog(commands.Cog, metaclass=CogMeta):
     @classmethod
     def setup(cls, bot: MasterBot):
         self = cls(bot)
-        bot.add_cog(self, guild=bot.test_guild)
+        bot.add_cog(self)
 
 
 def command(**kwargs):
