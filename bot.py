@@ -32,7 +32,7 @@ CogT = TypeVar('CogT', bound=Cog)
 
 
 class MasterBot(commands.Bot):
-    __version__ = '1.3.4'
+    __version__ = '1.4.1'
     test_guild = discord.Object(id=878431847162466354)
 
     def __init__(self, cr_api_key: str, weather_api_key: str, mongo_db: str, /) -> None:
