@@ -47,6 +47,8 @@ class Help(Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
+        if not self.bot.is_ready():
+            return
         if self.mention_regex.fullmatch(message.content):
             prefix = (await self.bot.get_prefix(message))[2]
             await message.reply(f'My prefix is `{prefix}`', mention_author=False)

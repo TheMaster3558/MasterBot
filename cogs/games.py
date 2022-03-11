@@ -6,7 +6,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands, tasks
 from bot import MasterBot
-from cogs.utils.view import View
+from cogs.utils.view import View, smart_send
 from typing import Literal, Optional, TypeVar, Type
 import asyncio
 import random
@@ -124,8 +124,8 @@ class TicTacToeView(View):
         if self.users[self.turn] == interaction.user.id:
             return True
         if interaction.user.id in self.users:
-            await interaction.response.send_message('Wait for your turn', ephemeral=True)
-        await interaction.response.send_message('You are not in this tic tac toe game')
+            await smart_send(interaction, 'Wait for your turn', ephemeral=True)
+        await smart_send(interaction, 'You are not in this tic tac toe game')
         return False
 
 
@@ -242,16 +242,16 @@ class Games(Cog):
         view = TicTacToeView(interaction.user, member)
         embed = discord.Embed(title=f'{interaction.user.display_name} vs {member.display_name}')
         embed.set_footer(text='You have 3 minutes.')
-        msg = await interaction.response.send_message(embed=embed, view=view)
+        await interaction.response.send_message(embed=embed, view=view)
         await interaction.followup.send(member.mention)
         await view.wait()
         if view.winner:
             winner = interaction.guild.get_member(view.winner)
-            await msg.reply(f'The winner is {winner.display_name}!')
+            await interaction.followup.send(f'The winner is {winner.display_name}!')
             return
         if view.winner == 0:
-            await msg.reply('You tied. You both suck.')
-        await msg.reply("You couldn't finish in time.")
+            await interaction.followup.send('You tied. You both suck.')
+        await interaction.followup.send("You couldn't finish in time.")
 
     @commands.command(aliases=['rps'])
     async def rock_paper_scissors(self, ctx: commands.Context, member: discord.Member = None):
