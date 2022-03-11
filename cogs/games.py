@@ -398,7 +398,7 @@ class Games(Cog):
             )
             return
 
-        background = Image.new(mode='RGB', size=(185, 220), color='white')
+        background = Image.new(mode='RGB', size=(185, 200), color='white')
         results = {}
 
         attempt = 1
@@ -419,7 +419,7 @@ class Games(Cog):
             content = msg.content.lower()
 
             if content not in english_words_lower_set:
-                await msg.reply("I don't think that's a real word.", mention_author=False)
+                await msg.reply("I don't think that's a real word.")
                 continue
 
             for index, letter in enumerate(content):
@@ -447,7 +447,7 @@ class Games(Cog):
                 background.save(image_binary, 'PNG')
                 image_binary.seek(0)
                 file = discord.File(image_binary, 'image.png')
-            await interaction.followup.send(file=file, mention_author=False)
+            await interaction.followup.send(file=file)
 
             if content == self.word:
                 success = True
