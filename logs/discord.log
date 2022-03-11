@@ -114,3 +114,14 @@
 2022-03-10 18:26:20,091:DEBUG:discord.gateway: Keeping shard ID None websocket alive with sequence 17.
 2022-03-10 18:26:20,187:DEBUG:discord.client: Dispatching event socket_raw_receive
 2022-03-10 18:26:20,187:DEBUG:discord.gateway: For Shard ID None: WebSocket Event: {'t': None, 's': None, 'op': 11, 'd': None}
+2022-03-10 18:27:01,345:DEBUG:discord.gateway: Keeping shard ID None websocket alive with sequence 17.
+2022-03-10 18:27:01,447:DEBUG:discord.client: Dispatching event socket_raw_receive
+2022-03-10 18:27:01,448:DEBUG:discord.gateway: For Shard ID None: WebSocket Event: {'t': None, 's': None, 'op': 11, 'd': None}
+2022-03-10 18:27:42,609:DEBUG:discord.gateway: Keeping shard ID None websocket alive with sequence 17.
+2022-03-10 18:27:42,751:DEBUG:discord.client: Dispatching event socket_raw_receive
+2022-03-10 18:27:42,751:DEBUG:discord.gateway: For Shard ID None: WebSocket Event: {'t': None, 's': None, 'op': 11, 'd': None}
+2022-03-10 18:27:50,797:INFO:discord.client: Received signal to terminate bot and event loop.
+2022-03-10 18:27:50,798:INFO:discord.client: Cleaning up tasks.
+2022-03-10 18:27:50,798:INFO:discord.client: Cleaning up after 4 tasks.
+2022-03-10 18:27:50,954:INFO:discord.client: All tasks finished cancelling.
+2022-03-10 18:27:50,956:INFO:discord.client: Closing the event loop.

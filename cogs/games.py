@@ -389,6 +389,79 @@ class Games(Cog):
 
         await sent.reply(f'It took you {attempt} tries.')
 
+    @app_commands.command(name='wordle', description='Play the popular game wordle. (Not created by us)')
+    async def _wordle(self, interaction):
+        if interaction.user.id in self.done:  # id is used so `User` and `Member` are treated the same
+            next_word = self.new_word.next_iteration - discord.utils.utcnow()
+            await interaction.response.send_message(
+                f"You've already done it. A new word comes in {self.convert(next_word.total_seconds())}"
+            )
+            return
+
+        background = Image.new(mode='RGB', size=(185, 220), color='white')
+        results = {}
+
+        attempt = 1
+        y = 17
+
+        success = False
+
+        await interaction.response.send_message('Type a 5 letter word to guess.', )
+        check = lambda m: len(m.content) == 5 and m.author == interaction.user
+
+        while attempt < 7:
+            try:
+                msg = await self.bot.wait_for('message', check=check, timeout=600)
+            except asyncio.TimeoutError:
+                await interaction.followup.send('Try guessing a bit faster next time.')
+                return
+
+            content = msg.content.lower()
+
+            if content not in english_words_lower_set:
+                await msg.reply("I don't think that's a real word.", mention_author=False)
+                continue
+
+            for index, letter in enumerate(content):
+                if letter == self.word[index]:
+                    results[index] = (letter, 'green')
+                elif letter in self.word:
+                    results[index] = (letter, '#FFD700')
+                else:
+                    results[index] = (letter, 'gray')
+
+            x = 10
+
+            for letter, color in results.values():
+                background.paste(Image.new('RGB', size=(25, 25), color=color), (x, y))
+                x += 35
+
+            img = ImageDraw.Draw(background)
+            x = 18.5
+
+            for letter, _ in results.values():
+                img.text((x, y + 4), letter.upper(), font=self.font)
+                x += 35
+
+            with BytesIO() as image_binary:
+                background.save(image_binary, 'PNG')
+                image_binary.seek(0)
+                file = discord.File(image_binary, 'image.png')
+            await interaction.followup.send(file=file, mention_author=False)
+
+            if content == self.word:
+                success = True
+                break
+
+            attempt += 1
+            y += 29
+
+        if not success:
+            await interaction.followup.send(f"You didn't guess it. The word is ||{self.word}||")
+            return
+
+        await interaction.followup.send(f'It took you {attempt} tries.')
+
 
 def setup(bot: MasterBot):
     Games.setup(bot)
