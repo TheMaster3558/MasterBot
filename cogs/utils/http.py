@@ -23,7 +23,6 @@ class AsyncHTTPClient:
     async def request(self, route, json=True, **params):
         params = cleanup_params(params)
         async with self.session.get(self.base + route, params=params) as resp:
-            print(resp.url)
             if json:
                 return await resp.json()
             return await resp.text()
