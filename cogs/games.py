@@ -64,8 +64,6 @@ class TicTacToeButton(discord.ui.Button['TicTacToeView']):
             for x, y in moves:
                 counter_x[x] += 1
                 counter_y[y] += 1
-            print(counter_y)
-            print(counter_x)
             for k, v in counter_x.items():
                 if v == 3:
                     finished = True
@@ -88,12 +86,9 @@ class TicTacToeButton(discord.ui.Button['TicTacToeView']):
         if finished:
             await self.view.disable_all(interaction.message)
             self.view.stop()
-        for c in self.view.children:
-            if c is not True:
-                break
+        if all(c.disabled for c in self.view.children):  # type: ignore
             self.view.winner = 0
             self.view.stop()
-        print('----------')
         self.view.turn = 1 if self.view.turn == 0 else 0
 
 
@@ -255,6 +250,7 @@ class Games(Cog):
             return
         if view.winner == 0:
             await interaction.followup.send('You tied. You both suck.')
+            return
         await interaction.followup.send("You couldn't finish in time.")
 
     @commands.command(aliases=['rps'])
