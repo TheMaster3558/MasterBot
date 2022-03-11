@@ -134,35 +134,38 @@ class Code(Cog, help_command=Help):
         """
         This command will need lots of working on.
         """
-        if len(code.source.split('\n')) > 300:
-            await ctx.send("You can't eval over 300 lines.")
-            return
-        if any([word in code.source for word in self.forbidden_words]):
-            await ctx.send('Your code has a word that would be risky to eval.')
-            return
-        if any([f'import {word}' in code.source or f'__import__("{word}")' in code.source or f"__import__('{word}')" in code.source for word in self.forbidden_imports]):
-            await ctx.send("You can't import that.")
-            return
-
-        async with self.bot.acquire_lock(self):
-            temp_out = io.StringIO()
-            sys.stdout = temp_out
-
-            try:
-                try:
-                    async with EventLoopThread() as thr:
-                        await self.bot.loop.run_in_executor(None, thr.run_coro, aexec(code.source), 60)
-                        # to prevent blocking event loop if they use time.sleep etc
-                except asyncio.TimeoutError:
-                    await ctx.reply('Your code took too long to run.')
-                    return
-            except Exception as e:
-                await ctx.reply(f'Your code raised an exception\n```\n{e}\n```')
+        async with ctx.typing():
+            if len(code.source.split('\n')) > 300:
+                await ctx.send("You can't eval over 300 lines.")
                 return
-
-            sys.stdout = sys.__stdout__
-
-        await ctx.reply(f'```\n{temp_out.getvalue()}\n```')
+            if any([word in code.source for word in self.forbidden_words]):
+                await ctx.send('Your code has a word that would be risky to eval.')
+                return
+            if any([f'import {word}' in code.source or f'__import__("{word}")' in code.source or f"__import__('{word}')" in code.source for word in self.forbidden_imports]):
+                await ctx.send("You can't import that.")
+                return
+            
+            msg = await ctx.send('Waiting for other evals to finish...')
+            async with self.bot.acquire_lock(self):
+                await msg.delete()
+                temp_out = io.StringIO()
+                sys.stdout = temp_out
+    
+                try:
+                    try:
+                        async with EventLoopThread() as thr:
+                            await self.bot.loop.run_in_executor(None, thr.run_coro, aexec(code.source), 60)
+                            # to prevent blocking event loop if they use time.sleep etc
+                    except asyncio.TimeoutError:
+                        await ctx.reply('Your code took too long to run.')
+                        return
+                except Exception as e:
+                    await ctx.reply(f'Your code raised an exception\n```\n{e}\n```')
+                    return
+    
+                sys.stdout = sys.__stdout__
+    
+            await ctx.reply(f'```\n{temp_out.getvalue()}\n```')
 
     @_eval.error
     async def error(self, ctx: commands.Context, error):
@@ -327,6 +330,7 @@ class Code(Cog, help_command=Help):
 
     @app_commands.command(name='eval', description='Run a Python file')
     async def __eval(self, interaction: discord.Interaction, file: discord.Attachment):
+        await interaction.response.defer(thinking=True)
         if not file.filename.endswith('.py'):
             await interaction.response.send_message('It must be a `python` file.')
             return
@@ -350,7 +354,6 @@ class Code(Cog, help_command=Help):
 
             try:
                 try:
-                    await interaction.response.defer(thinking=True)
                     async with EventLoopThread() as thr:
                         await self.bot.loop.run_in_executor(None, thr.run_coro, aexec(code.source), 60)
                         # to prevent blocking event loop if they use time.sleep etc
