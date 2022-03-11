@@ -1,1 +1,3 @@
 Version cog to see what's new in each version!
+Word detection in wordle improved with pyenchant with nktl to come. (NVM it's still not good)
+Ping opponent in games

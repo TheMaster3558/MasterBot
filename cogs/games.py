@@ -85,6 +85,11 @@ class TicTacToeButton(discord.ui.Button['TicTacToeView']):
         if finished:
             await self.view.disable_all(interaction.message)
             self.view.stop()
+        for c in self.view.children:
+            if c is not True:
+                break
+            self.view.winner = 0
+            self.view.stop()
         self.view.turn = 1 if self.view.turn == 0 else 0
 
 
@@ -199,12 +204,14 @@ class Games(Cog):
         view = TicTacToeView(ctx.author, member)
         embed = discord.Embed(title=f'{ctx.author.display_name} vs {member.display_name}')
         embed.set_footer(text='You have 3 minutes.')
-        msg = await ctx.send(embed=embed, view=view)
+        msg = await ctx.send(member.mention, embed=embed, view=view)
         await view.wait()
         if view.winner:
             winner = ctx.guild.get_member(view.winner)
             await msg.reply(f'The winner is {winner.display_name}!')
             return
+        if view.winner == 0:
+            await msg.reply('You tied. You both suck.')
         await msg.reply("You couldn't finish in time.")
 
     @tictactoe.error
@@ -236,11 +243,14 @@ class Games(Cog):
         embed = discord.Embed(title=f'{interaction.user.display_name} vs {member.display_name}')
         embed.set_footer(text='You have 3 minutes.')
         msg = await interaction.response.send_message(embed=embed, view=view)
+        await interaction.followup.send(member.mention)
         await view.wait()
         if view.winner:
             winner = interaction.guild.get_member(view.winner)
             await msg.reply(f'The winner is {winner.display_name}!')
             return
+        if view.winner == 0:
+            await msg.reply('You tied. You both suck.')
         await msg.reply("You couldn't finish in time.")
 
     @commands.command(aliases=['rps'])
