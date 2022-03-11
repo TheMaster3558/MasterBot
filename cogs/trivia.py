@@ -7,7 +7,7 @@ from html import unescape
 from cogs.utils.view import View
 from bot import MasterBot
 from cogs.utils.help_utils import HelpSingleton
-from cogs.utils.cog import Cog
+from cogs.utils.cog import Cog, command
 
 
 class Help(metaclass=HelpSingleton):
@@ -117,7 +117,7 @@ class Trivia(Cog, help_command=Help):
         else:
             raise type(error)(error)
 
-    @app_commands.command(name='trivia', description='Get trivia from opentdb.com!')
+    @command(name='playtrivia', description='Get trivia from opentdb.com!')
     async def _trivia(self, interaction: discord.Interaction):
         data = await self.http.trivia()
         if data.get('response_code') != 0:

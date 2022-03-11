@@ -4,8 +4,8 @@ from discord.ext import commands
 import expr
 from bot import MasterBot
 import re
-from typing import Type, TypeVar, Dict, Literal
-from cogs.utils.cog import Cog
+from typing import Type, TypeVar, Dict
+from cogs.utils.cog import Cog, command
 from cogs.utils.help_utils import HelpSingleton
 
 
@@ -87,7 +87,7 @@ class Math(Cog, help_command=Help):
         result = evaluate(expression, variables=variables)
         await ctx.reply(result, mention_author=False)
 
-    @app_commands.command(name='math', description="I'll do some math for you!")
+    @command(name='domath', description="I'll do some math for you!")
     @app_commands.describe(expression='The math expression')
     async def _math(self, interaction, expression: str):
         variables, expression = self.remove_vars(expression)

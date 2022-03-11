@@ -8,7 +8,7 @@ from cogs.utils.cr_utils import ClashRoyaleUtils
 from bot import MasterBot
 from cogs.utils.help_utils import HelpSingleton
 from static_embeds import cr_locations_embed, locations
-from cogs.utils.cog import Cog
+from cogs.utils.cog import Cog, command
 
 
 class Help(metaclass=HelpSingleton):
@@ -101,7 +101,7 @@ class ClanSearchFlags(commands.FlagConverter):
     result: Optional[int] = 1
 
 
-class ClashRoyale(Cog, app_commands_group=True, help_command=Help):
+class ClashRoyale(Cog, help_command=Help):
     def __init__(self, bot: MasterBot):
         super().__init__(bot)
         self.api_key = self.bot.clash_royale
@@ -112,7 +112,7 @@ class ClashRoyale(Cog, app_commands_group=True, help_command=Help):
     async def crlocations(self, ctx):
         await ctx.author.send(embed=cr_locations_embed)
 
-    @app_commands.command(name='crlocations', description='Get a list of locations to use.')
+    @command(name='crlocations', description='Get a list of locations to use.')
     async def _crlocations(self, interaction):
         await interaction.user.send(embed=cr_locations_embed)
 
@@ -136,7 +136,7 @@ class ClashRoyale(Cog, app_commands_group=True, help_command=Help):
         else:
             raise error
 
-    @app_commands.command(name='stats', description='Get clash royale player stats.')
+    @command(name='stats', description='Get clash royale player stats.')
     @app_commands.describe(tag='The player tag')
     async def _stats(self, ctx, tag: str):
         if tag.startswith('#'):
@@ -163,7 +163,7 @@ class ClashRoyale(Cog, app_commands_group=True, help_command=Help):
         else:
             raise error
 
-    @app_commands.command(name='card', description='Get a clash royale card.')
+    @command(name='card', description='Get a clash royale card.')
     @app_commands.describe(name='The card name')
     async def _card(self, ctx, name: str):
         cards = await self.http.cards_request()
@@ -194,7 +194,7 @@ class ClashRoyale(Cog, app_commands_group=True, help_command=Help):
         else:
             raise error
 
-    @app_commands.command(name='clan', description='Get clash royale clan stats')
+    @command(name='clan', description='Get clash royale clan stats')
     @app_commands.describe(tag='The clan tag')
     async def _clan(self, ctx, tag: str):
         if tag.startswith('#'):
@@ -244,7 +244,7 @@ class ClashRoyale(Cog, app_commands_group=True, help_command=Help):
         else:
             raise error
 
-    @app_commands.command(name='searchclan', description='Search up a clan in clash royale')
+    @command(name='searchclan', description='Search up a clan in clash royale')
     @app_commands.describe(name='The clans name',
                            location='The clan location',
                            min='The minimum amount of members',

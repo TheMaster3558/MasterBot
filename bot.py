@@ -16,7 +16,6 @@ from discord.ext import commands
 from cogs.utils.cog import Cog
 from time import perf_counter
 from typing import Optional, Iterable, TypeVar
-from prefix import Prefix, get_prefix
 import traceback
 import sys
 import logging
@@ -41,13 +40,12 @@ class MasterBot(commands.Bot):
         intents.members = True
         intents.message_content = True
 
-        super().__init__(command_prefix=get_prefix,
+        super().__init__(command_prefix=commands.when_mentioned_or('!'),
                          intents=intents,
                          help_command=None,
                          activity=discord.Game(f'version {self.__version__}'),
                          strip_after_prefix=True,
                          enable_debug_events=True)
-        self.add_cog(Prefix(self))
 
         self.start_time = perf_counter()
         self.on_ready_time = None
@@ -66,8 +64,6 @@ class MasterBot(commands.Bot):
         logger.addHandler(handler)
 
         self.locks: dict[CogT, asyncio.Lock] = {}
-
-        self.tree = app_commands.CommandTree(self)
 
     def acquire_lock(self, cog: CogT) -> asyncio.Lock:
         if cog not in self.locks:
@@ -110,18 +106,17 @@ class MasterBot(commands.Bot):
     def run(self, token: str) -> None:
         cogs = [
             'cogs.clash_royale',
-            'cogs.code',
             'cogs.help_info',
-            'cogs.jokes',
+            'cogs.code',
+            'cogs.forms',
+            'cogs.games',
+            'cogs.math',
             'cogs.moderation',
             'cogs.reaction_roles',
             'cogs.translate',
             'cogs.trivia',
-            'cogs.weather',
             'cogs.webhook',
-            'cogs.forms',
-            'cogs.math',
-            'cogs.games',
+            'cogs.weather'
         ]
         for cog in cogs:
             self.load_extension(cog)

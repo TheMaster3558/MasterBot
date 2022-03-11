@@ -21,7 +21,7 @@ from static_embeds import (
     confirm_bed,
     cancel_bed,
 )
-from cogs.utils.cog import Cog
+from cogs.utils.cog import Cog, command
 
 
 class Help(metaclass=HelpSingleton):
@@ -258,7 +258,7 @@ class Jokes(Cog, help_command=Help):
             await ctx.send(embed=embed)
         self.used_jokes.append(joke_id)
 
-    @app_commands.command(name='joke', description='Let me tell you a joke!')
+    @command(name='joke', description='Let me tell you a joke!')
     async def _joke(self, interaction: discord.Interaction):
         view = CategoryView(interaction.user)
         await interaction.response.send_message(embed=joke_category_embed, view=view)
@@ -370,7 +370,7 @@ class Jokes(Cog, help_command=Help):
         else:
             raise error
 
-    @app_commands.command(name='blacklist', description='Turn off some possible jokes.')
+    @command(name='blacklist', description='Turn off some possible jokes.')
     @app_commands.describe(nsfw='NSFW jokes',
                            religious='Religious jokes',
                            political='Political jokes',

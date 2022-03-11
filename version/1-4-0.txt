@@ -1,1 +1,2 @@
 Wordle command available with Slash Commands!
+All Slash Commands Back!

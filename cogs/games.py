@@ -10,7 +10,7 @@ from cogs.utils.view import View
 from typing import Literal, Optional, TypeVar, Type
 import asyncio
 import random
-from cogs.utils.cog import Cog
+from cogs.utils.cog import Cog, command
 from PIL import Image, ImageDraw, ImageFont
 from io import BytesIO
 from english_words import english_words_lower_set
@@ -227,7 +227,7 @@ class Games(Cog):
                 return
             await self.tictactoe(ctx, member=member)
 
-    @app_commands.command(name='tictactoe', description='Challenge a user to Tic Tac Toe!')
+    @command(name='tictactoe', description='Challenge a user to Tic Tac Toe!')
     @app_commands.describe(member='The member to challenge.')
     async def _tictactoe(self, interaction: discord.Interaction, member: discord.Member):
         view = TicTacToeView(interaction.user, member)
@@ -274,7 +274,7 @@ class Games(Cog):
                               description=f'{view.get_value(winner)} beats {view.get_value(loser)}')
         await msg.reply(embed=embed)
 
-    @app_commands.command(name='rockpaperscissors', description='Play a quick game of rock paper scissors')
+    @command(name='rockpaperscissors', description='Play a quick game of rock paper scissors')
     @app_commands.describe(member='If you want you can challenge a member')
     async def _rock_paper_scissors(self, interaction, member: discord.Member = None):
         view = RockPaperScissors(interaction.user, member)
@@ -389,7 +389,7 @@ class Games(Cog):
 
         await sent.reply(f'It took you {attempt} tries.')
 
-    @app_commands.command(name='wordle', description='Play the popular game wordle. (Not created by us)')
+    @command(name='wordle', description='Play the popular game wordle. (Not created by us)')
     async def _wordle(self, interaction):
         if interaction.user.id in self.done:  # id is used so `User` and `Member` are treated the same
             next_word = self.new_word.next_iteration - discord.utils.utcnow()

@@ -10,7 +10,7 @@ from bot import MasterBot
 import aiosqlite
 from sqlite3 import IntegrityError
 from cogs.utils.help_utils import HelpSingleton
-from cogs.utils.cog import Cog
+from cogs.utils.cog import Cog, command
 from cogs.utils.view import View, smart_send
 
 
@@ -60,7 +60,7 @@ class WebhookGroup(app_commands.Group):
         self.cog = cog
         super().__init__(name='webhook', description='A group command to make your own webhook!')
 
-    @app_commands.command(description='Create a webhook user.')
+    @command(description='Create a webhook user.')
     async def create(self, interaction: discord.Interaction, name: str, avatar: str = None):
         if self.cog.users.get(interaction.user.id):
             view = ConfirmView()
@@ -88,7 +88,7 @@ class WebhookGroup(app_commands.Group):
         self.cog.users[interaction.user.id] = {'name': name, 'avatar': avatar}
         await smart_send(interaction, embed=embed)
 
-    @app_commands.command(description='Send a message with your webhook.')
+    @command(description='Send a message with your webhook.')
     async def send(self, interaction: discord.Interaction, content: str):
         data = self.cog.users.get(interaction.user.id)
         if data is None:

@@ -7,7 +7,7 @@ from motor import motor_asyncio
 from pymongo.errors import DuplicateKeyError, OperationFailure
 from bot import MasterBot
 from cogs.utils.help_utils import HelpSingleton
-from cogs.utils.cog import Cog
+from cogs.utils.cog import Cog, command
 import datetime
 
 
@@ -329,7 +329,7 @@ class Moderation(Cog, help_command=Help):
                                   timestamp=ctx.message.created_at)
             await channel.send(embed=embed)
 
-    @app_commands.command(name='timeout', description='Put a user on timeout!')
+    @command(name='timeout', description='Put a user on timeout!')
     @app_commands.describe(member='The member', minutes='The time. If not provided then will removed timeout',
                            reason='Optional reason')
     async def _timeout(self, interaction: discord.Interaction, member: discord.Member, minutes: int, reason: str = None
@@ -342,8 +342,8 @@ class Moderation(Cog, help_command=Help):
             if minutes > 40320:
                 await interaction.response.send_message("You can't timeout for 28 days or more sadly.")
                 return
-            timed_out_until = discord.utils.utcnow() + datetime.timedelta(minutes=minutes)
-            await member.edit(timed_out_until=timed_out_until, reason=reason)
+            timed_out_until = datetime.timedelta(minutes=minutes)
+            await member.timeout(timed_out_until, reason=reason)
             await interaction.response.send_message(f"{member} got a timeout! I'll let them back in {minutes} minutes.")
             log = await self.log.find_one({'_id': str(interaction.guild.id)})
             if log:

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import discord
 from discord.ext import commands
 from discord import app_commands
 from cogs.utils.help_utils import HelpSingleton
@@ -12,25 +13,31 @@ if TYPE_CHECKING:
 class CogMeta(type(commands.Cog)):
     def __new__(cls, *args, **kwargs):
         help_command = kwargs.pop('help_command', None)
-        app_commands_group = kwargs.pop('app_commands_group', True)
         new_cls = super().__new__(cls, *args, **kwargs)  # type: ignore
         new_cls.help_command = help_command
-        new_cls.app_commands_group = app_commands_group
         return new_cls
 
 
-class Cog(commands.Cog, app_commands.Group, metaclass=CogMeta):
+class Cog(commands.Cog, metaclass=CogMeta):
     help_command: ClassVar[HelpSingleton]
     app_commands_group: ClassVar[bool]
+    commands_to_add: ClassVar[list[app_commands.Command]] = []
 
     def __init__(self, bot: MasterBot):
         self.bot = bot
-        if self.app_commands_group:
-            app_commands.Group.__init__(self, name=self.__class__.__cog_name__.replace(' ', '').lower())
 
     @classmethod
     def setup(cls, bot: MasterBot):
         self = cls(bot)
-        bot.add_cog(self)
-        if self.app_commands_group:
-            bot.tree.add_command(self, guild=bot.test_guild)
+        bot.add_cog(self, guild=bot.test_guild)
+
+
+def command(**kwargs):
+    def inner(coro):
+        func = app_commands.command(**kwargs)(coro)
+        if kwargs.get('testing'):
+            func = app_commands.guilds(discord.Object(id=878431847162466354))(func)
+        return func
+    return inner
+
+

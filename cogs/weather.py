@@ -8,7 +8,7 @@ import aiosqlite
 from sqlite3 import IntegrityError
 from cogs.utils.weather_utils import WeatherUtils
 from cogs.utils.help_utils import HelpSingleton
-from cogs.utils.cog import Cog
+from cogs.utils.cog import Cog, command
 
 
 class Help(metaclass=HelpSingleton):
@@ -167,7 +167,7 @@ class Weather(Cog, help_command=Help):
             return await ctx.send(f'You forgot the flag arguments. `{ctx.prefix}units <flags_args>`. **Args:**\n`temp` `C` or `F`\n`speed` `mph` or `kph``')
         await ctx.send(f'New settings! Temp: `{self.temp_units[ctx.guild.id]}` Speed: `{self.speed_units[ctx.guild.id]}`')
 
-    @app_commands.command(name='units', description='Change the weather units')
+    @command(name='units', description='Change the weather units')
     @app_commands.describe(temp='The temperature unit', speed='The speed unit')
     async def _units(self, interaction: discord.Interaction, temp: Literal["C", "F"] = None, speed: Literal["kph", "mph"] = None):
         if not interaction.user.guild_permissions.administrator:
@@ -207,7 +207,7 @@ class Weather(Cog, help_command=Help):
             return
         await ctx.send(embed=embed)
 
-    @app_commands.command(name='current', description='Get the current weather of a location')
+    @command(name='current', description='Get the current weather of a location')
     @app_commands.describe(location='The location')
     async def _current(self, interaction, location: str):
         data = await self.http.current(location)
@@ -233,7 +233,7 @@ class Weather(Cog, help_command=Help):
             return
         await ctx.send(embed=embed)
 
-    @app_commands.command(name='forecast', description='Get the forecast for a location')
+    @command(name='forecast', description='Get the forecast for a location')
     @app_commands.describe(days='The amount of days in the future', location='The location')
     async def _forecast(self, interaction, days: int = 1, *, location: str):
         data = await self.http.forecast(location, days)
@@ -259,7 +259,7 @@ class Weather(Cog, help_command=Help):
             return
         await ctx.send(embed=embed)
 
-    @app_commands.command(name='city', description='Search a city')
+    @command(name='city', description='Search a city')
     @app_commands.describe(query='The query')
     async def _city(self, interaction, index: int = 1, *, query: str):
         data = await self.http.search(query)
@@ -283,7 +283,7 @@ class Weather(Cog, help_command=Help):
         embed = await WeatherUtils.build_tz_embed(data)
         await ctx.send(embed=embed)
 
-    @app_commands.command(name='timezone', description='Get the timezone of a location')
+    @command(name='timezone', description='Get the timezone of a location')
     @app_commands.describe(location='The location')
     async def _timezone(self, interaction, location: str):
         data = await self.http.timezone(location)

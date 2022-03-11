@@ -23,7 +23,7 @@ import aiohttp
 import fuzzywuzzy
 
 from cogs.utils.view import View
-from cogs.utils.cog import Cog
+from cogs.utils.cog import Cog, command
 
 
 class InviteView(View):
@@ -55,7 +55,7 @@ class Help(Cog):
     async def ping(self, ctx):
         await ctx.send(f'Pong! `{str(round(self.bot.latency * 1000))}ms`')
 
-    @app_commands.command(name='ping', description='Pong!')
+    @command(name='ping', description='Pong!')
     async def _ping(self, interaction):
         await interaction.response.send_message(f'Pong! `{str(round(self.bot.latency * 1000))}ms`')
 
@@ -64,7 +64,7 @@ class Help(Cog):
         embed = discord.Embed(title=f'{self.bot.user.name} Invite')
         await ctx.author.send(embed=embed, view=InviteView(self.bot))
 
-    @app_commands.command(name='invite', description='Invite me!')
+    @command(name='invite', description='Invite me!')
     async def _invite(self, interaction):
         await interaction.response.send_message('Check ur DMs.')
         embed = discord.Embed(title=f'{self.bot.user.name} Invite')
@@ -83,7 +83,7 @@ class Help(Cog):
         embed.add_field(name='Stats', value=f'Servers: {len(self.bot.guilds)}\nUnique Users: {len(set(self.bot.users))}')
         await ctx.send(embed=embed)
 
-    @app_commands.command(name='info', description='Get info about the bot')
+    @command(name='info', description='Get info about the bot')
     async def _info(self, interaction):
         embed = discord.Embed(title=f'{self.bot.user.name} Info')
         embed.add_field(name='Version Info', value=f'{self.bot.user.name} version {self.bot.__version__}\n'
