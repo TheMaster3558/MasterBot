@@ -9,7 +9,7 @@ from typing import Literal
 class Version(Cog):
     def __init__(self, bot: MasterBot):
         super().__init__(bot)
-        print('Version cog is loaded')
+        print('Version cog loaded')
 
     @commands.command(aliases=['whatsnew'])
     async def new(self, ctx, version):
