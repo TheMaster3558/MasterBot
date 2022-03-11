@@ -162,7 +162,7 @@ class Code(Cog, help_command=Help):
 
             sys.stdout = sys.__stdout__
 
-            await ctx.reply(f'```\n{temp_out.getvalue()}\n```')
+        await ctx.reply(f'```\n{temp_out.getvalue()}\n```')
 
     @_eval.error
     async def error(self, ctx: commands.Context, error):
@@ -363,7 +363,7 @@ class Code(Cog, help_command=Help):
 
             sys.stdout = sys.__stdout__
 
-            await interaction.followup.send(f'```\n{temp_out.getvalue()}\n```')
+        await interaction.followup.send(f'```\n{temp_out.getvalue()}\n```')
 
     @commands.command()
     async def sync(self, ctx, guild: bool = None):
