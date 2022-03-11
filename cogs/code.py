@@ -16,32 +16,6 @@ from cogs.utils.cog import Cog
 import threading
 
 
-class EventLoopThread(threading.Thread):
-    def __init__(self, *args, loop: asyncio.AbstractEventLoop = None, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.loop = loop or asyncio.new_event_loop()
-        self.running = False
-
-    def run(self):
-        self.running = True
-        self.loop.run_forever()
-
-    def run_coro(self, coro, timeout: Optional[int] = None):
-        return asyncio.run_coroutine_threadsafe(coro, loop=self.loop).result(timeout=timeout)
-
-    def stop(self):
-        self.loop.call_soon_threadsafe(self.loop.stop)
-        self.join()
-        self.running = False
-
-    async def __aenter__(self):
-        self.start()
-        return self
-
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
-        self.stop()
-
-
 class Help(metaclass=HelpSingleton):
     def __init__(self, prefix):
         self.prefix = prefix
@@ -69,6 +43,32 @@ class Help(metaclass=HelpSingleton):
     def full_help(self):
         help_list = [self.eval_help(), self.canrun_help(), self.search_help(), self.match_help(), self.code_help()]
         return '\n'.join(help_list)
+
+
+class EventLoopThread(threading.Thread):
+    def __init__(self, *args, loop: asyncio.AbstractEventLoop = None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.loop = loop or asyncio.new_event_loop()
+        self.running = False
+
+    def run(self):
+        self.running = True
+        self.loop.run_forever()
+
+    def run_coro(self, coro, timeout: Optional[int] = None):
+        return asyncio.run_coroutine_threadsafe(coro, loop=self.loop).result(timeout=timeout)
+
+    def stop(self):
+        self.loop.call_soon_threadsafe(self.loop.stop)
+        self.join()
+        self.running = False
+
+    async def __aenter__(self):
+        self.start()
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        self.stop()
 
 
 async def aexec(code):
