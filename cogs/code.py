@@ -356,7 +356,7 @@ class Code(Cog, help_command=Help):
                 await interaction.followup.send('Your code took too long to run.')
                 return
         except Exception as e:
-            await interaction.followup.send(f'Your code raised an exception\n```\n{e}\n```')
+            await interaction.followup.send(f'Your code raised an exception\n```\n{e.__class__.__name__!r}: {e}\n```')
             return
 
         sys.stdout = sys.__stdout__
