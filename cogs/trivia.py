@@ -87,7 +87,7 @@ class Trivia(Cog, help_command=Help):
     def __init__(self, bot: MasterBot):
         super().__init__(bot)
         self.http = OpenTDBHTTPClient(self.bot.loop)
-        bot.loop.run_until_complete(self.http.get_token())
+        bot.loop.create_task(self.http.get_token())
         print('Trivia cog loaded')
 
     @commands.command()
