@@ -15,9 +15,10 @@ from PIL import Image, ImageDraw, ImageFont
 from io import BytesIO
 from english_words import english_words_lower_set
 from datetime import time
+import enchant
 
 
-words = [word for word in english_words_lower_set if len(word) == 5]
+words = [word for word in english_words_lower_set if len(word) == 5 and "'" not in word]
 
 
 UserT = TypeVar('UserT', bound=discord.User)
@@ -184,6 +185,7 @@ class Games(Cog):
         super().__init__(bot)
         self.done: list[UserID] = []
         self.new_word.start()
+        self.d = enchant.Dict('en_US')
         print('Games cog loaded')
 
     @tasks.loop(time=time(0, 0, 0))
@@ -345,7 +347,7 @@ class Games(Cog):
 
             content = msg.content.lower()
 
-            if content not in english_words_lower_set:
+            if not self.d.check(content):
                 await msg.reply("I don't think that's a real word.")
                 continue
 
