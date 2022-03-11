@@ -49,6 +49,7 @@ class TicTacToeButton(discord.ui.Button['TicTacToeView']):
         moves = getattr(self.view, player)
         for combo in self.view.diags:
             if all([c in moves for c in combo]):
+                print(combo)
                 finished = True
                 self.view.winner = self.view.users[self.view.turn]
                 child: TicTacToeButton
@@ -63,6 +64,8 @@ class TicTacToeButton(discord.ui.Button['TicTacToeView']):
             for x, y in moves:
                 counter_x[x] += 1
                 counter_y[y] += 1
+            print(counter_y)
+            print(counter_x)
             for k, v in counter_x.items():
                 if v == 3:
                     finished = True
@@ -90,6 +93,7 @@ class TicTacToeButton(discord.ui.Button['TicTacToeView']):
                 break
             self.view.winner = 0
             self.view.stop()
+        print('----------')
         self.view.turn = 1 if self.view.turn == 0 else 0
 
 
@@ -105,7 +109,7 @@ class TicTacToeView(View):
         [(2, 0), (0, 2), (1, 1)],
         [(1, 1), (2, 0), (0, 2)],
         [(1, 1), (0, 2), (2, 0)],
-        [(0, 2), (1, 1), (0, 2)],
+        [(0, 2), (1, 1), (2, 0)],
         [(0, 2), (0, 2), (1, 1)],
     ]
 
