@@ -116,7 +116,8 @@ class MasterBot(commands.Bot):
             'cogs.translate',
             'cogs.trivia',
             'cogs.webhook',
-            'cogs.weather'
+            'cogs.weather',
+            'cogs.jokes'
         ]
         for cog in cogs:
             self.load_extension(cog)
