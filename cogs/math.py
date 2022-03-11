@@ -59,7 +59,7 @@ class StateGroup(app_commands.Group):
 class Math(Cog, help_command=Help):
     def __init__(self, bot: MasterBot):
         super().__init__(bot)
-        self.parse_regex = re.compile('\w *= *\d+')
+        self.parse_regex = re.compile(r'\w *= *\d+')
         self.states: Dict[int, Dict[str, N]] = {}
         self.bot.tree.add_command(StateGroup(self))
         print('Math cog loaded')
