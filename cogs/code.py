@@ -1,3 +1,4 @@
+import asyncio
 import sys
 import discord
 from discord import app_commands
@@ -12,6 +13,33 @@ import aiofiles
 import aiohttp
 import io
 from cogs.utils.cog import Cog
+import threading
+
+
+class EventLoopThread(threading.Thread):
+    def __init__(self, *args, loop: asyncio.AbstractEventLoop = None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.loop = loop or asyncio.new_event_loop()
+        self.running = False
+
+    def run(self):
+        self.running = True
+        self.loop.run_forever()
+
+    def run_coro(self, coro, timeout: Optional[int] = None):
+        return asyncio.run_coroutine_threadsafe(coro, loop=self.loop).result(timeout=timeout)
+
+    def stop(self):
+        self.loop.call_soon_threadsafe(self.loop.stop)
+        self.join()
+        self.running = False
+
+    async def __aenter__(self):
+        self.start()
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        self.stop()
 
 
 class Help(metaclass=HelpSingleton):
@@ -73,7 +101,6 @@ class CodeBlock:
 class SlashCodeBlock:
     def __init__(self, argument):
         self.source = argument
-        type()
 
 
 class Code(Cog, help_command=Help):
@@ -106,30 +133,35 @@ class Code(Cog, help_command=Help):
     async def _eval(self, ctx, *, code: Union[CodeBlock, SlashCodeBlock]):
         """
         This command will need lots of working on.
-        Maybe will switch to SnekBox soon
         """
         if len(code.source.split('\n')) > 300:
-            return await ctx.send("You can't eval over 300 lines.")
+            await ctx.send("You can't eval over 300 lines.")
+            return
         if any([word in code.source for word in self.forbidden_words]):
-            return await ctx.send('Your code has a word that would be risky to eval.')
+            await ctx.send('Your code has a word that would be risky to eval.')
+            return
         if any([f'import {word}' in code.source or f'__import__("{word}")' in code.source or f"__import__('{word}')" in code.source for word in self.forbidden_imports]):
-            return await ctx.send("You can't import that.")
+            await ctx.send("You can't import that.")
+            return
 
         temp_out = io.StringIO()
         sys.stdout = temp_out
 
         try:
-            await aexec(code.source)
+            try:
+                async with EventLoopThread() as thr:
+                    await self.bot.loop.run_in_executor(None, thr.run_coro, aexec(code.source), 60)
+                    # to prevent blocking event loop if they use time.sleep etc
+            except asyncio.TimeoutError:
+                await ctx.reply('Your code took too long to run.')
+                return
         except Exception as e:
-            await ctx.send(f'Your code raised an exception\n```\n{e}\n```')
+            await ctx.reply(f'Your code raised an exception\n```\n{e}\n```')
             return
 
         sys.stdout = sys.__stdout__
 
-        if isinstance(ctx, discord.Interaction):
-            await ctx.response.send_message(f'```\n{temp_out.getvalue()}\n```')
-            return
-        await ctx.reply(f'```\n{temp_out.getvalue()}\n```', mention_author=False)
+        await ctx.reply(f'```\n{temp_out.getvalue()}\n```')
 
     @_eval.error
     async def error(self, ctx: commands.Context, error):
@@ -148,10 +180,11 @@ class Code(Cog, help_command=Help):
         command: Union[commands.Command, commands.Group] = self.bot.all_commands.get(acommand)
         if command is None:
             embed = discord.Embed(title=f'Command `{acommand}` not found.')
-            return await ctx.send(embed=embed)
+            await ctx.send(embed=embed)
+            return
         ctx.author = user or ctx.author
         await command.can_run(ctx)
-        await ctx.send('You can run this command!')
+        await ctx.send(f'{user} can run this command!')
 
     @canrun.error
     async def error(self, ctx, error):
@@ -264,15 +297,19 @@ class Code(Cog, help_command=Help):
             lines = [int(line) for line in lines.split('-')]
         else:
             lines = int(lines)
-        async with aiofiles.open(file_path, 'r') as file:
-            content = (await file.read()).split('\n')
+        try:
+            async with aiofiles.open(file_path, 'r') as file:
+                content = (await file.read()).split('\n')
+        except FileNotFoundError:
+            await ctx.send("I couldn't find that file.")
+            return
         if isinstance(lines, list):
             content = '\n'.join(content[lines[0]+1:lines[1]+1])
         elif lines is None:
             content = '\n'.join(content)
         else:
             content = content[lines]
-        content.replace('`', '<')
+        content = content.replace('`', r'\`')
         try:
             embed = discord.Embed(title=f'Code for {file_path}',
                                   description=f'```py\n{content}\n```')
@@ -288,12 +325,43 @@ class Code(Cog, help_command=Help):
             raise error
 
     @app_commands.command(name='eval', description='Run a Python file')
-    async def __eval(self, ctx, file: discord.Attachment):
+    async def __eval(self, interaction: discord.Interaction, file: discord.Attachment):
         if not file.filename.endswith('.py'):
-            return await ctx.send('It must be a `python` file.')
+            await interaction.response.send_message('It must be a `python` file.')
+            return
         code = await file.read()
         code = SlashCodeBlock(code.decode('utf-8'))
-        await self._eval(ctx, code=code)
+        if len(code.source.split('\n')) > 300:
+            await interaction.response.send_message("You can't eval over 300 lines.")
+            return
+        if any([word in code.source for word in self.forbidden_words]):
+            await interaction.response.send_message('Your code has a word that would be risky to eval.')
+            return
+        if any([
+                   f'import {word}' in code.source or f'__import__("{word}")' in code.source or f"__import__('{word}')" in code.source
+                   for word in self.forbidden_imports]):
+            await interaction.response.send_message("You can't import that.")
+            return
+
+        temp_out = io.StringIO()
+        sys.stdout = temp_out
+
+        try:
+            try:
+                await interaction.response.defer(thinking=True)
+                async with EventLoopThread() as thr:
+                    await self.bot.loop.run_in_executor(None, thr.run_coro, aexec(code.source), 60)
+                    # to prevent blocking event loop if they use time.sleep etc
+            except asyncio.TimeoutError:
+                await interaction.followup.send('Your code took too long to run.')
+                return
+        except Exception as e:
+            await interaction.followup.send(f'Your code raised an exception\n```\n{e}\n```')
+            return
+
+        sys.stdout = sys.__stdout__
+
+        await interaction.followup.send(f'```\n{temp_out.getvalue()}\n```')
 
     @commands.command()
     async def sync(self, ctx, guild: bool = None):

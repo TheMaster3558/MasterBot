@@ -1,3 +1,8 @@
 Version cog to see what's new in each version!
 Word detection in wordle improved with pyenchant with nktl to come. (NVM it's still not good)
 Ping opponent in games
+
+
+Changes in code:
+- code block markdown escaped when sending
+- create new event loop in new thread to prevent blocking the event loop with blocking code such as time.sleep
