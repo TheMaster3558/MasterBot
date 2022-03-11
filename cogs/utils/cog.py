@@ -4,6 +4,7 @@ import discord
 from discord.ext import commands
 from discord import app_commands
 from cogs.utils.help_utils import HelpSingleton
+import re
 from typing import ClassVar, TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -37,6 +38,8 @@ def command(**kwargs):
         func = app_commands.command(**kwargs)(coro)
         if kwargs.get('testing'):
             func = app_commands.guilds(discord.Object(id=878431847162466354))(func)
+        if not re.search(r'^[\w-]{1,32}$', func.name):
+            raise ValueError(r'name must follow regex ^[\w-]{1,32}$')
         return func
     return inner
 
