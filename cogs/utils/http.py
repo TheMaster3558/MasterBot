@@ -3,6 +3,10 @@ import aiohttp
 import asyncio
 
 
+def cleanup_params(params: dict) -> dict:
+    return {k: v for k, v in params.items() if v is not None}
+
+
 class AsyncHTTPClient:
     def __init__(self, base_url, *, connector: aiohttp.BaseConnector = None, headers=None, loop=None):
         self.base = base_url
@@ -17,14 +21,15 @@ class AsyncHTTPClient:
         self.session = aiohttp.ClientSession(connector=self._connector, headers=self.headers, loop=self.loop)
 
     async def request(self, route, json=True, **params):
+        params = cleanup_params(params)
         async with self.session.get(self.base + route, params=params) as resp:
+            print(resp.url)
             if json:
                 return await resp.json()
             return await resp.text()
 
     def __del__(self):
-        loop = asyncio.get_event_loop()
-        loop.run_until_complete(self.session.close())
+        self.loop.create_task(self.session.close())
 
 
 class RequestsHTTPClient:

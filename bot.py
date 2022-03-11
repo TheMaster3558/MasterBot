@@ -122,7 +122,6 @@ class MasterBot(commands.Bot):
             'cogs.forms',
             'cogs.math',
             'cogs.games',
-            'cogs.fbi'
         ]
         for cog in cogs:
             self.load_extension(cog)
