@@ -16,6 +16,28 @@ from io import BytesIO
 from english_words import english_words_lower_set
 from datetime import time
 import enchant
+from cogs.utils.help_utils import HelpSingleton
+
+
+class Help(metaclass=HelpSingleton):
+    def __init__(self, prefix):
+        self.prefix = prefix
+
+    def tictactoe_help(self):
+        message = f'`{self.prefix}tictactoe <member>`: Play tic tac toe against someone else!'
+        return message
+
+    def rps_help(self):
+        message = f'`{self.prefix}rockpaperscissors [member]`: Use `{self.prefix}rps` also. Play a game of Rock Paper Scissors.'
+        return message
+
+    def wordle_help(self):
+        message = f'`{self.prefix}wordle`: Play the popular game wordle. Not created by us.'
+        return message
+
+    def full_help(self):
+        help_list = [self.tictactoe_help(), self.rps_help(), self.wordle_help()]
+        return '\n'.join(help_list)
 
 
 words = [word for word in english_words_lower_set if len(word) == 5 and "'" not in word]
@@ -181,7 +203,7 @@ class RockPaperScissors(View):
         return None
 
 
-class Games(Cog):
+class Games(Cog, help_command=Help):
     word = random.choice(words)
     font = ImageFont.truetype('arial.ttf', 15)
 

@@ -16,6 +16,7 @@ from cogs.webhook import Webhooks
 from cogs.weather import Weather
 from cogs.forms import Forms
 from cogs.math import Math
+from cogs.games import Games
 
 import sys
 from async_google_trans_new import __version__ as agtn_version
@@ -104,7 +105,7 @@ class Help(Cog):
         if ctx.invoked_subcommand is None:
             embed = discord.Embed(title=f'{self.bot.user.name} Help Menu')
             embed.add_field(name='Categories',
-                            value='`reactions`\n`moderation`\n`code`\n`translation`\n`trivia`\n`clashroyale`\n`jokes`\n`webhook`\n`weather`\n`forms`\n`weather`')
+                            value='`reactions`\n`moderation`\n`code`\n`translation`\n`trivia`\n`clashroyale`\n`jokes`\n`webhook`\n`weather`\n`forms`\n`weather`\n`math`\n`games`')
             embed.add_field(name='Info', value=f'`{ctx.clean_prefix}info`')
             await ctx.send(embed=embed)
 
@@ -208,6 +209,15 @@ class Help(Cog):
         h = Math.help_command(prefix)
         help_message = h.full_help()
         embed = discord.Embed(title='Math Help',
+                              description=help_message)
+        await ctx.send(embed=embed)
+
+    @_help.command()
+    async def games(self, ctx):
+        prefix = ctx.clean_prefix
+        h = Games.help_command(prefix)
+        help_message = h.full_help()
+        embed = discord.Embed(title='Games Help',
                               description=help_message)
         await ctx.send(embed=embed)
 
