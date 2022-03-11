@@ -144,24 +144,25 @@ class Code(Cog, help_command=Help):
             await ctx.send("You can't import that.")
             return
 
-        temp_out = io.StringIO()
-        sys.stdout = temp_out
+        async with self.bot.acquire_lock(self):
+            temp_out = io.StringIO()
+            sys.stdout = temp_out
 
-        try:
             try:
-                async with EventLoopThread() as thr:
-                    await self.bot.loop.run_in_executor(None, thr.run_coro, aexec(code.source), 60)
-                    # to prevent blocking event loop if they use time.sleep etc
-            except asyncio.TimeoutError:
-                await ctx.reply('Your code took too long to run.')
+                try:
+                    async with EventLoopThread() as thr:
+                        await self.bot.loop.run_in_executor(None, thr.run_coro, aexec(code.source), 60)
+                        # to prevent blocking event loop if they use time.sleep etc
+                except asyncio.TimeoutError:
+                    await ctx.reply('Your code took too long to run.')
+                    return
+            except Exception as e:
+                await ctx.reply(f'Your code raised an exception\n```\n{e}\n```')
                 return
-        except Exception as e:
-            await ctx.reply(f'Your code raised an exception\n```\n{e}\n```')
-            return
 
-        sys.stdout = sys.__stdout__
+            sys.stdout = sys.__stdout__
 
-        await ctx.reply(f'```\n{temp_out.getvalue()}\n```')
+            await ctx.reply(f'```\n{temp_out.getvalue()}\n```')
 
     @_eval.error
     async def error(self, ctx: commands.Context, error):
@@ -343,25 +344,26 @@ class Code(Cog, help_command=Help):
             await interaction.response.send_message("You can't import that.")
             return
 
-        temp_out = io.StringIO()
-        sys.stdout = temp_out
+        async with self.bot.acquire_lock(self):
+            temp_out = io.StringIO()
+            sys.stdout = temp_out
 
-        try:
             try:
-                await interaction.response.defer(thinking=True)
-                async with EventLoopThread() as thr:
-                    await self.bot.loop.run_in_executor(None, thr.run_coro, aexec(code.source), 60)
-                    # to prevent blocking event loop if they use time.sleep etc
-            except asyncio.TimeoutError:
-                await interaction.followup.send('Your code took too long to run.')
+                try:
+                    await interaction.response.defer(thinking=True)
+                    async with EventLoopThread() as thr:
+                        await self.bot.loop.run_in_executor(None, thr.run_coro, aexec(code.source), 60)
+                        # to prevent blocking event loop if they use time.sleep etc
+                except asyncio.TimeoutError:
+                    await interaction.followup.send('Your code took too long to run.')
+                    return
+            except Exception as e:
+                await interaction.followup.send(f'Your code raised an exception\n```\n{e.__class__.__name__!r}: {e}\n```')
                 return
-        except Exception as e:
-            await interaction.followup.send(f'Your code raised an exception\n```\n{e.__class__.__name__!r}: {e}\n```')
-            return
 
-        sys.stdout = sys.__stdout__
+            sys.stdout = sys.__stdout__
 
-        await interaction.followup.send(f'```\n{temp_out.getvalue()}\n```')
+            await interaction.followup.send(f'```\n{temp_out.getvalue()}\n```')
 
     @commands.command()
     async def sync(self, ctx, guild: bool = None):
