@@ -128,14 +128,16 @@ class Trivia(Cog, help_command=Help):
         embed = discord.Embed(title=question)
         embed.set_footer(text='The difficulty is {}'.format(data.get('difficulty')))
         my_view = MultipleChoice(data.get('correct_answer'), data.get('incorrect_answers'))
-        message = await interaction.response.send_message(embed=embed, view=my_view)
+        await interaction.response.send_message(embed=embed, view=my_view)
         await my_view.wait()
         if my_view.done is False:
-            await my_view.disable_all(message=message)
+            for child in my_view.children:
+                child.disabled = True  # type: ignore
+            await interaction.edit_original_message(view=my_view)  # used instead of disabled_all
             embed = discord.Embed(title='No one got it right in time.',
                                   description='The answer was {}'.format(unescape(data.get('correct_answer'))))
             embed.add_field(name='Wrong guesses', value='\n'.join(f'{k}: {v}' for k, v in my_view.tries.items()) or 'No guesses')
-            await message.reply(embed=embed)
+            await interaction.followup.send(embed=embed)
 
 
 def setup(bot: MasterBot):
