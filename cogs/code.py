@@ -121,7 +121,8 @@ class Code(Cog, help_command=Help):
         try:
             await aexec(code.source)
         except Exception as e:
-            return await ctx.send(f'Your code raised an exception\n```\n{e}\n```')
+            await ctx.send(f'Your code raised an exception\n```\n{e}\n```')
+            return
 
         sys.stdout = sys.__stdout__
 
