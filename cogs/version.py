@@ -15,9 +15,10 @@ class Version(Cog):
     async def new(self, ctx, version):
         path = version.replace('.', '-')
         path += '.txt'
+        path = 'version/' + path
         try:
             async with aiofiles.open(path, 'r') as v:
-                embed = discord.Embed(title=path,
+                embed = discord.Embed(title=version,
                                       description=await v.read())
         except FileNotFoundError:
             await ctx.send('That version was not found.')
@@ -31,9 +32,10 @@ class Version(Cog):
     ]):
         path = version.replace('.', '-')
         path += '.txt'
+        path = 'version/' + path
         try:
             async with aiofiles.open(path, 'r') as v:
-                embed = discord.Embed(title=path,
+                embed = discord.Embed(title=version,
                                       description=await v.read())
         except FileNotFoundError:
             await interaction.response.send_message('That version was not found.')
