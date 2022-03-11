@@ -36,7 +36,7 @@ class Cog(commands.Cog, metaclass=CogMeta):
 def command(**kwargs):
     def inner(coro):
         func = app_commands.command(**kwargs)(coro)
-        if kwargs.get('testing'):
+        if kwargs.pop('testing', None):
             func = app_commands.guilds(discord.Object(id=878431847162466354))(func)
         if not re.search(r'^[\w-]{1,32}$', func.name):
             raise ValueError(r'name must follow regex ^[\w-]{1,32}$')
