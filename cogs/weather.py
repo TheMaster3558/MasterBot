@@ -128,11 +128,8 @@ class Weather(Cog, help_command=Help):
     async def after(self):
         await self.update_db()
 
-    @commands.Cog.listener()
-    async def on_command_error(self, ctx, error):
+    async def cog_command_error(self, ctx, error):
         if not ctx.command:
-            return
-        if ctx.command.cog != self:
             return
         if isinstance(error, commands.MissingRequiredArgument):
             await ctx.send(f'You missed an argument "{error.param}"')

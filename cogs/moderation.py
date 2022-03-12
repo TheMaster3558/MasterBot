@@ -94,21 +94,20 @@ class Moderation(Cog, help_command=Help):
         except OperationFailure:
             pass
 
-    @commands.Cog.listener()
-    async def on_command_error(self, ctx, error):
+    async def cog_command_error(self, ctx, error):
         if ctx.command is None:
-            return
-        if ctx.command.cog != self:
             return
         if isinstance(error, commands.errors.MissingPermissions):
             return
         elif isinstance(error, commands.errors.BotMissingPermissions):
             embed = discord.Embed(title=str(error),
                                   description='Give those permissions to me')
-            return await ctx.send(embed=embed)
+            await ctx.send(embed=embed)
+            return
         elif isinstance(error, commands.errors.MissingRequiredArgument):
             if not ctx.command.has_error_handler():
-                return await ctx.send(error)
+                await ctx.send(str(error))
+                return
         else:
             if not ctx.command.has_error_handler():
                 raise error

@@ -118,11 +118,8 @@ class Webhooks(Cog, help_command=Help):
         self.update_db.start()
         print('Webhook cog loaded')
 
-    @commands.Cog.listener()
-    async def on_command_error(self, ctx, error):
+    async def cog_command_error(self, ctx, error):
         if ctx.command is None:
-            return
-        if ctx.command.cog != self:
             return
         if isinstance(error, commands.BotMissingPermissions):
             if 'manage_webhooks' in error.missing_permissions:

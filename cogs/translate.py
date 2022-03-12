@@ -37,16 +37,13 @@ class Translator(Cog, help_command=Help):
         self.translator = AsyncTranslator(url_suffix='com')
         print('Translator cog loaded')
 
-    @commands.Cog.listener()
-    async def on_command_error(self, ctx, error):
+    async def cog_command_error(self, ctx, error):
         if ctx.command is None:
-            return
-        if ctx.command.cog != self:
             return
         if isinstance(error, commands.CommandOnCooldown):
             await ctx.send('Patience! Try again in {:.1f} seconds.'.format(error.retry_after))
         else:
-            raise type(error)(error)
+            raise error
 
     @commands.command()
     @commands.cooldown(1, 30, commands.BucketType.user)

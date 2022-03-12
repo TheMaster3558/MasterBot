@@ -1,0 +1,2 @@
+Code Changes:
+- discord.py error handling in cog

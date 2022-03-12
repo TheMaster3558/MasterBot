@@ -16,10 +16,10 @@ from discord.ext import commands
 from cogs.utils.cog import Cog
 from time import perf_counter
 from typing import Optional, Iterable, TypeVar
-import traceback
-import sys
 import logging
 import asyncio
+import traceback
+import sys
 import warnings
 
 with warnings.catch_warnings():
@@ -32,7 +32,7 @@ CogT = TypeVar('CogT', bound=Cog)
 
 
 class MasterBot(commands.Bot):
-    __version__ = '1.4.1'
+    __version__ = '1.4.2'
     test_guild = discord.Object(id=878431847162466354)
 
     def __init__(self, cr_api_key: str, weather_api_key: str, mongo_db: str, /) -> None:
@@ -100,7 +100,7 @@ class MasterBot(commands.Bot):
                                       description='Maybe you meant:\n`{}`'.format("`\n`".join(possibles)))
                 await context.reply(embed=embed, mention_author=False)
             return
-        if not context.cog.has_error_handler() and not context.command.has_error_handler():
+        if not context.cog.has_error_handler() and context.command.has_error_handler():
             traceback.print_exception(exception, file=sys.stderr)
 
     def run(self, token: str) -> None:

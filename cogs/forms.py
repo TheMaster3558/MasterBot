@@ -102,8 +102,7 @@ class Forms(Cog, help_command=Help):
         for guild in self.bot.guilds:
             self.modal[guild.id] = []
 
-    @commands.Cog.listener()
-    async def on_command_error(self, ctx, error):
+    async def cog_command_error(self, ctx, error):
         if not ctx.command:
             return
         if ctx.command.cog != self:

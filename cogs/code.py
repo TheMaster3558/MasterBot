@@ -115,11 +115,8 @@ class Code(Cog, help_command=Help):
         self.session = aiohttp.ClientSession(loop=self.bot.loop)
         print('Code cog loaded')
 
-    @commands.Cog.listener()
-    async def on_command_error(self, ctx: commands.Context, error):
+    async def cog_command_error(self, ctx: commands.Context, error):
         if not ctx.command:
-            return
-        if ctx.command.cog != self:
             return
         if ctx.command.has_error_handler():
             return

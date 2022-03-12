@@ -150,11 +150,8 @@ class Jokes(Cog, help_command=Help):
         self.used_jokes = [12345]  # 12345 is so the while loop starts
         print('Jokes cog loaded')
 
-    @commands.Cog.listener()
-    async def on_command_error(self, ctx, error):
+    async def cog_command_error(self, ctx, error):
         if not ctx.command:
-            return
-        if ctx.command.cog != self:
             return
         if isinstance(error, commands.MissingPermissions):
             return
