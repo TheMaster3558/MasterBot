@@ -20,6 +20,7 @@ import logging
 import asyncio
 import traceback
 import sys
+import re
 import warnings
 
 with warnings.catch_warnings():
@@ -64,6 +65,21 @@ class MasterBot(commands.Bot):
         logger.addHandler(handler)
 
         self.locks: dict[CogT, asyncio.Lock] = {}
+
+        self.regexes: dict[str, re.Pattern] = {
+            'bot token': re.compile(r'[A-Za-z\d]{23}\.[\w-]{6}\.[\w-]{27}'),
+            'email': re.compile(r'[\w\d]+\.\w+\.[a-z]{2,4}'),
+            'phone number': re.compile(r'\(?\d{3}\)?-?\d{3}-?\d{4}')
+        }
+
+    async def on_message(self, message: discord.Message):
+        for k, v in self.regexes:
+            if v.search(message.content):
+                embed = discord.Embed(title=f'Your message might have a {k} in it.',
+                                      description=f"[Here's the link]({message.jump_url})")
+                await message.author.send(embed=embed)
+                break
+        await self.process_commands(message)
 
     def acquire_lock(self, cog: CogT) -> asyncio.Lock:
         if cog not in self.locks:

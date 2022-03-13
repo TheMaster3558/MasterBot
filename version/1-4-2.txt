@@ -1,3 +1,4 @@
 Code Changes:
 - discord.py error handling in cog
 - Use of new setup_hook for discord.Client
+- Add notification if a user sent any person info (No cog)
