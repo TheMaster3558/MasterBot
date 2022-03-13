@@ -49,7 +49,7 @@ class MasterBot(commands.Bot):
                          enable_debug_events=True)
 
         self.start_time = perf_counter()
-        self.on_setup_time = None
+        self.on_ready_time = None
 
         self.clash_royale = cr_api_key
         self.weather = weather_api_key
@@ -73,12 +73,7 @@ class MasterBot(commands.Bot):
         }
 
     async def on_message(self, message: discord.Message):
-        for k, v in self.regexes:
-            if v.search(message.content):
-                embed = discord.Embed(title=f'Your message might have a {k} in it.',
-                                      description=f"[Here's the link]({message.jump_url})")
-                await message.author.send(embed=embed)
-                break
+
         await self.process_commands(message)
 
     def acquire_lock(self, cog: CogT) -> asyncio.Lock:
@@ -120,10 +115,11 @@ class MasterBot(commands.Bot):
 
     async def setup_hook(self) -> None:
         self.load_extensions()
+
+    async def on_ready(self):
+        self.on_ready_time = perf_counter()
         print('Logged in as {0} ID: {0.id}'.format(self.user))
-        self.on_setup_time = perf_counter()
-        print('Time taken to ready up:', round(self.on_setup_time - self.start_time, 1), 'seconds')
-        await self.wait_until_ready()
+        print('Time taken to start up:', round(self.on_ready_time - self.start_time, 1), 'seconds')
         await self.tree.sync()
 
     async def on_command_error(self, context: commands.Context, exception: commands.errors.CommandError) -> None:

@@ -11,7 +11,7 @@ import sys as __sys__
 from bot import MasterBot
 from cogs.utils.help_utils import HelpSingleton
 import aiofiles
-import aiohttp
+import builtins
 import io
 from cogs.utils.cog import Cog
 import threading
@@ -71,15 +71,27 @@ class EventLoopThread(threading.Thread):
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         self.stop()
 
+# print to the string io instead of the console only locally
 
-async def aexec(code):
+
+async def aexec(code, string_io: io.StringIO):
     # https://stackoverflow.com/questions/44859165/async-exec-in-python
     # Make an async function with the code and `exec` it
-    exec(
-        f'async def __ex(): ' +
-        ''.join(f'\n {l}' for l in code.split('\n'))
-    )
 
+    def string_io_print(*args, **kwargs):
+        kwargs['file'] = string_io
+        print(*args, **kwargs)
+
+    _globals = vars(builtins).copy()
+    _globals['print'] = string_io_print
+
+    exec(
+
+        f'async def __ex(): ' +
+        ''.join(f'\n {l}' for l in code.split('\n')),
+        _globals,
+        locals()
+    )
     # Get `__ex` from local variables, call it and return the result
     return await locals()['__ex']()
 
@@ -141,30 +153,27 @@ class Code(Cog, help_command=Help):
             if any([f'import {word}' in code.source or f'__import__("{word}")' in code.source or f"__import__('{word}')" in code.source for word in self.forbidden_imports]):
                 await ctx.send("You can't import that.")
                 return
-            
-            msg = await ctx.send('Waiting for other evals to finish...')
-            async with self.bot.acquire_lock(self):
-                await msg.delete()
-                temp_out = io.StringIO()
-                sys.stdout = temp_out
+
+            temp_out = io.StringIO()
     
+            try:
                 try:
-                    try:
-                        async with EventLoopThread() as thr:
-                            await self.bot.loop.run_in_executor(None, thr.run_coro, aexec(code.source), 60)
-                            # to prevent blocking event loop if they use time.sleep etc
-                    except concurrent.futures.TimeoutError:
-                        await ctx.reply('Your code took too long to run.')
-                        return
-                except Exception as e:
-                    await ctx.reply(f'Your code raised an exception\n```\n{e}\n```')
+                    async with EventLoopThread() as thr:
+                        await self.bot.loop.run_in_executor(None, thr.run_coro, aexec(code.source, temp_out), 60)
+                        # to prevent blocking event loop if they use time.sleep etc
+                except concurrent.futures.TimeoutError:
+                    await ctx.reply('Your code took too long to run.')
                     return
-    
-                sys.stdout = sys.__stdout__
+            except Exception as e:
+                await ctx.reply(f'Your code raised an exception\n```\n{e.__class__.__name__}: {e}\n```')
+                return
+
             value = temp_out.getvalue()
 
             value = value or 'No output'
             await ctx.reply(f'```\n{value}\n```')
+
+            temp_out.close()
 
     @_eval.error
     async def error(self, ctx: commands.Context, error):
@@ -348,30 +357,25 @@ class Code(Cog, help_command=Help):
 
         await interaction.response.defer(thinking=True)
 
-        msg = await interaction.channel.send('waiting for other evals to finish...')
-        async with self.bot.acquire_lock(self):
-            await msg.delete()
+        temp_out = io.StringIO()
 
-            temp_out = io.StringIO()
-            sys.stdout = temp_out
-
+        try:
             try:
-                try:
-                    async with EventLoopThread() as thr:
-                        await self.bot.loop.run_in_executor(None, thr.run_coro, aexec(code.source), 60)
-                        # to prevent blocking event loop if they use time.sleep etc
-                except concurrent.futures.TimeoutError:
-                    await interaction.followup.send('Your code took too long to run.')
-                    return
-            except Exception as e:
-                await interaction.followup.send(f'Your code raised an exception\n```\n{e.__class__.__name__!r}: {e}\n```')
+                async with EventLoopThread() as thr:
+                    await self.bot.loop.run_in_executor(None, thr.run_coro, aexec(code.source, temp_out), 60)
+                    # to prevent blocking event loop if they use time.sleep etc
+            except concurrent.futures.TimeoutError:
+                await interaction.followup.send('Your code took too long to run.')
                 return
-
-            sys.stdout = sys.__stdout__
+        except Exception as e:
+            await interaction.followup.send(f'Your code raised an exception\n```\n{e.__class__.__name__!r}: {e}\n```')
+            return
 
         value = temp_out.getvalue()
         value = value or 'No output'
         await interaction.followup.send(f'```\n{value}\n```')
+
+        temp_out.close()
 
     @commands.command()
     async def sync(self, ctx, guild: bool = None):
