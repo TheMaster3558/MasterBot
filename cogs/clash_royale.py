@@ -105,7 +105,7 @@ class ClashRoyale(Cog, help_command=Help):
     def __init__(self, bot: MasterBot):
         super().__init__(bot)
         self.api_key = self.bot.clash_royale
-        self.http = ClashRoyaleHTTPClient(self.api_key, self.bot.loop)
+        self.http = ClashRoyaleHTTPClient(self.api_key, loop=self.bot.loop)
         print('Clash Royale cog loaded')
 
     @commands.command()
