@@ -1,4 +1,5 @@
 import asyncio
+import concurrent.futures
 import sys
 import discord
 from discord import app_commands
@@ -153,7 +154,7 @@ class Code(Cog, help_command=Help):
                         async with EventLoopThread() as thr:
                             await self.bot.loop.run_in_executor(None, thr.run_coro, aexec(code.source), 60)
                             # to prevent blocking event loop if they use time.sleep etc
-                    except asyncio.TimeoutError:
+                    except concurrent.futures.TimeoutError:
                         await ctx.reply('Your code took too long to run.')
                         return
                 except Exception as e:
@@ -360,7 +361,7 @@ class Code(Cog, help_command=Help):
                     async with EventLoopThread() as thr:
                         await self.bot.loop.run_in_executor(None, thr.run_coro, aexec(code.source), 60)
                         # to prevent blocking event loop if they use time.sleep etc
-                except asyncio.TimeoutError:
+                except concurrent.futures.TimeoutError:
                     await interaction.followup.send('Your code took too long to run.')
                     return
             except Exception as e:
