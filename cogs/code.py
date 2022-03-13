@@ -113,7 +113,6 @@ class Code(Cog, help_command=Help):
 
     def __init__(self, bot: MasterBot):
         super().__init__(bot)
-        self.session = aiohttp.ClientSession(loop=self.bot.loop)
         print('Code cog loaded')
 
     async def cog_command_error(self, ctx: commands.Context, error):
