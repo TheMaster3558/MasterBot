@@ -1,6 +1,5 @@
 import requests
 import aiohttp
-import asyncio
 
 
 def cleanup_params(params: dict) -> dict:

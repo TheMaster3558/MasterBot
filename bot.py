@@ -48,7 +48,7 @@ class MasterBot(commands.Bot):
                          enable_debug_events=True)
 
         self.start_time = perf_counter()
-        self.on_ready_time = None
+        self.on_setup_time = None
 
         self.clash_royale = cr_api_key
         self.weather = weather_api_key
@@ -82,28 +82,7 @@ class MasterBot(commands.Bot):
     async def delete_app_commands(self):
         await self.http.bulk_upsert_global_commands(self.application_id, payload=[])
 
-    async def on_ready(self) -> None:
-        print('Logged in as {0} ID: {0.id}'.format(self.user))
-        self.on_ready_time = perf_counter()
-        print('Time taken to ready up:', round(self.on_ready_time - self.start_time, 1), 'seconds')
-        await self.tree.sync()
-
-    async def on_command_error(self, context: commands.Context, exception: commands.errors.CommandError) -> None:
-        if isinstance(exception, commands.CommandNotFound):
-            possibles = [cmd for cmd in self.all_commands if fuzz.ratio(
-                    context.message.content,
-                    cmd
-                ) > 70
-            ]
-            if len(possibles) > 0:
-                embed = discord.Embed(title="I couldn't find that command",
-                                      description='Maybe you meant:\n`{}`'.format("`\n`".join(possibles)))
-                await context.reply(embed=embed, mention_author=False)
-            return
-        if not context.cog.has_error_handler() and context.command.has_error_handler():
-            traceback.print_exception(exception, file=sys.stderr)
-
-    def run(self, token: str) -> None:
+    def load_extensions(self):
         cogs = [
             'cogs.clash_royale',
             'cogs.help_info',
@@ -122,7 +101,28 @@ class MasterBot(commands.Bot):
         ]
         for cog in cogs:
             self.load_extension(cog)
-        super().run(token)
+
+    async def setup_hook(self) -> None:
+        self.load_extensions()
+        print('Logged in as {0} ID: {0.id}'.format(self.user))
+        self.on_setup_time = perf_counter()
+        print('Time taken to ready up:', round(self.on_setup_time - self.start_time, 1), 'seconds')
+        await self.tree.sync()
+
+    async def on_command_error(self, context: commands.Context, exception: commands.errors.CommandError) -> None:
+        if isinstance(exception, commands.CommandNotFound):
+            possibles = [cmd for cmd in self.all_commands if fuzz.ratio(
+                    context.message.content,
+                    cmd
+                ) > 70
+            ]
+            if len(possibles) > 0:
+                embed = discord.Embed(title="I couldn't find that command",
+                                      description='Maybe you meant:\n`{}`'.format("`\n`".join(possibles)))
+                await context.reply(embed=embed, mention_author=False)
+            return
+        if not context.cog.has_error_handler() and context.command.has_error_handler():
+            traceback.print_exception(exception, file=sys.stderr)
 
     def restart(self):
         """Reloads all extensions and clears the cache"""
