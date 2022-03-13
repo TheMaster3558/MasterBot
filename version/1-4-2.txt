@@ -1,2 +1,3 @@
 Code Changes:
 - discord.py error handling in cog
+- Use of new setup_hook for discord.Client
