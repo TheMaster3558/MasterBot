@@ -123,6 +123,7 @@ class MasterBot(commands.Bot):
         print('Logged in as {0} ID: {0.id}'.format(self.user))
         self.on_setup_time = perf_counter()
         print('Time taken to ready up:', round(self.on_setup_time - self.start_time, 1), 'seconds')
+        await self.wait_until_ready()
         await self.tree.sync()
 
     async def on_command_error(self, context: commands.Context, exception: commands.errors.CommandError) -> None:
