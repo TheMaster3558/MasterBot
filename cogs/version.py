@@ -40,8 +40,8 @@ class Version(Cog):
                 embed = discord.Embed(title=version,
                                       description=await v.read())
         except FileNotFoundError:
-            await interaction.response.send_message('That version was not found.')
-            return
+            await interaction.response.send_message('An unexpected error occurred with opening files. Try again later.')
+            raise
         await interaction.response.send_message(embed=embed)
 
 
