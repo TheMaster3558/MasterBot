@@ -87,8 +87,11 @@ class Trivia(Cog, help_command=Help):
     def __init__(self, bot: MasterBot):
         super().__init__(bot)
         self.http = OpenTDBHTTPClient(self.bot.loop)
-        bot.loop.create_task(self.http.get_token())
         print('Trivia cog loaded')
+    
+    async def cog_load(self):
+        super().cog_load()
+        bot.loop.create_task(self.http.get_token())
 
     @commands.command()
     @commands.cooldown(1, 3, commands.BucketType.channel)
@@ -140,5 +143,5 @@ class Trivia(Cog, help_command=Help):
             await interaction.followup.send(embed=embed)
 
 
-def setup(bot: MasterBot):
-    Trivia.setup(bot)
+async def setup(bot: MasterBot):
+    await Trivia.setup(bot)
