@@ -39,12 +39,15 @@ class Help(Cog):
 
     def __init__(self, bot: MasterBot):
         super().__init__(bot)
-        self.bot.loop.create_task(self.get_regex())
         print('Help and Info cog loaded')
 
     async def get_regex(self):
         await self.bot.wait_until_ready()
         self.mention_regex = re.compile(f'<@!?{self.bot.user.id}>')
+    
+    async def cog_load(self):
+        super().cog_load()
+        self.bot.loop.create_task(self.get_regex())
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
@@ -222,5 +225,5 @@ class Help(Cog):
         await ctx.send(embed=embed)
 
 
-def setup(bot: MasterBot):
-    Help.setup(bot)
+async def setup(bot: MasterBot):
+    await Help.setup(bot)
