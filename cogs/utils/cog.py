@@ -36,9 +36,9 @@ class Cog(commands.Cog, metaclass=CogMeta):
             await self.http.close()
 
     @classmethod
-    def setup(cls, bot: MasterBot):
+    async def setup(cls, bot: MasterBot):
         self = cls(bot)
-        bot.add_cog(self)
+        await bot.add_cog(self)
 
 
 def command(**kwargs):
