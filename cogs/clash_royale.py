@@ -291,5 +291,5 @@ class ClashRoyale(Cog, help_command=Help):
         await ctx.send(embed=embed)
 
 
-def setup(bot: MasterBot):
-    ClashRoyale.setup(bot)
+async def setup(bot: MasterBot):
+    await ClashRoyale.setup(bot)

@@ -385,5 +385,5 @@ class Code(Cog, help_command=Help):
         await ctx.send(data)
 
 
-def setup(bot: MasterBot):
-    Code.setup(bot)
+async def setup(bot: MasterBot):
+    await Code.setup(bot)

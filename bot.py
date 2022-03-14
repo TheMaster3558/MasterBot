@@ -33,7 +33,7 @@ CogT = TypeVar('CogT', bound=Cog)
 
 
 class MasterBot(commands.Bot):
-    __version__ = '1.4.2'
+    __version__ = '1.4.3'
     test_guild = discord.Object(id=878431847162466354)
 
     def __init__(self, cr_api_key: str, weather_api_key: str, mongo_db: str, /) -> None:
@@ -93,7 +93,7 @@ class MasterBot(commands.Bot):
     async def delete_app_commands(self):
         await self.http.bulk_upsert_global_commands(self.application_id, payload=[])
 
-    def load_extensions(self):
+    async def load_extensions(self):
         cogs = [
             'cogs.clash_royale',
             'cogs.help_info',
@@ -111,10 +111,10 @@ class MasterBot(commands.Bot):
             'cogs.version'
         ]
         for cog in cogs:
-            self.load_extension(cog)
+            await self.load_extension(cog)
 
     async def setup_hook(self) -> None:
-        self.load_extensions()
+        await self.load_extensions()
 
     async def on_ready(self):
         self.on_ready_time = perf_counter()
@@ -156,10 +156,9 @@ class MasterBot(commands.Bot):
                                           moderate_members=True,
                                           send_messages=True,
                                           add_reactions=True)
-        scopes = ('bot', 'applications.commands')
         return discord.utils.oauth_url(self.user.id,
                                        permissions=permissions,
-                                       scopes=scopes)
+                                       )
 
     def custom_oath_url(self, permissions: Optional[discord.Permissions] = None,
                         scopes: Optional[Iterable[str]] = None) -> Optional[str]:

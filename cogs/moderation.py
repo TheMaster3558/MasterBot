@@ -538,5 +538,5 @@ class Moderation(Cog, help_command=Help):
             await ctx.send("I couldn't find that channel or member or role.")
 
 
-def setup(bot: MasterBot):
-    Moderation.setup(bot)
+async def setup(bot: MasterBot):
+    await Moderation.setup(bot)

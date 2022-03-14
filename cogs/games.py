@@ -497,5 +497,5 @@ class Games(Cog, help_command=Help):
         await interaction.followup.send(f'It took you {attempt} tries.')
 
 
-def setup(bot: MasterBot):
-    Games.setup(bot)
+async def setup(bot: MasterBot):
+    await Games.setup(bot)

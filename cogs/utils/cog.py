@@ -27,10 +27,18 @@ class Cog(commands.Cog, metaclass=CogMeta):
     def __init__(self, bot: MasterBot):
         self.bot = bot
 
+    async def cog_load(self):
+        if hasattr(self, "http"):
+            await self.http.create()
+
+    async def cog_unload(self):
+        if hasattr(self, "http"):
+            await self.http.close()
+
     @classmethod
-    def setup(cls, bot: MasterBot):
+    async def setup(cls, bot: MasterBot):
         self = cls(bot)
-        bot.add_cog(self)
+        await bot.add_cog(self)
 
 
 def command(**kwargs):

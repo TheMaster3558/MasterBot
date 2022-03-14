@@ -29,7 +29,12 @@ class Version(Cog):
     async def _new(self, interaction, version: Literal[
         "1.4.0",
         "1.4.1",
+<<<<<<< HEAD
         "1.4.2"
+=======
+        "1.4.2",
+        "1.4.3"
+>>>>>>> 47c1768ae4d1eeda1f59a8ec12c4dcb2cb510e87
     ]):
         path = version.replace('.', '-')
         path += '.txt'
@@ -44,8 +49,8 @@ class Version(Cog):
         await interaction.response.send_message(embed=embed)
 
 
-def setup(bot: MasterBot):
-    Version.setup(bot)
+async def setup(bot: MasterBot):
+    await Version.setup(bot)
 
 
 
