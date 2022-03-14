@@ -54,10 +54,22 @@ class CustomReactionRoleFlags(commands.FlagConverter):
 class ReactionRoles(Cog, help_command=Help):
     def __init__(self, bot: MasterBot):
         super().__init__(bot)
-        with open('databases/messages.json', 'r') as m:
-            self.role_dict = json.load(m)
+        self.role_dict = None
         print('Reaction Roles cog loaded')
         self.update_file.start()
+    
+    def fetch_role_dict(self):
+        with open('databases/messages.json', 'r') as m:
+            self.role_dict = json.load(m)
+    
+    async def cog_load():
+        super().cog_load()
+        await self.bot.loop.run_in_executor(None, self.fetch_role_dict)
+        self.update_file.start()
+    
+    async def cog_unload():
+        super().cog_unload()
+        self.update_file.cancel()
 
     async def convert_all(self, message):
         ctx = await self.bot.get_context(message)
@@ -289,5 +301,5 @@ class ReactionRoles(Cog, help_command=Help):
             await ctx.reply(embed=msg)
 
 
-def setup(bot: MasterBot):
-    ReactionRoles.setup(bot)
+async def setup(bot: MasterBot):
+    await ReactionRoles.setup(bot)
