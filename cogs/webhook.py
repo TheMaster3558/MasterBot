@@ -114,20 +114,19 @@ class Webhooks(Cog, help_command=Help):
         self.webhooks: dict[int, discord.Webhook] = {}
         self.users: dict[int, dict[str, Optional[str]]] = {}
         self.db = None
-        self.update_db.start()
         print('Webhook cog loaded')
-    
+
     async def cog_load(self):
-        super().cog_load()
+        await super().cog_load()
         self.session = aiohttp.ClientSession(loop=self.bot.loop)
         self.update_db.start()
         self.bot.tree.add_command(WebhookGroup(self))
-    
+
     async def cog_unload(self):
-          super().cog_unload()
-          await self.session.close()
-          self.update_db.cancel()
-          self.bot.tree.remove_command('webhook')
+        await super().cog_unload()
+        await self.session.close()
+        self.update_db.cancel()
+        self.bot.tree.remove_command('webhook')
 
     async def cog_command_error(self, ctx, error):
         if ctx.command is None:

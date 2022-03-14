@@ -29,13 +29,8 @@ class Version(Cog):
     async def _new(self, interaction, version: Literal[
         "1.4.0",
         "1.4.1",
-<<<<<<< HEAD
         "1.4.2"
-=======
-        "1.4.2",
-        "1.4.3"
->>>>>>> 47c1768ae4d1eeda1f59a8ec12c4dcb2cb510e87
-    ]):
+        ]):
         path = version.replace('.', '-')
         path += '.txt'
         path = 'version/' + path

@@ -38,7 +38,7 @@ class Translator(Cog, help_command=Help):
         print('Translator cog loaded')
     
     async def cog_load(self):
-        super().cog_load()
+        await super().cog_load()
         self.translator = AsyncTranslator(url_suffix='com')
 
     async def cog_command_error(self, ctx, error):
@@ -113,13 +113,13 @@ class Translator(Cog, help_command=Help):
         embed.set_footer(text='Google translate did its best')
         await interaction.response.send_message(embed=embed)
 
-    @app_commands.context_menu(name='detect')
-    async def __detect(self, interaction: discord.Interaction, message: discord.Message):
-        await self._detect._callback(interaction, message.content)
+    # @app_commands.context_menu(name='detect')
+    # async def __detect(self, interaction: discord.Interaction, message: discord.Message):
+        # await self._detect._callback(interaction, message.content)
 
-    @app_commands.context_menu(name='translate')
-    async def __translate(self, interaction: discord.Interaction, message: discord.Message):
-        await self._translate._callback(interaction, message.content)
+    # @app_commands.context_menu(name='translate')
+    # async def __translate(self, interaction: discord.Interaction, message: discord.Message):
+        # await self._translate._callback(interaction, message.content)
 
 
 async def setup(bot: MasterBot):

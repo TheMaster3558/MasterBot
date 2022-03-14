@@ -73,7 +73,9 @@ class MasterBot(commands.Bot):
         }
 
     async def on_message(self, message: discord.Message):
-
+        for name, regex in self.regexes.items():
+            if regex.search(message.content):
+                await message.author.send(f'Your [message]({message.jump_url}) may have a {name}')
         await self.process_commands(message)
 
     def acquire_lock(self, cog: CogT) -> asyncio.Lock:

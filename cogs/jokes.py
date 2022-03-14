@@ -150,11 +150,11 @@ class Jokes(Cog, help_command=Help):
         print('Jokes cog loaded')
     
     async def cog_load(self):
-        super().cog_load()
+        await super().cog_load()
         self.update_db.start()
     
     async def cog_unload(self):
-        super().cog_unload()
+        await super().cog_unload()
         self.update_db.cancel()
 
     async def cog_command_error(self, ctx, error):

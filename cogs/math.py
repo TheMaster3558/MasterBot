@@ -65,7 +65,7 @@ class Math(Cog, help_command=Help):
         print('Math cog loaded')
     
     async def cog_unload(self):
-        super().cog_unload()
+        await super().cog_unload()
         self.bot.tree.remove_command('state')
 
     def parse_for_vars(self, expression):

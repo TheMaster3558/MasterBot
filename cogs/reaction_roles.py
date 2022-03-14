@@ -56,19 +56,18 @@ class ReactionRoles(Cog, help_command=Help):
         super().__init__(bot)
         self.role_dict = None
         print('Reaction Roles cog loaded')
-        self.update_file.start()
     
     def fetch_role_dict(self):
         with open('databases/messages.json', 'r') as m:
             self.role_dict = json.load(m)
     
-    async def cog_load():
-        super().cog_load()
+    async def cog_load(self):
+        await super().cog_load()
         await self.bot.loop.run_in_executor(None, self.fetch_role_dict)
         self.update_file.start()
     
-    async def cog_unload():
-        super().cog_unload()
+    async def cog_unload(self):
+        await super().cog_unload()
         self.update_file.cancel()
 
     async def convert_all(self, message):
@@ -98,7 +97,7 @@ class ReactionRoles(Cog, help_command=Help):
 
     @tasks.loop(seconds=30)
     async def update_file(self):
-        async with self.bot.acquire_lock(self):
+        async with self.bot.acquire_lock(self):  # type: ignore
             await self.bot.loop.run_in_executor(None, self._update)
 
     @update_file.before_loop

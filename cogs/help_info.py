@@ -46,7 +46,7 @@ class Help(Cog):
         self.mention_regex = re.compile(f'<@!?{self.bot.user.id}>')
     
     async def cog_load(self):
-        super().cog_load()
+        await super().cog_load()
         self.bot.loop.create_task(self.get_regex())
 
     @commands.Cog.listener()

@@ -81,15 +81,14 @@ class Weather(Cog, help_command=Help):
         self.temp_units = {}
         self.speed_units = {}
         self.db = None
-        self.update_db.start()
         print('Weather cog loaded')
     
     async def cog_load(self):
-        super().cog_load()
+        await super().cog_load()
         self.update_db.start()
     
     async def cog_unload(self):
-        super().cog_unload()
+        await super().cog_unload()
         self.update_db.cancel()
 
     async def fetch_units(self):
