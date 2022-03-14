@@ -263,8 +263,20 @@ class Code(Cog, help_command=Help):
     @commands.is_owner()
     async def reload(self, ctx, *exts):
         for ext in exts:
-            self.bot.reload_extension(f'cogs.{ext}')
+            await self.bot.reload_extension(f'cogs.{ext}')
         await ctx.send(f'Extensions reloaded: {", ".join(exts)}')
+
+    @commands.command()
+    async def load(self, ctx, *exts):
+        for ext in exts:
+            await self.bot.load_extension(f'cogs.{ext}')
+        await ctx.send(f'Extensions loaded: {", ".join(exts)}')
+
+    @commands.command()
+    async def unload(self, ctx, *exts):
+        for ext in exts:
+            await self.bot.unload_extension(f'cogs.{ext}')
+        await ctx.send(f'Extensions unloaded: {", ".join(exts)}')
 
     @commands.command()
     @commands.is_owner()
