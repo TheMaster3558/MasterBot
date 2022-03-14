@@ -34,8 +34,12 @@ class Help(metaclass=HelpSingleton):
 class Translator(Cog, help_command=Help):
     def __init__(self, bot: MasterBot):
         super().__init__(bot)
-        self.translator = AsyncTranslator(url_suffix='com')
+        self.translator = None
         print('Translator cog loaded')
+    
+    async def cog_load(self):
+        super().cog_load()
+        self.translator = AsyncTranslator(url_suffix='com')
 
     async def cog_command_error(self, ctx, error):
         if ctx.command is None:
@@ -109,15 +113,14 @@ class Translator(Cog, help_command=Help):
         embed.set_footer(text='Google translate did its best')
         await interaction.response.send_message(embed=embed)
 
-    #  the following commands cannot be used in a cog until context menus in cogs are supported
-    # @app_commands.context_menu(name='detect')
-    # async def __detect(self, interaction: discord.Interaction, message: discord.Message):
-    #     await self._detect._callback(interaction, message.content)
+    @app_commands.context_menu(name='detect')
+    async def __detect(self, interaction: discord.Interaction, message: discord.Message):
+        await self._detect._callback(interaction, message.content)
 
-    # @app_commands.context_menu(name='translate')
-    # async def __translate(self, interaction: discord.Interaction, message: discord.Message):
-    #     await self._translate._callback(interaction, message.content)
+    @app_commands.context_menu(name='translate')
+    async def __translate(self, interaction: discord.Interaction, message: discord.Message):
+        await self._translate._callback(interaction, message.content)
 
 
-def setup(bot: MasterBot):
-    Translator.setup(bot)
+async def setup(bot: MasterBot):
+    await Translator.setup(bot)
