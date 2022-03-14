@@ -31,6 +31,10 @@ class Cog(commands.Cog, metaclass=CogMeta):
         if hasattr(self, "http"):
             await self.http.create()
 
+    async def cog_unload(self):
+        if hasattr(self, "http"):
+            await self.http.close()
+
     @classmethod
     def setup(cls, bot: MasterBot):
         self = cls(bot)
