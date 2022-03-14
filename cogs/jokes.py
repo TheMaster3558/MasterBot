@@ -145,10 +145,17 @@ class Jokes(Cog, help_command=Help):
         super().__init__(bot)
         self.db = None
         self.blacklist = {}
-        self.update_db.start()
         self.http = JokeAPIHTTPClient(self.bot.loop)
         self.used_jokes = [12345]  # 12345 is so the while loop starts
         print('Jokes cog loaded')
+    
+    async def cog_load(self):
+        super().cog_load()
+        self.update_db.start()
+    
+    async def cog_unload(self):
+        super().cog_unload()
+        self.update_db.cancel()
 
     async def cog_command_error(self, ctx, error):
         if not ctx.command:
@@ -455,5 +462,5 @@ class Jokes(Cog, help_command=Help):
         self.blacklist[interaction.guild.id] = options
 
 
-def setup(bot: MasterBot):
-    Jokes.setup(bot)
+async def setup(bot: MasterBot):
+    await Jokes.setup(bot)
