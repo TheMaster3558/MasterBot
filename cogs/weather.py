@@ -83,6 +83,14 @@ class Weather(Cog, help_command=Help):
         self.db = None
         self.update_db.start()
         print('Weather cog loaded')
+    
+    async def cog_load(self):
+        super().cog_load()
+        self.update_db.start()
+    
+    async def cog_unload(self):
+        super().cog_unload()
+        self.update_db.cancel()
 
     async def fetch_units(self):
         for guild in self.bot.guilds:
@@ -292,5 +300,5 @@ class Weather(Cog, help_command=Help):
         await interaction.response.send_message(embed=embed)
 
 
-def setup(bot: MasterBot):
-    Weather.setup(bot)
+async def setup(bot: MasterBot):
+    await Weather.setup(bot)
