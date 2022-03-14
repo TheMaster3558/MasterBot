@@ -29,8 +29,9 @@ class Version(Cog):
     async def _new(self, interaction, version: Literal[
         "1.4.0",
         "1.4.1",
-        "1.4.2"
-        ]):
+        "1.4.2",
+        "1.4.3"
+    ]):
         path = version.replace('.', '-')
         path += '.txt'
         path = 'version/' + path
@@ -46,7 +47,3 @@ class Version(Cog):
 
 async def setup(bot: MasterBot):
     await Version.setup(bot)
-
-
-
-
