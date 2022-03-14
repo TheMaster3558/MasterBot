@@ -63,6 +63,10 @@ class Math(Cog, help_command=Help):
         self.states: Dict[int, Dict[str, N]] = {}
         self.bot.tree.add_command(StateGroup(self))
         print('Math cog loaded')
+    
+    async def cog_unload(self):
+        super().cog_unload()
+        self.bot.tree.remove_command('state')
 
     def parse_for_vars(self, expression):
         finds = self.parse_regex.findall(expression)
@@ -121,7 +125,7 @@ class Math(Cog, help_command=Help):
             pass
 
 
-def setup(bot: MasterBot):
-    Math.setup(bot)
+async def setup(bot: MasterBot):
+    await Math.setup(bot)
 
 
