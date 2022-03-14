@@ -6,3 +6,4 @@ Code Changes:
 - Use of new setup_hook for discord.Client
 - Add notification if a user sent any person info (No cog)
 - Pass StringIO into file in `exec`
+- Running os commands in executor

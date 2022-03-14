@@ -28,7 +28,8 @@ class Version(Cog):
     @command(name='whatsnew', description='Findout whats new in a version! Starts for 1.4.0')
     async def _new(self, interaction, version: Literal[
         "1.4.0",
-        "1.4.1"
+        "1.4.1",
+        "1.4.2"
     ]):
         path = version.replace('.', '-')
         path += '.txt'

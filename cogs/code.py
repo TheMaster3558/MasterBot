@@ -250,7 +250,7 @@ class Code(Cog, help_command=Help):
     @commands.command(name='os')
     @commands.is_owner()
     async def _os(self, ctx, *, what):
-        __os__.system(what)
+        await self.bot.loop.run_in_executor(None, __os__.system, what)
 
     @commands.command()
     @commands.is_owner()
@@ -283,14 +283,14 @@ class Code(Cog, help_command=Help):
     @git.command()
     @commands.is_owner()
     async def add(self, ctx, path):
-        __os__.system('git add {}'.format(path))
+        await self.bot.loop.run_in_executor(None, __os__.system, 'git add {}'.format(path))
         await ctx.send('Files in {} were added to the next commit.'.format(path))
 
     @git.command()
     @commands.is_owner()
     async def commit(self, ctx, *, message):
-        __os__.system('git commit -m "{}"'.format(message))
-        await ctx.send('Changes have been committed with the message {}'.format(message))
+        await self.bot.loop.run_in_executor(None, __os__.system, 'git commit -m "{}"'.format(message))
+        await ctx.send('Changes have been committed with the messageg {}'.format(message))
 
     @git.command()
     @commands.is_owner()
@@ -298,7 +298,7 @@ class Code(Cog, help_command=Help):
         command = 'git push'
         if force == 'force':
             command += ' -f'
-        __os__.system(command)
+        await self.bot.loop.run_in_executor(None, __os__.system, command)
         await ctx.send('Files pushed. Force push = {}.'.format(force == 'force'))
 
     @commands.command(name='code')
