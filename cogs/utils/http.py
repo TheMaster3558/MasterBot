@@ -1,3 +1,5 @@
+import asyncio
+
 import requests
 import aiohttp
 
@@ -28,7 +30,7 @@ class AsyncHTTPClient:
                 return await resp.json()
             return await resp.text()
 
-    async def close():
+    async def close(self):
         if not self.session:
             return
         if not self.session.closed:
