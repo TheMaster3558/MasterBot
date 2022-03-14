@@ -28,7 +28,9 @@ class Version(Cog):
     @command(name='whatsnew', description='Findout whats new in a version! Starts for 1.4.0')
     async def _new(self, interaction, version: Literal[
         "1.4.0",
-        "1.4.1"
+        "1.4.1",
+        "1.4.2",
+        "1.4.3"
     ]):
         path = version.replace('.', '-')
         path += '.txt'
@@ -43,8 +45,8 @@ class Version(Cog):
         await interaction.response.send_message(embed=embed)
 
 
-def setup(bot: MasterBot):
-    Version.setup(bot)
+async def setup(bot: MasterBot):
+    await Version.setup(bot)
 
 
 
