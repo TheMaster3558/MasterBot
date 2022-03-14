@@ -298,5 +298,5 @@ class Forms(Cog, help_command=Help):
         await view.interaction.response.send_message('Your response has been recorded.')
 
 
-def setup(bot: MasterBot):
-    Forms.setup(bot)
+async def setup(bot: MasterBot):
+    await Forms.setup(bot)
