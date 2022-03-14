@@ -149,7 +149,7 @@ class MasterBot(commands.Bot):
     @property
     def oath_url(self) -> Optional[str]:
         if not self.user:
-            return
+            raise
         permissions = discord.Permissions(manage_roles=True,
                                           manage_channels=True,
                                           kick_members=True,

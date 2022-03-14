@@ -1,0 +1,2 @@
+Code Changes:
+- All extensions and cogs loading are now async
