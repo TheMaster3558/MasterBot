@@ -28,8 +28,11 @@ class AsyncHTTPClient:
                 return await resp.json()
             return await resp.text()
 
-    def __del__(self):
-        self.loop.create_task(self.session.close())
+    async def close():
+        if not self.session:
+            return
+        if not self.session.closed:
+            await self.session.close()
 
 
 class RequestsHTTPClient:
