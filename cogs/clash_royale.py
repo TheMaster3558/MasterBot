@@ -114,7 +114,7 @@ class ClashRoyale(Cog, help_command=Help):
 
     @command(name='crlocations', description='Get a list of locations to use.')
     async def _crlocations(self, interaction):
-        await interaction.user.send(embed=cr_locations_embed)
+        await interaction.response.send_message(embed=cr_locations_embed, ephemeral=True)
 
     @commands.command()
     @commands.cooldown(1, 30, commands.BucketType.user)
@@ -138,12 +138,12 @@ class ClashRoyale(Cog, help_command=Help):
 
     @command(name='stats', description='Get clash royale player stats.')
     @app_commands.describe(tag='The player tag')
-    async def _stats(self, ctx, tag: str):
+    async def _stats(self, interaction, tag: str):
         if tag.startswith('#'):
             tag = tag[1:]
         data = await self.http.player_request(tag)
         embed = await ClashRoyaleUtils.build_player_embed(data)
-        await ctx.send(embed=embed)
+        await interaction.response.send_message(embed=embed)
 
     @commands.command()
     @commands.cooldown(1, 30, commands.BucketType.user)
@@ -165,17 +165,18 @@ class ClashRoyale(Cog, help_command=Help):
 
     @command(name='card', description='Get a clash royale card.')
     @app_commands.describe(name='The card name')
-    async def _card(self, ctx, name: str):
+    async def _card(self, interaction, name: str):
         cards = await self.http.cards_request()
         try:
             card = ClashRoyaleUtils.search_for_card(cards, name)
         except ValueError as exc:
-            return await ctx.send(exc, ephemeral=True)
+            await interaction.response.send_message(exc, ephemeral=True)
+            return
         embed = await ClashRoyaleUtils.build_card_embed(card)
-        await ctx.send(embed=embed)
+        await interaction.response.send_message(embed=embed)
 
     @commands.command()
-    @commands.cooldown(1, 30, commands.BucketType)
+    @commands.cooldown(1, 30, commands.BucketType.user)
     async def clan(self, ctx: commands.Context, tag: str):
         await ctx.trigger_typing()
         if tag.startswith('#'):
@@ -196,13 +197,13 @@ class ClashRoyale(Cog, help_command=Help):
 
     @command(name='clan', description='Get clash royale clan stats')
     @app_commands.describe(tag='The clan tag')
-    async def _clan(self, ctx, tag: str):
+    async def _clan(self, interaction, tag: str):
         if tag.startswith('#'):
             tag = tag[1:]
         clan = await self.http.clan_tag_request(tag)
 
         embed = await ClashRoyaleUtils.build_clan_embed(clan)
-        await ctx.send(embed=embed)
+        await interaction.response.send_message(embed=embed)
 
     @commands.command(name='searchclan')
     @commands.cooldown(1, 30, commands.BucketType.user)
@@ -252,7 +253,7 @@ class ClashRoyale(Cog, help_command=Help):
                            score='The minimum clan score',
                            result='The result to give back')
     async def _search_clan(self,
-                           ctx,
+                           interaction,
                            name: str = None,
                            location: str = None,
                            min: int = None,
@@ -261,7 +262,8 @@ class ClashRoyale(Cog, help_command=Help):
                            result: app_commands.Range[int, 1, 10] = 1
                            ):
         if not location and not name and not min and not max and not score:
-            return await ctx.send('You must give me an argument. (other than result)', ephemeral=True)
+            await interaction.response.send_message('You must give me an argument. (other than result)', ephemeral=True)
+            return
         if location is not None:
             try:
                 location = int(location)
@@ -281,13 +283,14 @@ class ClashRoyale(Cog, help_command=Help):
         try:
             clan = clans[result - 1]  # type: ignore
         except IndexError:
-            return await ctx.send('Not enough clans were found.')
+            await interaction.response.send_message('Not enough clans were found.')
+            return
         if clan.get('tag').startswith('#'):
             clan['tag'] = clan['tag'][1:]
         clan = await self.http.clan_tag_request(clan.get('tag'))
 
         embed = await ClashRoyaleUtils.build_clan_embed(clan)
-        await ctx.send(embed=embed)
+        await interaction.response.send_message(embed=embed)
 
 
 async def setup(bot: MasterBot):

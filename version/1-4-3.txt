@@ -1,2 +1,3 @@
 Code Changes:
 - All extensions and cogs loading are now async
+- Clash Royale commands adapted for app commands

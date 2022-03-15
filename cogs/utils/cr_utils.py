@@ -109,7 +109,7 @@ class ClashRoyaleUtils:
         embed.add_field(name='Join Status', value=t)
         embed.add_field(name='Description', value='{}'.format(clan.get('description')))
         members = clan.get('memberList')
-        members = ['{} | {} ?'.format(member.get('name'), member.get('trophies')) for member in members[:5]]
+        members = ['{} | {}'.format(member.get('name'), member.get('trophies')) for member in members[:5]]
         if clan.get('members') >= 5:
             embed.add_field(name='Top Members', value='\n'.join(members))
         embed.set_thumbnail(url='https://www.deckshop.pro/img/badges/{0}.png'.format(clan.get('badgeId')))
