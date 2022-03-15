@@ -282,7 +282,6 @@ class ClashRoyale(Cog, help_command=Help):
             clan = clans[result - 1]  # type: ignore
         except IndexError:
             return await ctx.send('Not enough clans were found.')
-        self, ctx, clan.get('tag')
         if clan.get('tag').startswith('#'):
             clan['tag'] = clan['tag'][1:]
         clan = await self.http.clan_tag_request(clan.get('tag'))
