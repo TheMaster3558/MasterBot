@@ -1,0 +1,3 @@
+Code Changes:
+- Complete help command code rework
+- Improved error handling

@@ -4,9 +4,25 @@ from cogs.utils.cog import Cog, command
 from bot import MasterBot
 import aiofiles
 from typing import Literal
+from cogs.utils.help_utils import HelpSingleton
 
 
-class Version(Cog):
+class Help(metaclass=HelpSingleton):
+    def __init__(self, prefix):
+        self.prefix = prefix
+
+    def new(self):
+        if self.prefix != '/':
+            message = f'`{self.prefix}new <version>`: see whats new in a version'
+        else:
+            message = f'`{self.prefix}whatsnew <version>`: see whats new in a version'
+        return message
+
+    def full_help(self):
+        return self.new()
+
+
+class Version(Cog, name='version', help_command=Help):
     def __init__(self, bot: MasterBot):
         super().__init__(bot)
         print('Version cog loaded')

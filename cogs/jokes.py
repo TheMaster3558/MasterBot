@@ -136,7 +136,7 @@ def decode_sql_bool(data: Union[tuple, list]) -> list[bool]:
     return converted
 
 
-class Jokes(Cog, help_command=Help):
+class Jokes(Cog, help_command=Help, name='jokes'):
     default_options = {'nsfw': True, 'religious': True, 'political': True, 'sexist': True, 'racist': True,
                        'explicit': True}
     categories = ["any", "misc", "programming", "dark", "pun", "spooky", "christmas"]

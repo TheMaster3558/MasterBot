@@ -34,7 +34,7 @@ class Help(metaclass=HelpSingleton):
         return message
 
     def match_help(self):
-        message = f'`{self.prefix}match <regex> <text>`: Use regular expressions `re.fullmatch()`. Same as `search` but full match.'
+        message = f'`{self.prefix}match <regex> <text>`: Use regular expressions `re.match()`. Same as `search` but full match.'
         return message
 
     def code_help(self):
@@ -116,7 +116,7 @@ class SlashCodeBlock:
         self.source = argument
 
 
-class Code(Cog, help_command=Help):
+class Code(Cog, help_command=Help, name='code'):
     """
     Many of the commands are owner only
     """

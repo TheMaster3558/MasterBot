@@ -32,12 +32,21 @@ class Help(metaclass=HelpSingleton):
         message = f'`{self.prefix}city <query>`: Search up a city'
         return message
 
-    def tz_help(self):
+    def place_help(self):
+        return self.city_help()
+
+    def town_help(self):
+        return self.city_help()
+
+    def timezone_help(self):
         message = f'`{self.prefix}timezone <location>`: Get the timezone of a location.'
         return message
 
+    def tz_help(self):
+        return self.timezone_help()
+
     def full_help(self):
-        help_list = [self.current_help(), self.forecast_help(), self.city_help(), self.tz_help()]
+        help_list = [self.current_help(), self.forecast_help(), self.city_help(), self.timezone_help()]
         return '\n'.join(help_list)
 
 
@@ -70,7 +79,7 @@ class WeatherAPIHTTPClient(AsyncHTTPClient):
         return await self.request('timezone.json', q=location)
 
 
-class Weather(Cog, help_command=Help):
+class Weather(Cog, help_command=Help, name='weather'):
     metric = {'temp': 'C', 'speed': 'kph'}
     customary = {'temp': 'F', 'speed': 'mph'}
 

@@ -31,6 +31,12 @@ class Help(metaclass=HelpSingleton):
         message = f'`{self.prefix}rockpaperscissors [member]`: Use `{self.prefix}rps` also. Play a game of Rock Paper Scissors.'
         return message
 
+    def rock_paper_scissors_help(self):
+        return self.rps_help()
+
+    def rockpaperscissors_help(self):
+        return self.rps_help()
+
     def wordle_help(self):
         message = f'`{self.prefix}wordle`: Play the popular game wordle. Not created by us.'
         return message
@@ -203,7 +209,7 @@ class RockPaperScissors(View):
         return None
 
 
-class Games(Cog, help_command=Help):
+class Games(Cog, help_command=Help, name='games'):
     word = random.choice(words)
     font = ImageFont.truetype('arial.ttf', 15)
 
@@ -275,7 +281,7 @@ class Games(Cog, help_command=Help):
             return
         await interaction.followup.send("You couldn't finish in time.")
 
-    @commands.command(aliases=['rps'])
+    @commands.command(aliases=['rps', 'rockpaperscissors'])
     async def rock_paper_scissors(self, ctx: commands.Context, member: discord.Member = None):
         view = RockPaperScissors(ctx.author, member)
         member = member or ctx.me

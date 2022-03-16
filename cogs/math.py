@@ -56,7 +56,7 @@ class StateGroup(app_commands.Group):
             pass
 
 
-class Math(Cog, help_command=Help):
+class Math(Cog, help_command=Help, name='math'):
     def __init__(self, bot: MasterBot):
         super().__init__(bot)
         self.parse_regex = re.compile(r'\w *= *\d+')
@@ -105,6 +105,7 @@ class Math(Cog, help_command=Help):
     async def error(self, ctx, error):
         if isinstance(error, commands.MissingRequiredArgument):
             await ctx.send('I need something to actually do math on.')
+            return
         raise error
 
     @commands.group()

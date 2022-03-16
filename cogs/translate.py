@@ -13,9 +13,15 @@ class Help(metaclass=HelpSingleton):
     def __init__(self, prefix):
         self.prefix = prefix
 
-    def langs_help(self):
+    def languages_help(self):
         message = f'`{self.prefix}languages`: Aliases: `langs` `codes`. Get the valid list of languages to translate to.'
         return message
+
+    def langs_help(self):
+        return self.languages_help()
+
+    def codes_help(self):
+        return self.languages_help()
 
     def trans_help(self):
         message = f'`{self.prefix}translate [language] <text>`: `language` is optional. Translate your text!\n' \
@@ -27,11 +33,11 @@ class Help(metaclass=HelpSingleton):
         return message
 
     def full_help(self):
-        help_list = [self.langs_help(), self.trans_help(), self.detect_help()]
+        help_list = [self.languages_help(), self.trans_help(), self.detect_help()]
         return '\n'.join(help_list)
 
 
-class Translator(Cog, help_command=Help):
+class Translator(Cog, help_command=Help, name='translation'):
     def __init__(self, bot: MasterBot):
         super().__init__(bot)
         self.translator = None
@@ -51,15 +57,16 @@ class Translator(Cog, help_command=Help):
 
     @commands.command()
     @commands.cooldown(1, 30, commands.BucketType.user)
-    async def translate(self, ctx, lang=None, *, text=''):
+    async def translate(self, ctx, lang='', *, text=''):
         if lang in LANGUAGES.keys() or lang in LANGUAGES.values():
             if lang in LANGUAGES.values():
                 lang = {v: k for k, v in LANGUAGES.items()}
         else:
             text = lang + ' ' + text
             lang = 'en'
-        if not text:
-            return await ctx.send('Give me something to translate.')
+        if not text or not any([char != ' ' for char in list(text)]):
+            await ctx.send('Give me something to translate.')
+            return
         result = await self.translator.translate(text=text, lang_tgt=lang)
         embed = discord.Embed(description=f'Original: {text}\nTranslated: {result}')
         embed.set_footer(text=f'Text successfully translated to {LANGUAGES.get(lang)}')

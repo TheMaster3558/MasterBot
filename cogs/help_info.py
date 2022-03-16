@@ -5,19 +5,6 @@ from bot import MasterBot
 
 import re
 
-from cogs.reaction_roles import ReactionRoles
-from cogs.moderation import Moderation
-from cogs.code import Code
-from cogs.translate import Translator
-from cogs.trivia import Trivia
-from cogs.clash_royale import ClashRoyale
-from cogs.jokes import Jokes
-from cogs.webhook import Webhooks
-from cogs.weather import Weather
-from cogs.forms import Forms
-from cogs.math import Math
-from cogs.games import Games
-
 import sys
 from async_google_trans_new import __version__ as agtn_version
 import aiohttp
@@ -28,10 +15,65 @@ from cogs.utils.cog import Cog, command
 
 
 class InviteView(View):
-    def __init__(self, bot: MasterBot):
+    def __init__(self, bot):
         super().__init__()
         url = bot.oath_url
         self.add_item(discord.ui.Button(label='Click here!', url=url))
+
+
+class HelpEmbed(discord.Embed):
+    def __init__(self, bot, **kwargs):
+        super().__init__(**kwargs)
+        self.set_footer(text=f'{bot.user.name} Help Menu', icon_url=bot.user.avatar.url)
+
+
+class HelpCommand(commands.HelpCommand):
+    async def send_bot_help(self, mapping) -> None:
+        embed = HelpEmbed(title=f'{self.context.bot.user.name} Help Menu',
+                          bot=self.context.bot)
+        embed.add_field(name='Categories',
+                        value='`reactions`\t`moderation`\t`code`\t`translation`\t`trivia`\t`clashroyale`\t`jokes`\t`webhook`\t`weather`\t`forms`\t`weather`\t`math`\t`games`\t`version`')
+
+        channel = self.get_destination()
+        await channel.send(embed=embed)
+
+    async def send_cog_help(self, cog: Cog) -> None:
+        help_message = cog.help_command(self.context.clean_prefix).full_help()
+        embed = HelpEmbed(title=f'{cog.qualified_name.capitalize()} Help',
+                          description=help_message,
+                          bot=self.context.bot)
+
+        channel = self.get_destination()
+        await channel.send(embed=embed)
+
+    async def send_command_help(self, _command: commands.Command) -> None:
+        cog = _command.cog
+        if _command.root_parent:
+            name = _command.root_parent.name
+        else:
+            name = _command.name
+        help_message = getattr(cog.help_command, f'{name}_help')()
+
+        embed = HelpEmbed(title=f'{_command.qualified_name.capitalize()} Help',
+                          description=help_message,
+                          bot=self.context.bot)
+
+        channel = self.get_destination()
+        await channel.send(embed=embed)
+
+    async def send_group_help(self, group: commands.Group) -> None:
+        cog = group.cog
+        help_message = getattr(cog.help_command, f'{group.name}_help')()
+
+        embed = HelpEmbed(title=f'{group.name.capitalize()} Help',
+                          description=help_message,
+                          bot=self.context.bot)
+
+        channel = self.get_destination()
+        await channel.send(embed=embed)
+
+    async def command_not_found(self, string: str) -> str:
+        return f"I couldn't find the command \"{string}\""
 
 
 class Help(Cog):
@@ -39,12 +81,13 @@ class Help(Cog):
 
     def __init__(self, bot: MasterBot):
         super().__init__(bot)
+        bot.help_command = HelpCommand()
         print('Help and Info cog loaded')
 
     async def get_regex(self):
         await self.bot.wait_until_ready()
         self.mention_regex = re.compile(f'<@!?{self.bot.user.id}>')
-    
+
     async def cog_load(self):
         await super().cog_load()
         self.bot.loop.create_task(self.get_regex())
@@ -80,13 +123,14 @@ class Help(Cog):
     async def info(self, ctx):
         embed = discord.Embed(title=f'{self.bot.user.name} Info')
         embed.add_field(name='Version Info', value=f'{self.bot.user.name} version {self.bot.__version__}\n'
-                                                  f'[Python {sys.version.split(" ")[0]}](https://www.python.org)\n'
-                                                  f'[discord.py {discord.__version__}](https://github.com/Rapptz/discord.py)\n'
-                                                  f'[async-google-trans-new {agtn_version}](https://github.com/Theelx/async-google-trans-new)\n'
-                                                  f'[aiohttp {aiohttp.__version__}](https://docs.aiohttp.org/en/stable/)\n'
-                                                  f'[fuzzywuzzy {fuzzywuzzy.__version__}](https://github.com/seatgeek/thefuzz)\n'
-                                                  f'Platform {sys.platform}')
-        embed.add_field(name='Stats', value=f'Servers: {len(self.bot.guilds)}\nUnique Users: {len(set(self.bot.users))}')
+                                                   f'[Python {sys.version.split(" ")[0]}](https://www.python.org)\n'
+                                                   f'[discord.py {discord.__version__}](https://github.com/Rapptz/discord.py)\n'
+                                                   f'[async-google-trans-new {agtn_version}](https://github.com/Theelx/async-google-trans-new)\n'
+                                                   f'[aiohttp {aiohttp.__version__}](https://docs.aiohttp.org/en/stable/)\n'
+                                                   f'[fuzzywuzzy {fuzzywuzzy.__version__}](https://github.com/seatgeek/thefuzz)\n'
+                                                   f'Platform {sys.platform}')
+        embed.add_field(name='Stats',
+                        value=f'Servers: {len(self.bot.guilds)}\nUnique Users: {len(set(self.bot.users))}')
         await ctx.send(embed=embed)
 
     @command(name='info', description='Get info about the bot')
@@ -102,127 +146,6 @@ class Help(Cog):
         embed.add_field(name='Stats',
                         value=f'Servers: {len(self.bot.guilds)}\nUnique Users: {len(set(self.bot.users))}')
         await interaction.response.send_message(embed=embed)
-
-    @commands.group(name='help')
-    async def _help(self, ctx):
-        if ctx.invoked_subcommand is None:
-            embed = discord.Embed(title=f'{self.bot.user.name} Help Menu')
-            embed.add_field(name='Categories',
-                            value='`reactions`\n`moderation`\n`code`\n`translation`\n`trivia`\n`clashroyale`\n`jokes`\n`webhook`\n`weather`\n`forms`\n`weather`\n`math`\n`games`')
-            embed.add_field(name='Info', value=f'`{ctx.clean_prefix}info`')
-            await ctx.send(embed=embed)
-
-    @_help.command()
-    async def reactions(self, ctx):
-        prefix = ctx.clean_prefix
-        h = ReactionRoles.help_command(prefix)
-        help_message = h.full_help()
-        embed = discord.Embed(title='Reaction Role Help',
-                              description=help_message)
-        await ctx.send(embed=embed)
-
-    @_help.command()
-    async def moderation(self, ctx):
-        prefix = ctx.clean_prefix
-        h = Moderation.help_command(prefix)
-        help_message = h.full_help()
-        embed = discord.Embed(title='Moderation Help',
-                              description=help_message)
-        await ctx.send(embed=embed)
-
-    @_help.command()
-    async def code(self, ctx):
-        prefix = ctx.clean_prefix
-        h = Code.help_command(prefix)
-        help_message = h.full_help()
-        embed = discord.Embed(title='Code Help',
-                              description=help_message)
-        await ctx.send(embed=embed)
-
-    @_help.command()
-    async def translate(self, ctx):
-        prefix = ctx.clean_prefix
-        h = Translator.help_command(prefix)
-        help_message = h.full_help()
-        embed = discord.Embed(title='Translate Help',
-                              description=help_message)
-        embed.set_footer(text='This bot uses Google Translate to do this')
-        await ctx.send(embed=embed)
-
-    @_help.command()
-    async def trivia(self, ctx):
-        prefix = ctx.clean_prefix
-        h = Trivia.help_command(prefix)
-        help_message = h.full_help()
-        embed = discord.Embed(title='Trivia Help',
-                              description=help_message)
-        embed.set_footer(text='This bot uses opentdb.com to do this')
-        await ctx.send(embed=embed)
-
-    @_help.command()
-    async def clashroyale(self, ctx):
-        prefix = ctx.clean_prefix
-        h = ClashRoyale.help_command(prefix)
-        help_message = h.full_help()
-        embed = discord.Embed(title='Clash Royale Help',
-                              description=help_message)
-        embed.set_footer(text='This bot uses the Clash Royale API to do this. Learn more at developer.clashroyale.com')
-        await ctx.send(embed=embed)
-
-    @_help.command()
-    async def jokes(self, ctx):
-        prefix = ctx.clean_prefix
-        h = Jokes.help_command(prefix)
-        help_message = h.full_help()
-        embed = discord.Embed(title='Jokes Help',
-                              description=help_message)
-        embed.set_footer(text='This bot uses jokeapi.dev to do this')
-        await ctx.send(embed=embed)
-
-    @_help.command()
-    async def webhook(self, ctx):
-        prefix = ctx.clean_prefix
-        h = Webhooks.help_command(prefix)
-        help_message = h.full_help()
-        embed = discord.Embed(title='Webhook Help',
-                              description=help_message)
-        await ctx.send(embed=embed)
-
-    @_help.command()
-    async def weather(self, ctx):
-        prefix = ctx.clean_prefix
-        h = Weather.help_command(prefix)
-        help_message = h.full_help()
-        embed = discord.Embed(title='Weather Help',
-                              description=help_message)
-        await ctx.send(embed=embed)
-
-    @_help.command()
-    async def forms(self, ctx):
-        prefix = ctx.clean_prefix
-        h = Forms.help_command(prefix)
-        help_message = h.full_help()
-        embed = discord.Embed(title='Forms Help',
-                              description=help_message)
-        await ctx.send(embed=embed)
-
-    @_help.command()
-    async def math(self, ctx):
-        prefix = ctx.clean_prefix
-        h = Math.help_command(prefix)
-        help_message = h.full_help()
-        embed = discord.Embed(title='Math Help',
-                              description=help_message)
-        await ctx.send(embed=embed)
-
-    @_help.command()
-    async def games(self, ctx):
-        prefix = ctx.clean_prefix
-        h = Games.help_command(prefix)
-        help_message = h.full_help()
-        embed = discord.Embed(title='Games Help',
-                              description=help_message)
-        await ctx.send(embed=embed)
 
 
 async def setup(bot: MasterBot):

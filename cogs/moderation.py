@@ -75,7 +75,7 @@ class Help(metaclass=HelpSingleton):
         return '\n'.join(help_list) + '\n**Most commands not available with Slash Commands**'
 
 
-class Moderation(Cog, help_command=Help):
+class Moderation(Cog, help_command=Help, name='moderation'):
     """Will be changed to cache instead of db call in v2 or earlier"""
 
     def __init__(self, bot: MasterBot):

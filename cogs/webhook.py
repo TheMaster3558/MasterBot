@@ -20,16 +20,12 @@ class Help(metaclass=HelpSingleton):
 
     def webhook_help(self):
         message = f'`{self.prefix}webhook create <flags>`: Create your own webhook user!\nFlags:\n**name**\n**avatar** (optional. should be url)\n' \
-                  f'`{self.prefix}webhook send <message>`: Send a message with the webhook.'
-        return message
-
-    def delete_help(self):
-        message = f'`{self.prefix}webhook delete`: Delete the data of your webhook user.'
+                  f'`{self.prefix}webhook send <message>`: Send a message with the webhook\n' \
+                  f'`{self.prefix}webhook delete`: Delete the data of your webhook user.'
         return message
 
     def full_help(self):
-        help_list = [self.webhook_help(), self.delete_help()]
-        return '\n'.join(help_list) + '\nNot available with Slash Commands yet'
+        return self.webhook_help()
 
 
 class WebhookUserFlags(commands.FlagConverter):
@@ -107,7 +103,7 @@ class WebhookGroup(app_commands.Group):
         await interaction.response.send_message(f'Sending message:\n{content}', ephemeral=True)
 
 
-class Webhooks(Cog, help_command=Help):
+class Webhooks(Cog, help_command=Help, name='webhook'):
     def __init__(self, bot: MasterBot):
         super().__init__(bot)
         self.session = None

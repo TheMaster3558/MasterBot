@@ -89,7 +89,7 @@ class ConfirmView(View):
         self.stop()
 
 
-class Forms(Cog, help_command=Help):
+class Forms(Cog, help_command=Help, name='forms'):
     def __init__(self, bot: MasterBot):
         super().__init__(bot)
         self.modal: dict[int, list[discord.ui.Modal]] = {}
