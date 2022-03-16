@@ -52,28 +52,40 @@ class HelpCommand(commands.HelpCommand):
             name = _command.root_parent.name
         else:
             name = _command.name
-        help_message = getattr(cog.help_command, f'{name}_help')()
+
+        channel = self.get_destination()
+
+        try:
+            help_message = getattr(cog.help_command(self.context.clean_prefix), f'{name}_help')()
+        except TypeError:
+            await channel.send(f"I couldn't find any help for `{_command.qualified_name}`")
+            return
 
         embed = HelpEmbed(title=f'{_command.qualified_name.capitalize()} Help',
                           description=help_message,
                           bot=self.context.bot)
 
-        channel = self.get_destination()
         await channel.send(embed=embed)
 
     async def send_group_help(self, group: commands.Group) -> None:
         cog = group.cog
-        help_message = getattr(cog.help_command, f'{group.name}_help')()
+
+        channel = self.get_destination()
+
+        try:
+            help_message = getattr(cog.help_command(self.context.clean_prefix), f'{group.name}_help')()
+        except TypeError:
+            await channel.send(f"I couldn't find any help for `{group.qualified_name}`")
+            return
 
         embed = HelpEmbed(title=f'{group.name.capitalize()} Help',
                           description=help_message,
                           bot=self.context.bot)
 
-        channel = self.get_destination()
         await channel.send(embed=embed)
 
     async def command_not_found(self, string: str) -> str:
-        return f"I couldn't find the command \"{string}\""
+        return f"I couldn't find the command `{string}`"
 
 
 class Help(Cog):
