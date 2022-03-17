@@ -4,4 +4,5 @@ Code Changes:
 
 User Changes:
 - Possible commands will be shown for not found commands
+- Find out the age of an account. Or the time an account would be made if the id was real.
 

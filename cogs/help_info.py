@@ -4,6 +4,7 @@ from discord.ext import commands
 from bot import MasterBot
 
 import re
+from typing import Union
 
 import sys
 from async_google_trans_new import __version__ as agtn_version
@@ -163,6 +164,34 @@ class Help(Cog):
         embed.add_field(name='Stats',
                         value=f'Servers: {len(self.bot.guilds)}\nUnique Users: {len(set(self.bot.users))}')
         await interaction.response.send_message(embed=embed)
+
+    @commands.command()
+    async def created(self, ctx, user: Union[discord.User, int]):
+        user = user.id if isinstance(user, discord.User) else user
+        created_at = discord.utils.snowflake_time(user)
+        timestamp = discord.utils.format_dt(created_at, 'R')
+        await ctx.reply(timestamp, mention_author=False)
+
+    @created.error
+    async def error(self, ctx, error):
+        if isinstance(error, commands.MissingRequiredArgument):
+            await ctx.send('You need to give me a `user` or `id`')
+        elif isinstance(error, commands.BadArgument):
+            await ctx.send(f"I couldn't make that into a user or id")
+        else:
+            raise error
+
+    @command(name='created', description='See when a discord user or snowflake was created at')
+    @app_commands.describe(user='A discord user', snowflake='A discord ID')
+    async def _created(self, interaction, user: discord.User = None, snowflake: int = None):
+        if not user and not snowflake:
+            await interaction.response.send_message('You must give a user or snowflake', ephemeral=True)
+        if not snowflake:
+            snowflake = user.id
+
+        created_at = discord.utils.snowflake_time(snowflake)
+        timestamp = discord.utils.format_dt(created_at, 'R')
+        await interaction.response.send_message(timestamp)
 
 
 async def setup(bot: MasterBot):
