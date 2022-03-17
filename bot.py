@@ -110,13 +110,16 @@ class MasterBot(commands.Bot):
         print('Time taken to start up:', round(self.on_ready_time - self.start_time, 1), 'seconds')
         await self.tree.sync()
 
+    def possible_commands(self, context: commands.Context, ratio: int = 70):
+        return [cmd for cmd in self.all_commands if fuzz.ratio(
+            context.message.content,
+            cmd
+        ) > ratio
+         ]
+
     async def on_command_error(self, context: commands.Context, exception: commands.errors.CommandError) -> None:
         if isinstance(exception, commands.CommandNotFound):
-            possibles = [cmd for cmd in self.all_commands if fuzz.ratio(
-                    context.message.content,
-                    cmd
-                ) > 70
-            ]
+            possibles = self.possible_commands(context)
             if len(possibles) > 0:
                 embed = discord.Embed(title="I couldn't find that command",
                                       description='Maybe you meant:\n`{}`'.format("`\n`".join(possibles)))

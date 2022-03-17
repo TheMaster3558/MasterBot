@@ -64,7 +64,6 @@ class HelpCommand(commands.HelpCommand):
         embed = HelpEmbed(title=f'{_command.qualified_name.capitalize()} Help',
                           description=help_message,
                           bot=self.context.bot)
-
         await channel.send(embed=embed)
 
     async def send_group_help(self, group: commands.Group) -> None:
@@ -85,7 +84,13 @@ class HelpCommand(commands.HelpCommand):
         await channel.send(embed=embed)
 
     async def command_not_found(self, string: str) -> str:
-        return f"I couldn't find the command `{string}`"
+        message = f"I couldn't find the command `{string}`"
+
+        close_commands = self.context.bot.possible_commands(self.context)  # type: ignore
+        if len(close_commands) > 0:
+            message += '\n`{}`'.format("`\n`".join(close_commands))
+
+        return message
 
 
 class Help(Cog):

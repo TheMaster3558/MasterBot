@@ -1,3 +1,7 @@
 Code Changes:
 - Complete help command code rework
 - Improved error handling
+
+User Changes:
+- Possible commands will be shown for not found commands
+
