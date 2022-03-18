@@ -13,7 +13,7 @@ from cogs.utils.help_utils import HelpSingleton
 import aiofiles
 import builtins
 import io
-from cogs.utils.cog import Cog
+from cogs.utils.cog import Cog, command
 import threading
 
 
@@ -41,8 +41,12 @@ class Help(metaclass=HelpSingleton):
         message = f'`{self.prefix}code <file> [lines]`: Get some code from the bot.'
         return message
 
+    def created_help(self):
+        message = f'`{self.prefix}created <snowflake>`: Snowflake can be a user or a made up ID. Get the time a snowflake was create at.'
+        return message
+
     def full_help(self):
-        help_list = [self.eval_help(), self.canrun_help(), self.search_help(), self.match_help(), self.code_help()]
+        help_list = [self.eval_help(), self.canrun_help(), self.search_help(), self.match_help(), self.code_help(), self.created_help()]
         return '\n'.join(help_list)
 
 
@@ -218,7 +222,7 @@ class Code(Cog, help_command=Help, name='code'):
         returned = re.search(regex, text)
         await ctx.send(str(returned))
 
-    @app_commands.command(name='search', description='Use regex to search text')
+    @command(name='search', description='Use regex to search text')
     @app_commands.describe(regex='The regular expression', text='The text to search.')
     async def _search(self, interaction, regex: str, text: str):
         returned = re.search(regex, text)
@@ -229,7 +233,7 @@ class Code(Cog, help_command=Help, name='code'):
         returned = re.fullmatch(regex, text)
         await ctx.send(str(returned))
 
-    @app_commands.command(name='match', description='Use regex to match text')
+    @command(name='match', description='Use regex to match text')
     @app_commands.describe(regex='The regular expression', text='The text to match.')
     async def _match(self, interaction, regex: str, text: str):
         returned = re.match(regex, text)
@@ -348,7 +352,7 @@ class Code(Cog, help_command=Help, name='code'):
         else:
             raise error
 
-    @app_commands.command(name='eval', description='Run a Python file')
+    @command(name='eval', description='Run a Python file')
     async def __eval(self, interaction: discord.Interaction, file: discord.Attachment):
         if not file.filename.endswith('.py'):
             await interaction.response.send_message('It must be a `python` file.')
@@ -395,6 +399,52 @@ class Code(Cog, help_command=Help, name='code'):
             guild = self.bot.test_guild
         data = await self.bot.tree.sync(guild=guild)
         await ctx.send(data)
+
+    @commands.command()
+    async def created(self, ctx, user: Union[discord.User, int]):
+        user = user.id if isinstance(user, discord.User) else user
+        created_at = discord.utils.snowflake_time(user)
+        timestamp = discord.utils.format_dt(created_at, 'R')
+        await ctx.reply(timestamp, mention_author=False)
+
+    @created.error
+    async def error(self, ctx, error):
+        if isinstance(error, commands.MissingRequiredArgument):
+            await ctx.send('You need to give me a `user` or `id`')
+        elif isinstance(error, commands.BadArgument):
+            await ctx.send(f"I couldn't make that into a user or id")
+        else:
+            raise error
+
+    @command(name='created', description='See when a discord user or snowflake was created at')
+    @app_commands.describe(user='A discord user', snowflake='A discord ID')
+    async def _created(self, interaction, user: discord.User = None, snowflake: int = None):
+        if not user and not snowflake:
+            await interaction.response.send_message('You must give a user or snowflake', ephemeral=True)
+        if not snowflake:
+            snowflake = user.id
+
+        created_at = discord.utils.snowflake_time(snowflake)
+        timestamp = discord.utils.format_dt(created_at, 'R')
+        await interaction.response.send_message(timestamp)
+
+    @commands.command()
+    async def binaryint(self, ctx, integer: int):
+        await ctx.send(f'{integer:b}')
+
+    @commands.command(aliases=['hexadecimal'])
+    async def hexint(self, ctx, integer: int):
+        await ctx.send(str(hex(integer)))
+
+    @commands.command(aliases=['octal'])
+    async def octint(self, ctx, integer: int):
+        await ctx.send(str(oct(integer)))
+
+    @binaryint.error
+    @hexint.error
+    @octint.error
+    async def error(self, ctx, error):
+        await ctx.send(str(error))
 
 
 async def setup(bot: MasterBot):
