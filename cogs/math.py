@@ -22,8 +22,20 @@ class Help(metaclass=HelpSingleton):
         message2 = f'`{self.prefix}state delete`: Delete that state.'
         return message + '\n' + message2
 
+    def pi_help(self):
+        message = f'`{self.prefix}pi`: Get the value of pi'
+        return message
+
+    def phi_help(self):
+        message = f'`{self.prefix}phi`: Get the value of phi'
+        return message
+
+    def e_help(self):
+        message = f'`{self.prefix}e`: Get the value of e'
+        return message
+
     def full_help(self):
-        help_list = [self.math_help(), self.state_help()]
+        help_list = [self.math_help(), self.state_help(), self.pi_help(), self.phi_help(), self.e_help()]
         return '\n'.join(help_list)
 
 
@@ -124,6 +136,18 @@ class Math(Cog, help_command=Help, name='math'):
             del self.states[ctx.author.id]
         except KeyError:
             pass
+
+    @commands.command()
+    async def pi(self, ctx):
+        await ctx.send(expr.pi)
+
+    @commands.command()
+    async def phi(self, ctx):
+        await ctx.send(expr.phi)
+
+    @commands.command()
+    async def e(self, ctx):
+        await ctx.send(expr.e)
 
 
 async def setup(bot: MasterBot):
