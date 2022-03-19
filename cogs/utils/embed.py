@@ -28,5 +28,5 @@ class Embed(discord.Embed):
             elif isinstance(field, EmbedField):
                 self.add_field(name=field.name, value=field.value, inline=field.inline)
 
-    async def send(self, channel: Union[discord.TextChannel, discord.DMChannel, discord.Thread]):
+    async def send(self, channel: discord.abc.Messageable):
         await channel.send(embed=self)
