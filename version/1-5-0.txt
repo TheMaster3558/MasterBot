@@ -7,3 +7,4 @@ User Changes:
 - Possible commands will be shown for not found commands
 - New features in code cog!
 - Math cog values
+- A few commands are now server only

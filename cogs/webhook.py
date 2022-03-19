@@ -56,6 +56,12 @@ class WebhookGroup(app_commands.Group):
         self.cog = cog
         super().__init__(name='webhook', description='A group command to make your own webhook!')
 
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        if interaction.guild:
+            return True
+        await interaction.response.send_message('Try this in a server.')
+        return False
+
     @command(description='Create a webhook user.')
     async def create(self, interaction: discord.Interaction, name: str, avatar: str = None):
         if self.cog.users.get(interaction.user.id):
