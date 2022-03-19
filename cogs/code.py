@@ -1,6 +1,6 @@
 import asyncio
-import concurrent.futures
-import sys
+import os
+from concurrent.futures import TimeoutError
 import discord
 from discord import app_commands
 from discord.ext import commands
@@ -124,7 +124,7 @@ class Code(Cog, help_command=Help, name='code'):
     """
     Many of the commands are owner only
     """
-    forbidden_imports = ['os', 'sys', 'subprocess']
+    forbidden_imports = ['os', 'sys', 'subprocess', 'setuptools', 'distutils', 'threading', 'multiprocessing', 'Cython']
     forbidden_words = ['ctx', '__os__', '__sys__', 'self', 'open(', 'sys']
 
     def __init__(self, bot: MasterBot):
@@ -165,7 +165,7 @@ class Code(Cog, help_command=Help, name='code'):
                     async with EventLoopThread() as thr:
                         await self.bot.loop.run_in_executor(None, thr.run_coro, aexec(code.source, temp_out), 60)
                         # to prevent blocking event loop if they use time.sleep etc
-                except concurrent.futures.TimeoutError:
+                except TimeoutError:
                     await ctx.reply('Your code took too long to run.')
                     return
             except Exception as e:
@@ -380,7 +380,7 @@ class Code(Cog, help_command=Help, name='code'):
                 async with EventLoopThread() as thr:
                     await self.bot.loop.run_in_executor(None, thr.run_coro, aexec(code.source, temp_out), 60)
                     # to prevent blocking event loop if they use time.sleep etc
-            except concurrent.futures.TimeoutError:
+            except TimeoutError:
                 await interaction.followup.send('Your code took too long to run.')
                 return
         except Exception as e:
@@ -445,6 +445,16 @@ class Code(Cog, help_command=Help, name='code'):
     @octint.error
     async def error(self, ctx, error):
         await ctx.send(str(error))
+
+    @commands.command(name='setup')
+    @commands.is_owner()
+    async def _setup(self, ctx):
+        lines = """from setuptools import setup
+        from Cython.Build import cythonize
+        
+        setup(ext_modules=cythonize('cogs/utils/math_extensions.pyx'), zip_safe=False)
+        """
+        os.system(lines)
 
 
 async def setup(bot: MasterBot):

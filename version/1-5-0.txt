@@ -1,9 +1,9 @@
 Code Changes:
 - Complete help command code rework
 - Improved error handling
+- Re compile more efficient files commands
 
 User Changes:
 - Possible commands will be shown for not found commands
 - New features in code cog!
 - Math cog values
-
