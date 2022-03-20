@@ -103,16 +103,18 @@ class Forms(Cog, help_command=Help, name='forms'):
             self.modal[guild.id] = []
 
     async def cog_command_error(self, ctx, error):
+        error: commands.CommandError  # showing as `Exception` for some reason
+
         if not ctx.command:
             return
         if ctx.command.cog != self:
             return
         if isinstance(error, commands.BadArgument):
-            await ctx.send(f"I couldn't convert that to an integer")
+            await ctx.send(str(error))
         elif isinstance(error, commands.NoPrivateMessage):
             await ctx.send('Try this in a server')
         else:
-            raise error
+            await self.bot.on_command_error(ctx, error)
 
     @commands.command()
     @commands.guild_only()

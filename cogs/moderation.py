@@ -95,6 +95,8 @@ class Moderation(Cog, help_command=Help, name='moderation'):
             pass
 
     async def cog_command_error(self, ctx, error):
+        error: commands.CommandError  # showing as `Exception` for some reason
+
         if ctx.command is None:
             return
         if isinstance(error, commands.errors.MissingPermissions):
@@ -110,7 +112,7 @@ class Moderation(Cog, help_command=Help, name='moderation'):
                 return
         else:
             if not ctx.command.has_error_handler():
-                raise error
+                await self.bot.on_command_error(ctx, error)
 
     @commands.command()
     @commands.has_permissions(administrator=True)

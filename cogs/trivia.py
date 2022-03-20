@@ -118,7 +118,7 @@ class Trivia(Cog, help_command=Help, name='trivia'):
         if isinstance(error, commands.CommandOnCooldown):
             await ctx.send(error)
         else:
-            raise type(error)(error)
+            raise error
 
     @command(name='playtrivia', description='Get trivia from opentdb.com!')
     async def _trivia(self, interaction: discord.Interaction):

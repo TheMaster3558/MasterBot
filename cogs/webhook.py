@@ -141,7 +141,7 @@ class Webhooks(Cog, help_command=Help, name='webhook'):
         elif isinstance(error, commands.NoPrivateMessage):
             await ctx.send('Try this in a server.')
         else:
-            raise error
+            await self.bot.on_command_error(ctx, error)
 
     async def fetch_webhooks(self):
         for channel in self.bot.get_all_channels():

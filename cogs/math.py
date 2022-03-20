@@ -73,8 +73,11 @@ class Math(Cog, help_command=Help, name='math'):
         super().__init__(bot)
         self.parse_regex = re.compile(r'\w *= *\d+')
         self.states: Dict[int, Dict[str, N]] = {}
-        self.bot.tree.add_command(StateGroup(self))
         print('Math cog loaded')
+
+    async def cog_load(self):
+        await super().cog_load()
+        self.bot.tree.add_command(StateGroup(self))
     
     async def cog_unload(self):
         await super().cog_unload()

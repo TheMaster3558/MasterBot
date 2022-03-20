@@ -131,6 +131,8 @@ class Code(Cog, help_command=Help, name='code'):
         print('Code cog loaded')
 
     async def cog_command_error(self, ctx: commands.Context, error):
+        error: commands.CommandError
+
         if not ctx.command:
             return
         if ctx.command.has_error_handler():
@@ -139,7 +141,7 @@ class Code(Cog, help_command=Help, name='code'):
             return
         else:
             if not ctx.command.has_error_handler():
-                raise error
+                await self.bot.on_command_error(ctx, error)
 
     @commands.cooldown(1, 60, commands.BucketType.user)
     @commands.command(name='eval')

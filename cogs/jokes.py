@@ -158,12 +158,14 @@ class Jokes(Cog, help_command=Help, name='jokes'):
         self.update_db.cancel()
 
     async def cog_command_error(self, ctx, error):
+        error: commands.CommandError  # showing as `Exception` for some reason
+
         if not ctx.command:
             return
         if isinstance(error, commands.MissingPermissions):
             return
         else:
-            raise error
+            await self.bot.on_command_error(ctx, error)
 
     @commands.Cog.listener()
     async def on_guild_join(self, guild):

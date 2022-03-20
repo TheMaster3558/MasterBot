@@ -54,7 +54,7 @@ class Translator(Cog, help_command=Help, name='translation'):
         if isinstance(error, commands.CommandOnCooldown):
             await ctx.send('Patience! Try again in {:.1f} seconds.'.format(error.retry_after))
         else:
-            raise error
+            await self.bot.on_command_error(ctx, error)
 
     @commands.command()
     @commands.cooldown(1, 30, commands.BucketType.user)

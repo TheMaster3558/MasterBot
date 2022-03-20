@@ -130,8 +130,7 @@ class MasterBot(commands.Bot):
             traceback.print_exception(exception, file=sys.stderr)
             return
 
-        if not context.cog.has_error_handler() and context.command.has_error_handler():
-            traceback.print_exception(exception, file=sys.stderr)
+        traceback.print_exception(exception, file=sys.stderr)
 
     def restart(self):
         """Reloads all extensions and clears the cache"""

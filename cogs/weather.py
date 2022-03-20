@@ -151,7 +151,7 @@ class Weather(Cog, help_command=Help, name='weather'):
             await ctx.send(f'You missed an argument "{error.param}"')
         else:
             if not ctx.command.has_error_handler():
-                raise error
+                await self.bot.on_command_error(ctx, error)
 
     @commands.command()
     @commands.has_permissions(administrator=True)
