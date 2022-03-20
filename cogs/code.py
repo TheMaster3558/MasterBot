@@ -139,7 +139,8 @@ class Code(Cog, help_command=Help, name='code'):
         if isinstance(error, (commands.MissingPermissions, commands.MissingRequiredArgument, commands.NotOwner)):
             return
         else:
-            raise error
+            if not ctx.command.has_error_handler():
+                raise error
 
     @commands.cooldown(1, 60, commands.BucketType.user)
     @commands.command(name='eval', aliases=['e'])
