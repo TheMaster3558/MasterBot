@@ -46,6 +46,7 @@ class Translator(Cog, help_command=Help, name='translation'):
     async def cog_load(self):
         await super().cog_load()
         self.translator = AsyncTranslator(url_suffix='com')
+        self.bot.translator = self.translator  # for context menus
 
     async def cog_command_error(self, ctx, error):
         if ctx.command is None:
@@ -120,14 +121,30 @@ class Translator(Cog, help_command=Help, name='translation'):
         embed.set_footer(text='Google translate did its best')
         await interaction.response.send_message(embed=embed)
 
-    # @app_commands.context_menu(name='detect')
-    # async def __detect(self, interaction: discord.Interaction, message: discord.Message):
-        # await self._detect._callback(interaction, message.content)
 
-    # @app_commands.context_menu(name='translate')
-    # async def __translate(self, interaction: discord.Interaction, message: discord.Message):
-        # await self._translate._callback(interaction, message.content)
+@app_commands.context_menu()
+async def translate(interaction: discord.Interaction, message: discord.Message):
+    translator: AsyncTranslator = interaction.client.translator  # type: ignore
+    result = await translator.translate(message.content, lang_tgt='en')
+    embed = discord.Embed(description=f'Original: {message.content}\nTranslated: {result}')
+    embed.set_footer(text='Text successfully translated to English')
+    await interaction.response.send_message(embed=embed, ephemeral=True)
+
+
+@app_commands.context_menu()
+async def detect(interaction: discord.Interaction, message: discord.Message):
+    translator: AsyncTranslator = interaction.client.translator  # type: ignore
+    result = await translator.detect(message.content)
+    embed = discord.Embed(title=f'I detected the language as {result[1]}',
+                          description=f'Text: {message.content}')
+    embed.set_footer(text='Google translate did its best')
+    await interaction.response.send_message(embed=embed, ephemeral=True)
 
 
 async def setup(bot: MasterBot):
     await Translator.setup(bot)
+    try:
+        bot.tree.add_command(translate)
+        bot.tree.add_command(detect)
+    except app_commands.CommandAlreadyRegistered:
+        pass

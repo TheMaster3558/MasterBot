@@ -2,9 +2,11 @@ Code Changes:
 - Complete help command code rework
 - Improved error handling
 - Re compile more efficient files commands
+- Error handling
 
 User Changes:
 - Possible commands will be shown for not found commands
 - New features in code cog!
 - Math cog values
 - A few commands are now server only
+- Translation context menus

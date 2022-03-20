@@ -9,6 +9,7 @@ import sys
 from async_google_trans_new import __version__ as agtn_version
 import aiohttp
 import fuzzywuzzy
+import Cython
 
 from cogs.utils.view import View
 from cogs.utils.cog import Cog, command
@@ -145,7 +146,8 @@ class Help(Cog):
                                                    f'[async-google-trans-new {agtn_version}](https://github.com/Theelx/async-google-trans-new)\n'
                                                    f'[aiohttp {aiohttp.__version__}](https://docs.aiohttp.org/en/stable/)\n'
                                                    f'[fuzzywuzzy {fuzzywuzzy.__version__}](https://github.com/seatgeek/thefuzz)\n'
-                                                   f'Platform {sys.platform}')
+                                                   f'[Cython {Cython.__version__}](https://cython.org/)\n'
+                                                   f'Platform {sys.platform}\n')
         embed.add_field(name='Stats',
                         value=f'Servers: {len(self.bot.guilds)}\nUnique Users: {len(set(self.bot.users))}')
         await ctx.send(embed=embed)
@@ -159,6 +161,7 @@ class Help(Cog):
                                                    f'[async-google-trans-new {agtn_version}](https://github.com/Theelx/async-google-trans-new)\n'
                                                    f'[aiohttp {aiohttp.__version__}](https://docs.aiohttp.org/en/stable/)\n'
                                                    f'[fuzzywuzzy {fuzzywuzzy.__version__}](https://github.com/seatgeek/thefuzz)\n'
+                                                   f'[Cython {Cython.__version__}](https://cython.org/)\n'
                                                    f'Platform {sys.platform}')
         embed.add_field(name='Stats',
                         value=f'Servers: {len(self.bot.guilds)}\nUnique Users: {len(set(self.bot.users))}')
