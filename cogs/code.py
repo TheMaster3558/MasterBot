@@ -1,12 +1,11 @@
 import asyncio
-import os
 from concurrent.futures import TimeoutError
 import discord
 from discord import app_commands
 from discord.ext import commands
 from typing import Optional, Union
 import re
-import os as __os__  # to keep eval command safe
+import os as __os__
 import sys as __sys__
 from bot import MasterBot
 from cogs.utils.help_utils import HelpSingleton
@@ -143,7 +142,7 @@ class Code(Cog, help_command=Help, name='code'):
                 raise error
 
     @commands.cooldown(1, 60, commands.BucketType.user)
-    @commands.command(name='eval', aliases=['e'])
+    @commands.command(name='eval')
     async def _eval(self, ctx, *, code: Union[CodeBlock, SlashCodeBlock]):
         """
         This command will need lots of working on.
@@ -450,12 +449,25 @@ class Code(Cog, help_command=Help, name='code'):
     @commands.command(name='setup')
     @commands.is_owner()
     async def _setup(self, ctx):
-        lines = """from setuptools import setup
-        from Cython.Build import cythonize
-        
-        setup(ext_modules=cythonize('cogs/utils/math_extensions.pyx'), zip_safe=False)
+        lines = """
+from setuptools import setup
+from Cython.Build import cythonize
+  
+setup(ext_modules=cythonize('cogs/utils/math_extensions.pyx'), zip_safe=False)
         """
-        os.system(lines)
+
+        # creating a new file
+        async with aiofiles.open('setup.py', 'w') as cy_setup:
+            await cy_setup.write(lines)
+        try:
+            __os__.system(' python setup.py build_ext --inplace')
+        except Exception as e:
+            await ctx.send(f'{e.__class__.__name__}: {e}')
+        finally:
+            try:
+                __os__.remove('setup.py')
+            except FileNotFoundError:
+                pass
 
 
 async def setup(bot: MasterBot):

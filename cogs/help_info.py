@@ -4,7 +4,6 @@ from discord.ext import commands
 from bot import MasterBot
 
 import re
-from typing import Union
 
 import sys
 from async_google_trans_new import __version__ as agtn_version

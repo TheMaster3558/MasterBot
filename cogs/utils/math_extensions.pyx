@@ -6,3 +6,5 @@ cdef float prod(float __iterable):
         total *= i
 
     return total
+
+print("HelloWorld")
