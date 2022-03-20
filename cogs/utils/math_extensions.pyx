@@ -1,7 +1,8 @@
-def prod(__iterable):
-    total = 1
+cdef float prod(float __iterable):
+    cdef float total = 1
 
-    for num in __iterable:
-        total *= num
+    cdef float i
+    for i in __iterable:
+        total *= i
 
     return total
