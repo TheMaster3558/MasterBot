@@ -52,4 +52,7 @@ def command(**kwargs):
         return func
     return inner
 
-
+def app_guild_only():
+    async def predicate(interaction):
+        return interaction.guild is not None
+    return app_commands.check(predicate)
