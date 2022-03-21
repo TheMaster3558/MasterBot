@@ -7,7 +7,7 @@ import asyncio
 import time
 import datetime
 from cogs.utils.help_utils import HelpSingleton
-from cogs.utils.cog import Cog
+from cogs.utils.cog import Cog, command, app_guild_only
 from cogs.utils.modal import Modal
 
 
@@ -172,8 +172,9 @@ class Forms(Cog, help_command=Help, name='forms'):
             embed.add_field(name=k, value='\n'.join(v))
         await ctx.author.send(embed=embed)
 
-    @app_commands.command(name='form', description='Create a form for other users to take')
+    @command(name='form', description='Create a form for other users to take')
     @app_commands.describe(title='The title', expire='The hours it will expire in. Defaults to 3.')
+    @app_guild_only()
     async def _form(self,
                     interaction,
                     title: str,
@@ -264,7 +265,8 @@ class Forms(Cog, help_command=Help, name='forms'):
         self.results[modal].append(response)
         await view.interaction.response.send_message('Your response has been recorded.')
 
-    @app_commands.command(name='takeform', description='Take a form from another user!')
+    @command(name='takeform', description='Take a form from another user!')
+    @app_guild_only($
     async def _takeform(self, interaction):
         if not interaction.guild:
             await interaction.response.send_message('Try this in a server.')
