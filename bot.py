@@ -35,7 +35,7 @@ class MasterBot(commands.Bot):
     __version__ = '1.5.0'
     test_guild = discord.Object(id=878431847162466354)
 
-    def __init__(self, cr_api_key: str, weather_api_key: str, mongo_db: str, /, **options) -> None:
+    def __init__(self, cr_api_key: str, weather_api_key: str, mongo_db: str, /, *, token: str, **options) -> None:
         intents = discord.Intents.default()
         intents.members = True
         intents.message_content = True
@@ -51,6 +51,7 @@ class MasterBot(commands.Bot):
 
         self.clash_royale = cr_api_key
         self.weather = weather_api_key
+        self.token = token
 
         self.prefixes = {}
         self.prefixes_db = None
@@ -65,7 +66,7 @@ class MasterBot(commands.Bot):
         self.locks: dict[CogT, asyncio.Lock] = {}
 
     @classmethod
-    def default(cls, cr_api_key: str, weather_api_key: str, mongo_db: str, /):
+    def default(cls, cr_api_key: str, weather_api_key: str, mongo_db: str, /, *, token: str):
         """The default options"""
         return cls(
             cr_api_key,
@@ -74,7 +75,8 @@ class MasterBot(commands.Bot):
             command_prefix=commands.when_mentioned_or('!'),
             activity=discord.Game(f'version {cls.__version__}'),
             strip_after_prefix=True,
-            enable_debug_events=True
+            enable_debug_events=True,
+            token=token
         )
 
     def acquire_lock(self, cog: CogT) -> asyncio.Lock:
@@ -169,3 +171,26 @@ class MasterBot(commands.Bot):
         return discord.utils.oauth_url(self.user.id,
                                        permissions=permissions,
                                        scopes=scopes)
+
+    async def start(self, token: str = None, *, reconnect: bool = True) -> None:
+        token = token or self.token
+        await super().start(token, reconnect=reconnect)
+
+
+def run_many(*instances: MasterBot):
+    async def runner():
+        loop = asyncio.get_event_loop()
+        _log = logging.getLogger(__name__)
+
+        for index, instance in enumerate(instances):
+            try:
+                loop.create_task(instance.start())
+            except Exception as exc:
+                _log.error('Instance %d has failed to start' % index, exc_info=exc)
+
+        try:
+            loop.run_forever()
+        except KeyboardInterrupt:
+            return
+
+    asyncio.run(runner())
