@@ -1,0 +1,5 @@
+User Changes:
+- Some Slash commands are now server only
+
+Code Changes:
+- Support multiple running instances

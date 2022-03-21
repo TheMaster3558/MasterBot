@@ -10,7 +10,7 @@ from bot import MasterBot
 import aiosqlite
 from sqlite3 import IntegrityError
 from cogs.utils.help_utils import HelpSingleton
-from cogs.utils.cog import Cog, command
+from cogs.utils.cog import Cog, command, NoPrivateMessage
 from cogs.utils.view import View, smart_send
 
 
@@ -59,8 +59,7 @@ class WebhookGroup(app_commands.Group):
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if interaction.guild:
             return True
-        await interaction.response.send_message('Try this in a server.')
-        return False
+        raise NoPrivateMessage('Try this in a server.')
 
     @command(description='Create a webhook user.')
     async def create(self, interaction: discord.Interaction, name: str, avatar: str = None):

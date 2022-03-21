@@ -13,7 +13,7 @@ from __future__ import annotations
 import discord
 from discord import app_commands
 from discord.ext import commands
-from cogs.utils.cog import Cog
+from cogs.utils.cog import Cog, NoPrivateMessage
 from time import perf_counter
 from typing import Optional, Iterable, TypeVar
 import logging
@@ -35,16 +35,16 @@ class MasterBot(commands.Bot):
     __version__ = '1.5.0'
     test_guild = discord.Object(id=878431847162466354)
 
-    def __init__(self, cr_api_key: str, weather_api_key: str, mongo_db: str, /) -> None:
+    def __init__(self, cr_api_key: str, weather_api_key: str, mongo_db: str, /, **options) -> None:
         intents = discord.Intents.default()
         intents.members = True
         intents.message_content = True
 
-        super().__init__(command_prefix=commands.when_mentioned_or('!'),
-                         intents=intents,
-                         activity=discord.Game(f'version {self.__version__}'),
-                         strip_after_prefix=True,
-                         enable_debug_events=True)
+        options['intents'] = intents
+
+        super().__init__(**options)
+
+        self.tree.error(self.command_tree_error)
 
         self.start_time = perf_counter()
         self.on_ready_time = None
@@ -64,19 +64,23 @@ class MasterBot(commands.Bot):
 
         self.locks: dict[CogT, asyncio.Lock] = {}
 
+    @classmethod
+    def default(cls, cr_api_key: str, weather_api_key: str, mongo_db: str, /):
+        """The default options"""
+        return cls(
+            cr_api_key,
+            weather_api_key,
+            mongo_db,
+            command_prefix=commands.when_mentioned_or('!'),
+            activity=discord.Game(f'version {cls.__version__}'),
+            strip_after_prefix=True,
+            enable_debug_events=True
+        )
+
     def acquire_lock(self, cog: CogT) -> asyncio.Lock:
         if cog not in self.locks:
             self.locks[cog] = asyncio.Lock()
         return self.locks[cog]
-
-    @classmethod
-    def custom(cls, cr_api_key: str, weather_api_key: str, mongo_db: str, /,
-               command_prefix='!', **options) -> MasterBotT:
-        self = cls(cr_api_key, weather_api_key, mongo_db)
-        self.command_prefix = command_prefix
-        for k, v in options:
-            setattr(self, k, v)
-        return self
 
     async def delete_app_commands(self):
         await self.http.bulk_upsert_global_commands(self.application_id, payload=[])
@@ -126,11 +130,14 @@ class MasterBot(commands.Bot):
                 await context.reply(embed=embed, mention_author=False)
             return
 
-        if not context.cog:
-            traceback.print_exception(exception, file=sys.stderr)
+        traceback.print_exception(exception, file=sys.stderr)
+
+    async def command_tree_error(self, interaction, command, error):
+        if isinstance(error, NoPrivateMessage):
+            await interaction.response.send_message(error.message)
             return
 
-        traceback.print_exception(exception, file=sys.stderr)
+        traceback.print_exception(error, file=sys.stderr)
 
     def restart(self):
         """Reloads all extensions and clears the cache"""

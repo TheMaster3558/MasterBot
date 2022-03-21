@@ -52,7 +52,16 @@ def command(**kwargs):
         return func
     return inner
 
+
+class NoPrivateMessage(app_commands.CheckFailure):
+    def __init__(self, message=None):
+        self.message = message or 'This command can only be used in a server.'
+        super().__init__(message)
+
+
 def app_guild_only():
     async def predicate(interaction):
-        return interaction.guild is not None
+        if interaction.guild:
+            return True
+        raise NoPrivateMessage()
     return app_commands.check(predicate)

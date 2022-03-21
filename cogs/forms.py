@@ -266,7 +266,7 @@ class Forms(Cog, help_command=Help, name='forms'):
         await view.interaction.response.send_message('Your response has been recorded.')
 
     @command(name='takeform', description='Take a form from another user!')
-    @app_guild_only($
+    @app_guild_only()
     async def _takeform(self, interaction):
         if not interaction.guild:
             await interaction.response.send_message('Try this in a server.')
