@@ -186,7 +186,9 @@ def run_many(*instances: MasterBot):
             try:
                 loop.create_task(instance.start())
             except Exception as exc:
-                _log.error('Instance %d has failed to start' % index, exc_info=exc)
+                _log.error(f'{instance} has failed to start', exc_info=exc)
+            else:
+                _log.info(f'{instance} has started')
 
         try:
             loop.run_forever()
