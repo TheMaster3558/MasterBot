@@ -21,7 +21,7 @@ from static_embeds import (
     confirm_bed,
     cancel_bed,
 )
-from cogs.utils.cog import Cog, command
+from cogs.utils.app_and_cogs import Cog, command
 
 
 class Help(metaclass=HelpSingleton):

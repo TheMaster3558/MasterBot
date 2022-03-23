@@ -21,8 +21,6 @@ class CogMeta(type(commands.Cog)):
 
 class Cog(commands.Cog, metaclass=CogMeta):
     help_command: ClassVar[HelpSingleton]
-    app_commands_group: ClassVar[bool]
-    commands_to_add: ClassVar[list[app_commands.Command]] = []
 
     def __init__(self, bot: MasterBot):
         self.bot = bot

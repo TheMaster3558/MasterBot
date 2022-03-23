@@ -7,7 +7,7 @@ from motor import motor_asyncio
 from pymongo.errors import DuplicateKeyError, OperationFailure
 from bot import MasterBot
 from cogs.utils.help_utils import HelpSingleton
-from cogs.utils.cog import Cog, command
+from cogs.utils.app_and_cogs import Cog, command
 import datetime
 
 

@@ -12,7 +12,7 @@ import fuzzywuzzy
 import Cython
 
 from cogs.utils.view import View
-from cogs.utils.cog import Cog, command
+from cogs.utils.app_and_cogs import Cog, command
 
 
 class InviteView(View):

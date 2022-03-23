@@ -10,7 +10,7 @@ from bot import MasterBot
 import aiosqlite
 from sqlite3 import IntegrityError
 from cogs.utils.help_utils import HelpSingleton
-from cogs.utils.cog import Cog, command, NoPrivateMessage
+from cogs.utils.app_and_cogs import Cog, command, NoPrivateMessage
 from cogs.utils.view import View, smart_send
 
 

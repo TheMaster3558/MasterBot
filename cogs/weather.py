@@ -8,7 +8,7 @@ import aiosqlite
 from sqlite3 import IntegrityError
 from cogs.utils.weather_utils import WeatherUtils
 from cogs.utils.help_utils import HelpSingleton
-from cogs.utils.cog import Cog, command
+from cogs.utils.app_and_cogs import Cog, command
 
 
 class Help(metaclass=HelpSingleton):

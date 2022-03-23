@@ -13,7 +13,7 @@ from __future__ import annotations
 import discord
 from discord import app_commands
 from discord.ext import commands
-from cogs.utils.cog import Cog, NoPrivateMessage
+from cogs.utils.app_and_cogs import Cog, NoPrivateMessage
 from time import perf_counter
 from typing import Optional, Iterable, TypeVar
 import logging
@@ -27,7 +27,6 @@ with warnings.catch_warnings():
     from fuzzywuzzy import fuzz
 
 
-MasterBotT = TypeVar('MasterBotT', bound='MasterBot')
 CogT = TypeVar('CogT', bound=Cog)
 
 

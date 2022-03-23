@@ -10,7 +10,7 @@ from cogs.utils.view import View, smart_send
 from typing import Literal, Optional, TypeVar, Type
 import asyncio
 import random
-from cogs.utils.cog import Cog, command
+from cogs.utils.app_and_cogs import Cog, command
 from PIL import Image, ImageDraw, ImageFont
 from io import BytesIO
 from english_words import english_words_lower_set

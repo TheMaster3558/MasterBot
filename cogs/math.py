@@ -5,7 +5,7 @@ import expr
 from bot import MasterBot
 import re
 from typing import Type, TypeVar, Dict
-from cogs.utils.cog import Cog, command
+from cogs.utils.app_and_cogs import Cog, command
 from cogs.utils.help_utils import HelpSingleton
 
 

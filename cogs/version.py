@@ -1,6 +1,6 @@
 import discord
 from discord.ext import commands
-from cogs.utils.cog import Cog, command
+from cogs.utils.app_and_cogs import Cog, command
 from bot import MasterBot
 import aiofiles
 from typing import Literal

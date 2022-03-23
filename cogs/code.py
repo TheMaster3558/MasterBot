@@ -12,7 +12,7 @@ from cogs.utils.help_utils import HelpSingleton
 import aiofiles
 import builtins
 import io
-from cogs.utils.cog import Cog, command
+from cogs.utils.app_and_cogs import Cog, command
 import threading
 
 

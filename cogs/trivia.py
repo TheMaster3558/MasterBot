@@ -7,7 +7,7 @@ from html import unescape
 from cogs.utils.view import View
 from bot import MasterBot
 from cogs.utils.help_utils import HelpSingleton
-from cogs.utils.cog import Cog, command
+from cogs.utils.app_and_cogs import Cog, command
 
 
 class Help(metaclass=HelpSingleton):

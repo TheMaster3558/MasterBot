@@ -7,7 +7,7 @@ import asyncio
 import time
 import datetime
 from cogs.utils.help_utils import HelpSingleton
-from cogs.utils.cog import Cog, command, app_guild_only
+from cogs.utils.app_and_cogs import Cog, command, app_guild_only
 from cogs.utils.modal import Modal
 
 

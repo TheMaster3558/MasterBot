@@ -7,7 +7,7 @@ import json
 from copy import deepcopy
 from bot import MasterBot
 from cogs.utils.help_utils import HelpSingleton
-from cogs.utils.cog import Cog
+from cogs.utils.app_and_cogs import Cog
 
 
 class Help(metaclass=HelpSingleton):
