@@ -101,7 +101,7 @@ class MasterBot(commands.Bot):
             'cogs.webhook',
             'cogs.weather',
             'cogs.jokes',
-            'cogs.version'
+            'cogs.version',
         ]
         for cog in cogs:
             await self.load_extension(cog)

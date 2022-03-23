@@ -5,30 +5,12 @@ from bot import MasterBot
 import aiosqlite
 from sqlite3 import IntegrityError
 import asyncio
-from dataclasses import dataclass
 from typing import Optional, Tuple
 import contextlib
 
 
-@dataclass
-class CustomCommandObject:
-    name: str
-    args: tuple
-    output: str
-    author: discord.User
-
-    def to_embed(self) -> discord.Embed:
-        embed = discord.Embed(title='Custom Command')
-        embed.add_field(name='Name', value=self.name)
-        embed.add_field(name='Args', value=','.join(f'"{arg}"' for arg in self.args))
-        embed.add_field(name='Output', value=self.output)
-        embed.set_footer(text=f'Created by {self.author.display_name}', icon_url=self.author.display_avatar.url)
-        return embed
-
-
 class CommandCreateFlags(commands.FlagConverter):
     name: str
-    args: Optional[Tuple[str]] = ()
     output: str
 
 
@@ -36,7 +18,7 @@ class CustomCommands(Cog):
     def __init__(self, bot: MasterBot):
         super().__init__(bot)
         self.db = None
-        self.cc: dict[int, list[CustomCommandObject]] = {}
+        self.cc: dict[int, list[commands.Command]] = {}
         print('Custom Commands cog loaded')
 
     async def cog_load(self):
@@ -59,16 +41,9 @@ class CustomCommands(Cog):
             for cmd in cmds:
                 async def nest():
                     try:
-                        await self.db.execute(f"""INSERT INTO guild_{guild.id} VALUES (
-                        {cmd.name},
-                        {cmd.args},
-                        {cmd.output});""")
+                        await self.db.execute()
                     except IntegrityError:
-                        await self.db.execute(f"""UPDATE guild_{guild.id}
-                                SET name = {cmd.name},
-                                    args = {cmd.args},
-                                    output = {cmd.output}
-                                    WHERE name = {cmd.name}""")
+                        await self.db.execute()
                 _tasks.append(self.bot.loop.create_task(nest()))
             await asyncio.gather(*_tasks)
 
@@ -79,26 +54,25 @@ class CustomCommands(Cog):
         _tasks = []
 
         for guild in self.bot.guilds:
-            _tasks.append(self.bot.loop.create_task(self.db.execute(f"""CREATE TABLE IF NOT EXISTS guild_{guild.id} (
-                                      name TEXT,
-                                      args TEXT,
-                                      output TEXT
-                                  );""")))
+            _tasks.append(self.bot.loop.create_task(self.db.execute()))
         await asyncio.gather(*_tasks)
         await self.db.commit()
 
+    @update_commands.after_loop
+    async def after(self):
+        await self.update_commands()
+
+    @commands.Cog.listener()
+    async def on_message(self, message: discord.Message):
+        ...
+
     @commands.command(aliases=['cc'])
     async def custom_command(self, ctx, *, flags: CommandCreateFlags):
-        command = CustomCommandObject(
-            name=flags.name,
-            args=flags.args,
-            output=flags.output,
-            author=ctx.author
-        )
+        async def func(*args):
+            ...
 
-        embed = command.to_embed()
 
-        msg: discord.Message = await ctx.send('Click ✅ to confirm', embed=embed)
+        msg: discord.Message = await ctx.send('Click ✅ to confirm', embed=...)
         await msg.add_reaction('✅')
         await msg.add_reaction('❌')
 
@@ -114,7 +88,7 @@ class CustomCommands(Cog):
             else:
                 if ctx.guild.id not in self.cc:
                     self.cc[ctx.guild.id] = []
-                self.cc[ctx.guild.id].append(command)
+                self.cc[ctx.guild.id].append(...)
                 await ctx.send('Done!')
 
         with contextlib.suppress(discord.HTTPException):

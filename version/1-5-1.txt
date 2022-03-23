@@ -1,6 +1,6 @@
 User Changes:
 - Some Slash commands are now server only
-- Custom commands coming in version 1.6
 
 Code Changes:
 - Support multiple running instances
+- Moderation cog removed by 1.6
