@@ -181,16 +181,18 @@ def run_many(*instances: MasterBot):
         loop = asyncio.get_event_loop()
         _log = logging.getLogger(__name__)
 
+        _tasks = []
+
         for index, instance in enumerate(instances):
             try:
-                loop.create_task(instance.start())
+                _tasks.append(loop.create_task(instance.start()))
             except Exception as exc:
                 _log.error(f'{instance} has failed to start', exc_info=exc)
             else:
                 _log.info(f'{instance} has started')
 
         try:
-            loop.run_forever()
+            await asyncio.gather(*_tasks)
         except KeyboardInterrupt:
             return
 

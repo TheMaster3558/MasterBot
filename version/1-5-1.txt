@@ -4,3 +4,4 @@ User Changes:
 Code Changes:
 - Support multiple running instances
 - Moderation cog removed by 1.6
+- Run many fixed
