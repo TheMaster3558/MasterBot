@@ -76,16 +76,21 @@ class Help(metaclass=HelpSingleton):
 
 
 class Moderation(Cog, help_command=Help, name='moderation'):
-    """Will be changed to cache instead of db call in v2 or earlier"""
+    """Will be changed to cache instead of db call in v2 or earlier
+    UPDATE: COG IS DEPRECATED"""
 
     def __init__(self, bot: MasterBot):
         super().__init__(bot)
-        print('Connecting to mongodb... (Moderation Cog)')
-        self.client = motor_asyncio.AsyncIOMotorClient(
-            bot.moderation_mongo)
-        print('Connected.')
-        self.log: motor_asyncio.AsyncIOMotorCollection = self.client['moderation']['channels']
+        self.client = None
+        self.log = None
         print('Moderation cog loaded')
+
+    async def cog_load(self):
+        #  last update ever
+        await super().cog_load()
+        self.client = motor_asyncio.AsyncIOMotorClient(
+            self.bot.moderation_mongo)
+        self.log: motor_asyncio.AsyncIOMotorCollection = self.client['moderation']['channels']
 
     @commands.Cog.listener()
     async def on_guild_remove(self, guild):
