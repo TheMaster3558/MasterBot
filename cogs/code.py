@@ -128,6 +128,9 @@ class Code(Cog, help_command=Help, name='code'):
 
     def __init__(self, bot: MasterBot):
         super().__init__(bot)
+
+        self.created_mentions = discord.AllowedMentions(users=False)
+
         print('Code cog loaded')
 
     async def cog_command_error(self, ctx: commands.Context, error):
@@ -428,7 +431,13 @@ class Code(Cog, help_command=Help, name='code'):
 
         created_at = discord.utils.snowflake_time(snowflake)
         timestamp = discord.utils.format_dt(created_at, 'R')
-        await interaction.response.send_message(timestamp)
+
+        if user:
+            timestamp = f'{user.mention} was created ' + timestamp
+        elif snowflake:
+            timestamp = f'{snowflake} was created ' + timestamp
+
+        await interaction.response.send_message(timestamp, allowed_mentions=self.created_mentions)
 
     @commands.command()
     async def binaryint(self, ctx, integer: int):
