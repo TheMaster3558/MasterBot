@@ -9,6 +9,7 @@ from bot import MasterBot
 from cogs.utils.help_utils import HelpSingleton
 from cogs.utils.app_and_cogs import Cog, command
 import datetime
+from cogs.code import EventLoopThread
 
 
 class Help(metaclass=HelpSingleton):
@@ -86,11 +87,16 @@ class Moderation(Cog, help_command=Help, name='moderation'):
         print('Moderation cog loaded')
 
     async def cog_load(self):
-        #  last update ever
+        # last update ever
         await super().cog_load()
-        self.client = motor_asyncio.AsyncIOMotorClient(
-            self.bot.moderation_mongo)
-        self.log: motor_asyncio.AsyncIOMotorCollection = self.client['moderation']['channels']
+
+        async def blocker():
+            self.client = motor_asyncio.AsyncIOMotorClient(
+                self.bot.moderation_mongo)
+            self.log = self.client['moderation']['channels']
+
+        async with EventLoopThread() as thr:
+            self.bot.loop.run_in_executor(None, thr.run_coro, blocker())
 
     @commands.Cog.listener()
     async def on_guild_remove(self, guild):
