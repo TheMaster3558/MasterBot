@@ -173,12 +173,8 @@ class ReactionRoles(Cog, help_command=Help, name='reactions'):
             embed.set_footer(icon_url='https://cdn.discordapp.com/emojis/923067534792589312.png?size=96')
             await ctx.send(embed=embed, delete_after=10)
         elif isinstance(error, (commands.MissingRequiredArgument, commands.MissingFlagArgument)):
-            if isinstance(self.bot.command_prefix, str):
-                prefix = self.bot.command_prefix
-            elif isinstance(self.bot.command_prefix, list):
-                prefix = self.bot.command_prefix[2]
-            else:
-                prefix = '[p]'
+            prefix = (await self.bot.get_prefix(ctx.message))[2]
+
             embed = discord.Embed(title='You have bad format',
                                   description=f'Arguments:\n\t`title` (optional)\n\t`names` (optional, roles names '
                                               f'will replace)\n\t`emojis`\n\t`roles`\n Example: `{prefix}rr title: '
@@ -239,12 +235,8 @@ class ReactionRoles(Cog, help_command=Help, name='reactions'):
             embed.set_footer(icon_url='https://cdn.discordapp.com/emojis/923067534792589312.png?size=96')
             await ctx.send(embed=embed, delete_after=10)
         elif isinstance(error, (commands.MissingRequiredArgument, commands.MissingFlagArgument)):
-            if isinstance(self.bot.command_prefix, str):
-                prefix = self.bot.command_prefix
-            elif isinstance(self.bot.command_prefix, list):
-                prefix = self.bot.command_prefix[2]
-            else:
-                prefix = '[p]'
+            prefix = (await self.bot.get_prefix(ctx.message))[2]
+
             embed = discord.Embed(title='You have bad format',
                                   description=f'Arguments:\n\t`title` (optional)\n\t`description` (optional)'
                                               f'\n\t`emojis`\n\t`roles`\n Example: `{prefix}rr title: '
