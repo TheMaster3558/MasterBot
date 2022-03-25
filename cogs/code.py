@@ -426,6 +426,7 @@ class Code(Cog, help_command=Help, name='code'):
     async def _created(self, interaction, user: discord.User = None, snowflake: int = None):
         if not user and not snowflake:
             await interaction.response.send_message('You must give a user or snowflake', ephemeral=True)
+            return
         if not snowflake:
             snowflake = user.id
 
