@@ -245,7 +245,7 @@ class ReactionRoles(Cog, help_command=Help, name='reactions'):
             embed.set_footer(text='Do not make me say this again!')
             await ctx.send(embed=embed, delete_after=30)
         else:
-            raise type(error)(error)
+            raise error
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload: discord.RawReactionActionEvent):

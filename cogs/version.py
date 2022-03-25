@@ -41,7 +41,7 @@ class Version(Cog, name='version', help_command=Help):
             return
         await ctx.send(embed=embed)
 
-    @command(name='whatsnew', description='Findout whats new in a version! Starts for 1.4.0')
+    @command(name='whatsnew', description='Find out whats new in a version! Starts for 1.4.0')
     async def _new(self, interaction, version: Literal[
         "1.4.0",
         "1.4.1",
