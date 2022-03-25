@@ -4,7 +4,7 @@ from discord.ext import commands
 import expr
 from bot import MasterBot
 import re
-from typing import Type, TypeVar, Dict
+from typing import Type, TypeVar
 from cogs.utils.app_and_cogs import Cog, command
 from cogs.utils.help_utils import HelpSingleton
 
@@ -71,8 +71,8 @@ class StateGroup(app_commands.Group):
 class Math(Cog, help_command=Help, name='math'):
     def __init__(self, bot: MasterBot):
         super().__init__(bot)
-        self.parse_regex = re.compile(r'\w *= *\d+')
-        self.states: Dict[int, Dict[str, N]] = {}
+        self.parse_regex = re.compile(r'\w+ *= *\d+')
+        self.states: dict[int, dict[str, N]] = {}
         print('Math cog loaded')
 
     async def cog_load(self):
