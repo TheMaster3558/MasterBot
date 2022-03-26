@@ -306,6 +306,7 @@ class Games(Cog, help_command=Help, name='games'):
                 winner = member
             elif v2 == 'Paper':
                 winner = ctx.author
+
         if winner is None:
             await msg.reply('Tie. They both picked the same thing LOL.')
             return

@@ -427,6 +427,7 @@ class Code(Cog, help_command=Help, name='code'):
         if not user and not snowflake:
             await interaction.response.send_message('You must give a user or snowflake', ephemeral=True)
             return
+
         if not snowflake:
             snowflake = user.id
 
@@ -457,29 +458,6 @@ class Code(Cog, help_command=Help, name='code'):
     @octint.error
     async def error(self, ctx, error):
         await ctx.send(str(error))
-
-    @commands.command(name='setup')
-    @commands.is_owner()
-    async def _setup(self, ctx):
-        lines = """
-from setuptools import setup
-from Cython.Build import cythonize
-  
-setup(ext_modules=cythonize('cogs/utils/math_extensions.pyx'), zip_safe=False)
-        """
-
-        # creating a new file
-        async with aiofiles.open('setup.py', 'w') as cy_setup:
-            await cy_setup.write(lines)
-        try:
-            __os__.system(' python setup.py build_ext --inplace')
-        except Exception as e:
-            await ctx.send(f'{e.__class__.__name__}: {e}')
-        finally:
-            try:
-                __os__.remove('setup.py')
-            except FileNotFoundError:
-                pass
 
 
 async def setup(bot: MasterBot):
