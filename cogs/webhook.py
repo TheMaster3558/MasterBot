@@ -130,6 +130,8 @@ class Webhooks(Cog, help_command=Help, name='webhook'):
         self.bot.tree.remove_command('webhook')
 
     async def cog_command_error(self, ctx, error):
+        error: commands.CommandError
+
         if ctx.command is None:
             return
         if isinstance(error, commands.BotMissingPermissions):
@@ -181,12 +183,12 @@ class Webhooks(Cog, help_command=Help, name='webhook'):
         for k, v in self.users.items():
             try:
                 await self.db.execute(f"""INSERT INTO users VALUES ({k},
-                '{v['name']}',
-                '{v['avatar']}')""")
+                '?',
+                '?')""", (v['name'], v['avatar']))
             except IntegrityError:
                 await self.db.execute(f"""UPDATE users
-                SET name = '{v['name']}', avatar = '{v['avatar']}'
-                WHERE id = {k};""")
+                SET name = '?', avatar = '?'
+                WHERE id = {k};""", (v['name'], v['avatar']))
         await self.db.commit()
 
     @update_db.before_loop
@@ -228,6 +230,7 @@ class Webhooks(Cog, help_command=Help, name='webhook'):
             msg = await ctx.send('Are you sure you would like to replace your old webhook users?')
             await msg.add_reaction('✅')
             await msg.add_reaction('❌')
+
             check = lambda r, u: u == ctx.author and r.message == msg and str(r.emoji) in ('✅', '❌')
             try:
                 reaction, user = await self.bot.wait_for('reaction_add', check=check, timeout=30)
@@ -236,15 +239,21 @@ class Webhooks(Cog, help_command=Help, name='webhook'):
             else:
                 if str(reaction.emoji) == '❌':
                     return await ctx.send('Cancelling.')
+
         if flags.name.lower() == 'clyde':
-            return await ctx.send('The name cannot be `clyde`')
+            await ctx.send('The name cannot be `clyde`')
+            return
+
         embed = discord.Embed(title='New Webhook User!')
         embed.add_field(name='Name', value=flags.name)
+
         if flags.avatar is not None:
             if not flags.avatar.startswith('http://') and not flags.avatar.startswith('https://'):
                 return await ctx.send('Avatar must be a url starting with `http://` or `https://`')
             embed.set_thumbnail(url=flags.avatar)
+
         self.users[ctx.author.id] = {'name': flags.name, 'avatar': flags.avatar}
+
         await ctx.send(embed=embed)
         await ctx.message.delete(delay=3)
 
