@@ -102,6 +102,7 @@ class MasterBot(commands.Bot):
             'cogs.weather',
             'cogs.jokes',
             'cogs.version',
+            'cogs.music'
         ]
         for cog in cogs:
             await self.load_extension(cog)
