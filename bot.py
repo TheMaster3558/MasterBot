@@ -93,7 +93,7 @@ class MasterBot(commands.Bot):
             'cogs.code',
             'cogs.forms',
             'cogs.games',
-            'cogs.math',
+            'cogs.botmath',
             'cogs.moderation',
             'cogs.reaction_roles',
             'cogs.translate',
