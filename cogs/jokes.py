@@ -55,13 +55,13 @@ class BlacklistView(View):
         return True
 
     @discord.ui.button(label='Confirm', style=discord.ButtonStyle.green, emoji='\u2705')
-    async def confirm(self, button: discord.ui.Button, interaction: discord.Interaction):
+    async def confirm(self, interaction: discord.Interaction, button: discord.ui.Button):
         self.choice = True
         await self.disable_all(interaction.message)
         self.stop()
 
     @discord.ui.button(label='Cancel', style=discord.ButtonStyle.red, emoji='\u274C')
-    async def cancel(self, button: discord.ui.Button, interaction: discord.Interaction):
+    async def cancel(self, interaction: discord.Interaction, button: discord.ui.Button):
         self.choice = False
         await self.disable_all(interaction.message)
         self.stop()

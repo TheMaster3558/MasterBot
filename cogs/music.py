@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import math
 
 import discord
 from discord import app_commands
@@ -27,7 +26,7 @@ class SongView(View):
         self.loop = loop
 
     @discord.ui.button(emoji='\u23f8', style=discord.ButtonStyle.primary, custom_id='0')
-    async def play_or_pause(self, button: discord.ui.Button, interaction: discord.Interaction):
+    async def play_or_pause(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.send_message('Done.', ephemeral=True)
 
         if button.custom_id == '0':
@@ -43,14 +42,14 @@ class SongView(View):
         await interaction.message.edit(view=self)
 
     @discord.ui.button(emoji='⏭', style=discord.ButtonStyle.primary)
-    async def skip(self, button: discord.ui.Button, interaction: discord.Interaction):
+    async def skip(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.send_message('Skipping...', ephemeral=True)
         await self.player.force_next()
 
     @discord.ui.button(label='Leave', style=discord.ButtonStyle.danger)
-    async def leave(self, button: discord.ui.Button, interaction: discord.Interaction):
+    async def leave(self, interaction: discord.Interaction, button: discord.ui.Button):
         await self.player.disconnect(force=True)
-        await interaction.response.send_message('Bye.')
+        await interaction.response.send_message('Bye.', ephemeral=True)
         await self.disable_all(interaction.message)
         del self.player.cog.queues[interaction.guild_id]
         self.stop()
@@ -70,7 +69,6 @@ class Player(wavelink.Player):
         self.started = False
         self._first_iteration = True
         self._waiting_task: asyncio.Task = None  # type: ignore
-        self._waiting = True
         self.current: wavelink.Track = None  # type: ignore
 
     async def make_embed(self, edit: bool = True) -> discord.Embed:
@@ -103,14 +101,10 @@ class Player(wavelink.Player):
         self._waiting_task.cancel()
         await self.pause()
 
-    def is_waiting(self) -> bool:
-        return self._waiting
-
     async def _consume_queue(self):
         self.queue = self.cog.queues[self.channel.guild.id]
 
         while True:
-            self._waiting = True
             search: wavelink.Track = await self.queue.get()
             self.current = search
 

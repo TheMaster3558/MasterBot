@@ -34,13 +34,13 @@ class QuestionView(View):
         super().__init__(timeout=30)
 
     @discord.ui.button(label='Short', style=discord.ButtonStyle.grey)
-    async def short(self, button, interaction):
+    async def short(self, interaction, button):
         self.value = discord.TextStyle.short
         await self.disable_all(interaction.message)
         self.stop()
 
     @discord.ui.button(label='Paragraph', style=discord.ButtonStyle.blurple)
-    async def paragraph(self, button, interaction):
+    async def paragraph(self, interaction, button):
         self.value = discord.TextStyle.paragraph
         await self.disable_all(interaction.message)
         self.stop()
@@ -77,7 +77,7 @@ class ConfirmView(View):
         super().__init__(timeout=30)
 
     @discord.ui.button(label='Start', style=discord.ButtonStyle.green)
-    async def confirm(self, button, interaction: discord.Interaction):
+    async def confirm(self, interaction, button):
         #  saying interaction has already been responded to unless i make a new interaction
         await interaction.response.send_modal(self.modal)
         try:

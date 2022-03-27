@@ -39,13 +39,13 @@ class ConfirmView(View):
         super().__init__(timeout=60)
 
     @discord.ui.button(emoji='✅', style=discord.ButtonStyle.grey)
-    async def yes(self, button, interaction: discord.Interaction):
+    async def yes(self, interaction: discord.Interaction, button: discord.ui.Button):
         self.value = True
         await self.disable_all(interaction.message)
         self.stop()
 
     @discord.ui.button(emoji='❌', style=discord.ButtonStyle.grey)
-    async def no(self, button, interaction):
+    async def no(self, interaction: discord.Interaction, button: discord.ui.Button):
         self.value = False
         await self.disable_all(interaction.message)
         self.stop()
