@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-
 import discord
 from discord import app_commands
 from discord.ext import commands
@@ -85,7 +84,7 @@ class Player(wavelink.Player):
         await self._event.wait()
 
     async def play(
-        self, source: wavelink.abc.Playable, replace: bool = True, start: int = 0, end: int = 0
+            self, source: wavelink.abc.Playable, replace: bool = True, start: int = 0, end: int = 0
     ):
         await super().play(source=source, replace=replace, start=start, end=end)
         self._event.clear()
@@ -118,12 +117,13 @@ class Player(wavelink.Player):
 
     def start(self):
         if not self.started:
-            def leave(*args):
-                self.client.loop.create_task(self.disconnect(force=True))
+            async def task():
+                try:
+                    await self._consume_queue()
+                finally:
+                    await self.disconnect(force=True)
 
-            f = asyncio.ensure_future(self._consume_queue(), loop=self.client.loop)
-            f.add_done_callback(leave)
-
+            self.client.loop.create_task(task())
             self.started = True
 
 
@@ -131,6 +131,7 @@ class Music(Cog, name='music'):
     def __init__(self, bot: MasterBot):
         super().__init__(bot)
         self.queues: dict[int, asyncio.Queue[wavelink.Track]] = {}
+        self.node_pool: wavelink.NodePool | None = None
         print('Music cog loaded')
 
     async def cog_load(self):
@@ -139,19 +140,25 @@ class Music(Cog, name='music'):
 
     async def connect(self):
         await self.bot.wait_until_ready()
-        await wavelink.NodePool.create_node(bot=self.bot,
-                                            host='losingtime.dpaste.org',
-                                            port=2124,
-                                            password='SleepingOnTrains')
+        self.node_pool = await wavelink.NodePool.create_node(bot=self.bot,
+                                                             host='losingtime.dpaste.org',
+                                                             port=2124,
+                                                             password='SleepingOnTrains')
 
     @commands.Cog.listener()
     async def on_guild_join(self, guild: discord.Guild):
         await guild.create_voice_channel(name='Join to create room!')
 
     @commands.Cog.listener()
-    async def on_voice_state_update(self, member: discord.Member, before: discord.VoiceState, after: discord.VoiceState):
+    async def on_voice_state_update(self, member: discord.Member, before: discord.VoiceState,
+                                    after: discord.VoiceState):
         if after.channel and after.channel.name == 'Join to create room!':
-            channel = await member.guild.create_voice_channel(name=f"{member.display_avatar}'s room")
+            permissions = discord.PermissionOverwrite(manage_channels=True)
+            overwrites = {
+                member: permissions
+            }
+
+            channel = await member.guild.create_voice_channel(name=f"{member.display_avatar}'s room", overwrites=overwrites)
             await member.move_to(channel, reason='Private room creation')
             return
 
