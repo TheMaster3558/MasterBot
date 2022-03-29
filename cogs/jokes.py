@@ -359,6 +359,7 @@ class Jokes(Cog, name='jokes'):
             raise error
 
     @command(name='blacklist', description='Turn off some possible jokes.')
+    @app_commands.has_permissions(administrator=True)
     @app_commands.describe(nsfw='NSFW jokes',
                            religious='Religious jokes',
                            political='Political jokes',
@@ -372,10 +373,7 @@ class Jokes(Cog, name='jokes'):
                           political: str = None,
                           sexist: str = None,
                           racist: str = None,
-                          explicit: str = None):
-
-        if not interaction.user.guild_permissions.administrator:
-            await interaction.response.send_message('You need admin perms to run this!!')
+                          explicit: str = None)
         flags = QuickObject(
             nsfw=nsfw,
             religious=religious,
