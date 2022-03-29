@@ -104,14 +104,13 @@ class Player(wavelink.Player):
         self.queue = self.cog.queues[self.channel.guild.id]
 
         while True:
-            search: wavelink.Track = await self.queue.get()
-            self.current = search
+            self.current: wavelink.Track = await self.queue.get()
 
             if not self._first_iteration:
                 await self.make_embed()
                 await self.message.reply(f'Now playing "{self.current.title}"')
 
-            await self.play(search)
+            await self.play(self.current)
             await self.wait_until_song_finished()
             self._first_iteration = False
 
@@ -127,6 +126,45 @@ class Player(wavelink.Player):
             self.started = True
 
 
+class WavelinkConverter(commands.Converter):
+    def __init__(self, items):
+        self.tracks = []
+        for iterable in items:
+            self.tracks.extend(iterable)
+        self.__iter_count = 0
+
+    @classmethod
+    async def convert(cls, ctx: commands.Context[MasterBot], argument: str
+                      ) -> WavelinkConverter:
+        done, pending = await asyncio.wait([
+            ctx.bot.loop.create_task(wavelink.YouTubeTrack.search(query=argument, return_first=False)),
+            ctx.bot.loop.create_task(wavelink.SoundCloudTrack.search(query=argument, return_first=False))
+        ], timeout=10)
+        items = [item.result() for item in done]
+        return cls(items)
+
+    def __len__(self):
+        return len(self.tracks)
+
+    def __getitem__(self, item):
+        return self.tracks[item]
+
+    def __iter__(self):
+        self.__iter_count = 0
+        return self
+
+    def __next__(self) -> wavelink.YouTubeTrack | wavelink.SoundCloudTrack:
+        self.__iter_count += 1
+
+        try:
+            return self.tracks[self.__iter_count]
+        except IndexError:
+            raise StopIteration
+
+    def __str__(self):
+        return str(self.tracks)
+
+
 class Music(Cog, name='music'):
     def __init__(self, bot: MasterBot):
         super().__init__(bot)
@@ -137,6 +175,9 @@ class Music(Cog, name='music'):
     async def cog_load(self):
         await super().cog_load()
         self.bot.loop.create_task(self.connect())
+
+    async def cog_unload(self):
+        await super().cog_unload()
 
     async def connect(self):
         await self.bot.wait_until_ready()
@@ -158,7 +199,9 @@ class Music(Cog, name='music'):
                 member: permissions
             }
 
-            channel = await member.guild.create_voice_channel(name=f"{member.display_avatar}'s room", overwrites=overwrites)
+            channel = await member.guild.create_voice_channel(
+                name=f"{member.display_avatar}'s room", overwrites=overwrites
+            )
             await member.move_to(channel, reason='Private room creation')
             return
 
@@ -191,18 +234,46 @@ class Music(Cog, name='music'):
         await ctx.send(f'Joined {vc.channel.mention}')
 
     @commands.command(aliases=['p'])
-    async def play(self, ctx: commands.Context, *, search: wavelink.SoundCloudTrack):
+    async def play(self, ctx: commands.Context, *, search: str):
+        if ctx.author.voice and ctx.author.voice.channel:
+            if ctx.voice_client and ctx.voice_client.channel != ctx.author.voice.channel:
+                await ctx.send("I'm occupied already.")
+                return
+
         if not ctx.author.voice:
             await ctx.send('Join a voice channel.')
             return
 
         elif not ctx.voice_client:
             vc: Player = await ctx.author.voice.channel.connect(cls=Player)  # type: ignore
+            self.queues[ctx.guild.id] = asyncio.Queue()
 
         else:
             vc: Player = ctx.voice_client  # type: ignore
+            self.queues[ctx.guild.id] = asyncio.Queue()
 
-        self.queues[ctx.guild.id].put_nowait(search)
+        async with ctx.typing():
+            search = await WavelinkConverter.convert(ctx, search)
+
+        vc.start()  # wont start in `join` for some reason
+
+        if len(search) == 1:
+            track = search[0]
+        else:
+            paginate = discord.Embed(title='Select a song',
+                                     description='\n'.join(
+                                         f'`{index}.` **{item.title}** by **{item.author}**' for index, item in
+                                         enumerate(search))
+                                     )
+            p_msg = await ctx.send(embed=paginate)
+            msg = await self.bot.wait_for('message',
+                                          check=lambda m: m.author == ctx.author and m.content.isnumeric() and int(
+                                              m.content) <= len(search)
+                                          )
+            await p_msg.delete()
+            track = search[int(msg.content)]
+
+        self.queues[ctx.guild.id].put_nowait(track)
 
         await asyncio.sleep(0)
 
@@ -213,7 +284,7 @@ class Music(Cog, name='music'):
             msg = await ctx.send(embed=embed, view=view)
             vc.message = msg
         else:
-            await ctx.send(f'"{search.title}" added to queue.')
+            await ctx.send(f'"{track.title}" added to queue.')
 
 
 async def setup(bot: MasterBot):
