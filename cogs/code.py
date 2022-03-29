@@ -259,7 +259,7 @@ class Code(Cog, name='code'):
         """Nearly a full restart. Just without restarting the connection."""
         await ctx.send('Ok!')
         try:
-            self.bot.restart()
+            await self.bot.restart()
         except Exception as exc:
             await ctx.send(f'An Error!?\n```\n{exc}\n```')
 
