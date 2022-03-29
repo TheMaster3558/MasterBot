@@ -140,11 +140,11 @@ class MasterBot(commands.Bot):
 
         traceback.print_exception(error, file=sys.stderr)
 
-    def restart(self):
+    async def restart(self):
         """Reloads all extensions and clears the cache"""
         extensions = list(self.extensions).copy()
         for ext in extensions:
-            self.reload_extension(ext)
+            await self.reload_extension(ext)
         self.clear()
 
     @property
