@@ -94,7 +94,6 @@ class MasterBot(commands.Bot):
             'cogs.forms',
             'cogs.games',
             'cogs.botmath',
-            'cogs.moderation',
             'cogs.reaction_roles',
             'cogs.translate',
             'cogs.trivia',

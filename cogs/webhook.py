@@ -9,23 +9,8 @@ import asyncio
 from bot import MasterBot
 import aiosqlite
 from sqlite3 import IntegrityError
-from cogs.utils.help_utils import HelpSingleton
 from cogs.utils.app_and_cogs import Cog, command, NoPrivateMessage
 from cogs.utils.view import View, smart_send
-
-
-class Help(metaclass=HelpSingleton):
-    def __init__(self, prefix):
-        self.prefix = prefix
-
-    def webhook_help(self):
-        message = f'`{self.prefix}webhook create <flags>`: Create your own webhook user!\nFlags:\n**name**\n**avatar** (optional. should be url)\n' \
-                  f'`{self.prefix}webhook send <message>`: Send a message with the webhook\n' \
-                  f'`{self.prefix}webhook delete`: Delete the data of your webhook user.'
-        return message
-
-    def full_help(self):
-        return self.webhook_help()
 
 
 class WebhookUserFlags(commands.FlagConverter):
@@ -108,7 +93,7 @@ class WebhookGroup(app_commands.Group):
         await interaction.response.send_message(f'Sending message:\n{content}', ephemeral=True)
 
 
-class Webhooks(Cog, help_command=Help, name='webhook'):
+class Webhooks(Cog, name='webhooks'):
     def __init__(self, bot: MasterBot):
         super().__init__(bot)
         self.session = None

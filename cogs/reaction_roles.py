@@ -6,47 +6,7 @@ from typing import Tuple, Optional, Union
 import json
 from copy import deepcopy
 from bot import MasterBot
-from cogs.utils.help_utils import HelpSingleton
 from cogs.utils.app_and_cogs import Cog
-
-
-class Help(metaclass=HelpSingleton):
-    def __init__(self, prefix):
-        self.prefix = prefix
-
-    def reaction_role_help(self):
-        message = f'`{self.prefix}reactionrole`: Alias = `{self.prefix}rr`. Create a reaction role!' + f'\nArguments:\n\t`title` (optional)\n\t`names` (optional, roles names ' \
-                                                                                                       f'will replace)\n\t`emojis`\n\t`roles`\n Example: `{self.prefix}rr title: ' \
-                                                                                                       f'Hi! names: Red Green Blue emojis: ❤ 💚 💙 roles: RedRole GreenRole ' \
-                                                                                                       f'Blue Role`'
-        return message
-
-    def reactionrole_help(self):
-        return self.reaction_role_help()
-
-    def rr_help(self):
-        return self.reaction_role_help()
-
-    def custom_reaction_role_help(self):
-        message = f'`{self.prefix}customreactionrole`: Alias = `{self.prefix}crr`. Create a customreaction role!' + f'\nArguments:\n\t`title` (optional)\n\t`description` (optional)' \
-                                                                                                                    f'\n\t`emojis`\n\t`roles`\n Example: `{self.prefix}rr title: ' \
-                                                                                                                    f'Hi! description: react to get a color role! emojis: ❤ 💚 💙 roles: RedRole GreenRole ' \
-                                                                                                                    f'Blue Role`'
-        return message
-
-    def customreactionrole_help(self):
-        return self.custom_reaction_role_help()
-
-    def crr_help(self):
-        return self.custom_reaction_role_help()
-
-    def delete_help(self):
-        message = f'`{self.prefix}delete <message>`: Delete a reaction role message.\nExample: `{self.prefix}delete 926567187550994434`'
-        return message
-
-    def full_help(self):
-        help_list = [self.reaction_role_help(), self.custom_reaction_role_help(), self.delete_help()]
-        return '\n'.join(help_list) + '\nNot available with Slash Commands.'
 
 
 class ReactionRoleFlags(commands.FlagConverter):
@@ -63,7 +23,7 @@ class CustomReactionRoleFlags(commands.FlagConverter):
     roles: Tuple[discord.Role, ...]
 
 
-class ReactionRoles(Cog, help_command=Help, name='reactions'):
+class ReactionRoles(Cog, name='reactions'):
     def __init__(self, bot: MasterBot):
         super().__init__(bot)
         self.role_dict = None

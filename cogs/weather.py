@@ -7,47 +7,7 @@ from typing import Optional, Union, Literal
 import aiosqlite
 from sqlite3 import IntegrityError
 from cogs.utils.weather_utils import WeatherUtils
-from cogs.utils.help_utils import HelpSingleton
 from cogs.utils.app_and_cogs import Cog, command
-
-
-class Help(metaclass=HelpSingleton):
-    def __init__(self, prefix):
-        self.prefix = prefix
-
-    def units_help(self):
-        message = f'`{self.prefix}units <flags>`: Flags can be replaced with **metric** or **customary**. The Flag arguments are `temp` and `speed`.\n' \
-        'The options for `temp` are `C` and `F`. The options for `speed` are `mph` and `kph`.'
-        return message
-
-    def current_help(self):
-        message = f'`{self.prefix}current <location>`: Get the current weather of a location.'
-        return message
-
-    def forecast_help(self):
-        message = f'`{self.prefix}forecast [days] <location>`: Get the forecast for a location. You can skip `days`.'
-        return message
-
-    def city_help(self):
-        message = f'`{self.prefix}city <query>`: Search up a city'
-        return message
-
-    def place_help(self):
-        return self.city_help()
-
-    def town_help(self):
-        return self.city_help()
-
-    def timezone_help(self):
-        message = f'`{self.prefix}timezone <location>`: Get the timezone of a location.'
-        return message
-
-    def tz_help(self):
-        return self.timezone_help()
-
-    def full_help(self):
-        help_list = [self.current_help(), self.forecast_help(), self.city_help(), self.timezone_help()]
-        return '\n'.join(help_list)
 
 
 class FlagUnits(commands.FlagConverter):
@@ -79,7 +39,7 @@ class WeatherAPIHTTPClient(AsyncHTTPClient):
         return await self.request('timezone.json', q=location)
 
 
-class Weather(Cog, help_command=Help, name='weather'):
+class Weather(Cog, name='weather'):
     metric = {'temp': 'C', 'speed': 'kph'}
     customary = {'temp': 'F', 'speed': 'mph'}
 

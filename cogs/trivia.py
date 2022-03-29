@@ -6,20 +6,7 @@ import random
 from html import unescape
 from cogs.utils.view import View
 from bot import MasterBot
-from cogs.utils.help_utils import HelpSingleton
 from cogs.utils.app_and_cogs import Cog, command
-
-
-class Help(metaclass=HelpSingleton):
-    def __init__(self, prefix):
-        self.prefix = prefix
-
-    def trivia_help(self):
-        message = f'`{self.prefix}trivia`: Get a trivia question. Many people can play!'
-        return message
-
-    def full_help(self):
-        return self.trivia_help()
 
 
 class OpenTDBHTTPClient(AsyncHTTPClient):
@@ -83,7 +70,7 @@ class MultipleChoice(View):
         return True
 
 
-class Trivia(Cog, help_command=Help, name='trivia'):
+class Trivia(Cog, name='trivia'):
     def __init__(self, bot: MasterBot):
         super().__init__(bot)
         self.http = OpenTDBHTTPClient(self.bot.loop)

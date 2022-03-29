@@ -6,37 +6,6 @@ from bot import MasterBot
 import re
 from typing import Type, TypeVar
 from cogs.utils.app_and_cogs import Cog, command
-from cogs.utils.help_utils import HelpSingleton
-
-
-class Help(metaclass=HelpSingleton):
-    def __init__(self, prefix):
-        self.prefix = prefix
-
-    def math_help(self):
-        message = f'`{self.prefix}math <expression>`: Let me do some math for you!'
-        return message
-
-    def state_help(self):
-        message = f'`{self.prefix}state create [vars]`: `vars` are optional. Create a state to save variables accross math commands!'
-        message2 = f'`{self.prefix}state delete`: Delete that state.'
-        return message + '\n' + message2
-
-    def pi_help(self):
-        message = f'`{self.prefix}pi`: Get the value of pi'
-        return message
-
-    def phi_help(self):
-        message = f'`{self.prefix}phi`: Get the value of phi'
-        return message
-
-    def e_help(self):
-        message = f'`{self.prefix}e`: Get the value of e'
-        return message
-
-    def full_help(self):
-        help_list = [self.math_help(), self.state_help(), self.pi_help(), self.phi_help(), self.e_help()]
-        return '\n'.join(help_list)
 
 
 N = TypeVar('N', int, float)
@@ -68,7 +37,7 @@ class StateGroup(app_commands.Group):
             pass
 
 
-class Math(Cog, help_command=Help, name='math'):
+class Math(Cog, name='botmath'):
     def __init__(self, bot: MasterBot):
         super().__init__(bot)
         self.parse_regex = re.compile(r'\w+ *= *\d+')

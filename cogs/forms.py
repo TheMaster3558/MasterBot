@@ -6,26 +6,8 @@ from bot import MasterBot
 import asyncio
 import time
 import datetime
-from cogs.utils.help_utils import HelpSingleton
 from cogs.utils.app_and_cogs import Cog, command, app_guild_only
 from cogs.utils.modal import Modal
-
-
-class Help(metaclass=HelpSingleton):
-    def __init__(self, prefix):
-        self.prefix = prefix
-
-    def form_help(self):
-        message = f'`{self.prefix}form <title> [expires_in_hours]`: Create a form for other users to take.'
-        return message
-
-    def takeform_help(self):
-        message = f'`{self.prefix}takeform`: Take a form from another user!'
-        return message
-
-    def full_help(self):
-        help_list = [self.form_help(), self.takeform_help()]
-        return '\n'.join(help_list)
 
 
 class QuestionView(View):
@@ -89,7 +71,7 @@ class ConfirmView(View):
         self.stop()
 
 
-class Forms(Cog, help_command=Help, name='forms'):
+class Forms(Cog, name='forms'):
     def __init__(self, bot: MasterBot):
         super().__init__(bot)
         self.modal: dict[int, list[discord.ui.Modal]] = {}

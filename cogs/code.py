@@ -8,45 +8,11 @@ import re
 import os as __os__
 import sys as __sys__
 from bot import MasterBot
-from cogs.utils.help_utils import HelpSingleton
 import aiofiles
 import builtins
 import io
 from cogs.utils.app_and_cogs import Cog, command
 import threading
-
-
-class Help(metaclass=HelpSingleton):
-    def __init__(self, prefix):
-        self.prefix = prefix
-
-    def eval_help(self):
-        message = f'`{self.prefix}eval <code>`: Code in python with the discord bot! (Command may not work). (Certain words will cause the code to not run to protect our system. [Click here for more](https://nedbatchelder.com/blog/201206/eval_really_is_dangerous.html))'
-        return message
-
-    def canrun_help(self):
-        message = f'`{self.prefix}canrun [user] <command>`: User is optional. Check if you or the user can run the command.'
-        return message
-
-    def search_help(self):
-        message = f'`{self.prefix}search <regex> <text>`: Use regular expressions `re.search()`. Example: `!search [a-z][0-9][A-Z] a0Z`'
-        return message
-
-    def match_help(self):
-        message = f'`{self.prefix}match <regex> <text>`: Use regular expressions `re.match()`. Same as `search` but full match.'
-        return message
-
-    def code_help(self):
-        message = f'`{self.prefix}code <file> [lines]`: Get some code from the bot.'
-        return message
-
-    def created_help(self):
-        message = f'`{self.prefix}created <snowflake>`: Snowflake can be a user or a made up ID. Get the time a snowflake was create at.'
-        return message
-
-    def full_help(self):
-        help_list = [self.eval_help(), self.canrun_help(), self.search_help(), self.match_help(), self.code_help(), self.created_help()]
-        return '\n'.join(help_list)
 
 
 class EventLoopThread(threading.Thread):
@@ -119,7 +85,7 @@ class SlashCodeBlock:
         self.source = argument
 
 
-class Code(Cog, help_command=Help, name='code'):
+class Code(Cog, name='code'):
     """
     Many of the commands are owner only
     """

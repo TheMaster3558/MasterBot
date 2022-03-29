@@ -8,7 +8,6 @@ from typing import Optional, Union
 from bot import MasterBot
 import aiosqlite
 from sqlite3 import IntegrityError
-from cogs.utils.help_utils import HelpSingleton
 from static_embeds import (
     joke_category_embed,
     nsfw_embed,
@@ -22,23 +21,6 @@ from static_embeds import (
     cancel_bed,
 )
 from cogs.utils.app_and_cogs import Cog, command
-
-
-class Help(metaclass=HelpSingleton):
-    def __init__(self, prefix):
-        self.prefix = prefix
-
-    def joke_help(self):
-        message = f'`{self.prefix}joke [categories]`: Get a joke! Categories are optional. Separate with a space (Slash Commands use select menu). Categories: `Any`, `Misc`,`Programming`, `Dark`, `Pun`, `Spooky`, `Christmas`\n'
-        return message
-
-    def blacklist_help(self):
-        message = f'`{self.prefix}blacklist [flags]`: Arguments: `nsfw`, `religious`, `political`, `sexist`, `racist`, `explicit`\nExample: `{self.prefix}blacklist nsfw: true racist: false`'
-        return message
-
-    def full_help(self):
-        help_list = [self.joke_help(), self.blacklist_help()]
-        return '\n'.join(help_list)
 
 
 class BlacklistView(View):
@@ -136,7 +118,7 @@ def decode_sql_bool(data: Union[tuple, list]) -> list[bool]:
     return converted
 
 
-class Jokes(Cog, help_command=Help, name='jokes'):
+class Jokes(Cog, name='jokes'):
     default_options = {'nsfw': True, 'religious': True, 'political': True, 'sexist': True, 'racist': True,
                        'explicit': True}
     categories = ["any", "misc", "programming", "dark", "pun", "spooky", "christmas"]

@@ -4,40 +4,11 @@ from discord.ext import commands
 from async_google_trans_new import AsyncTranslator
 from async_google_trans_new.constant import LANGUAGES
 from bot import MasterBot
-from cogs.utils.help_utils import HelpSingleton
 from static_embeds import lang_bed
 from cogs.utils.app_and_cogs import Cog, command
 
 
-class Help(metaclass=HelpSingleton):
-    def __init__(self, prefix):
-        self.prefix = prefix
-
-    def languages_help(self):
-        message = f'`{self.prefix}languages`: Aliases: `langs` `codes`. Get the valid list of languages to translate to.'
-        return message
-
-    def langs_help(self):
-        return self.languages_help()
-
-    def codes_help(self):
-        return self.languages_help()
-
-    def trans_help(self):
-        message = f'`{self.prefix}translate [language] <text>`: `language` is optional. Translate your text!\n' \
-                  f'Examples: `{self.prefix}translate en 我蝙蝠侠也` or `{self.prefix}translate 我蝙蝠侠也`'
-        return message
-
-    def detect_help(self):
-        message = f'`{self.prefix}detect <text>`: Detect what language the text is!'
-        return message
-
-    def full_help(self):
-        help_list = [self.languages_help(), self.trans_help(), self.detect_help()]
-        return '\n'.join(help_list)
-
-
-class Translator(Cog, help_command=Help, name='translation'):
+class Translator(Cog, name='translation'):
     def __init__(self, bot: MasterBot):
         super().__init__(bot)
         self.translator = None
@@ -49,6 +20,8 @@ class Translator(Cog, help_command=Help, name='translation'):
         self.bot.translator = self.translator  # for context menus
 
     async def cog_command_error(self, ctx, error):
+        error: commands.CommandError
+
         if ctx.command is None:
             return
         if isinstance(error, commands.CommandOnCooldown):

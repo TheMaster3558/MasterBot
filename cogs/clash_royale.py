@@ -6,39 +6,8 @@ from cogs.utils.http import AsyncHTTPClient
 from requests.structures import CaseInsensitiveDict
 from cogs.utils.cr_utils import ClashRoyaleUtils
 from bot import MasterBot
-from cogs.utils.help_utils import HelpSingleton
 from static_embeds import cr_locations_embed, locations
 from cogs.utils.app_and_cogs import Cog, command
-
-
-class Help(metaclass=HelpSingleton):
-    def __init__(self, prefix):
-        self.prefix = prefix
-
-    def crlocations_help(self):
-        message = f'`{self.prefix}crlocations`: Get a list of locations to use for other commands.'
-        return message
-
-    def stats_help(self):
-        message = f'`{self.prefix}stats <player_tag>`: Get clash royale player stats.'
-        return message
-
-    def clan_help(self):
-        message = f'`{self.prefix}clan <clan_tag>`: Get clash royale clan stats.'
-        return message
-
-    def card_help(self):
-        message = f'`{self.prefix}card <name>`: Get a clash royale card.'
-        return message
-
-    def searchclan_help(self):
-        message = f'`{self.prefix}searchclan [flag_args]`:\n**Args for searchclan:**\n\t`name`: The name\n\t`location`: The location\n\t`min`: Minimum members\n\t`max`: Maximum members\n\t`score`: Minimum clan score\n\t`result`: Which result to choose. Defaults to first.'
-        return message
-
-    def full_help(self):
-        help_list = [self.crlocations_help(), self.stats_help(), self.clan_help(), self.card_help(),
-                     self.searchclan_help()]
-        return '\n'.join(help_list)
 
 
 class CountryError(Exception):
@@ -101,7 +70,7 @@ class ClanSearchFlags(commands.FlagConverter):
     result: Optional[int] = 1
 
 
-class ClashRoyale(Cog, help_command=Help, name='clashroyale'):
+class ClashRoyale(Cog, name='clashroyale'):
     def __init__(self, bot: MasterBot):
         super().__init__(bot)
         self.api_key = self.bot.clash_royale

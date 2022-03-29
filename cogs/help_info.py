@@ -29,59 +29,42 @@ class HelpEmbed(discord.Embed):
 
 
 class HelpCommand(commands.HelpCommand):
-    async def send_bot_help(self, mapping) -> None:
-        embed = HelpEmbed(title=f'{self.context.bot.user.name} Help Menu',
-                          bot=self.context.bot)
-        embed.add_field(name='Categories',
-                        value='`reactions`\t`moderation`\t`code`\t`translation`\t`trivia`\t`clashroyale`\t`jokes`\t`webhook`\t`weather`\t`forms`\t`weather`\t`math`\t`games`\t`version`')
+    async def send_command_help(self, _command: commands.Command, /, *, send: bool = True) -> discord.Embed:
+        embed = discord.Embed(
+            title=f'{_command.qualified_name} Help',
+            description=_command.description or 'No description'
+        )
+        embed.add_field(name='Syntax', value=f'```{self.get_command_signature(_command)}```')
+
+        if send:
+            channel = self.get_destination()
+            await channel.send(embed=embed)
+
+        return embed
+
+    async def send_group_help(self, group: commands.Group, /, *, send: bool = True) -> discord.Embed:
+        embed = discord.Embed(title=f'{group.qualified_name} Help',
+                              description=f'`{self.get_command_signature(group)}`' + group.description or 'No '
+                                                                                                          'description')
+        for sub in group.commands:
+            embed.add_field(name=sub.name, value=f'`{self.get_command_signature(sub)}`' + sub.description or 'No '
+                            'description')
+
+        if send:
+            channel = self.get_destination()
+            await channel.send(embed=embed)
+
+        return embed
+
+    async def send_cog_help(self, cog: Cog, /) -> None:
+        embed = discord.Embed(title=f'{cog.qualified_name} Help')
+
+        for cmd in cog.walk_commands():
+            embed.add_field(
+            name=cmd.qualified_name, value=f'`{self.get_command_signature(cmd)}`\n{cmd.description or "No description"}'
+            )
 
         channel = self.get_destination()
-        await channel.send(embed=embed)
-
-    async def send_cog_help(self, cog: Cog) -> None:
-        help_message = cog.help_command(self.context.clean_prefix).full_help()
-        embed = HelpEmbed(title=f'{cog.qualified_name.capitalize()} Help',
-                          description=help_message,
-                          bot=self.context.bot)
-
-        channel = self.get_destination()
-        await channel.send(embed=embed)
-
-    async def send_command_help(self, _command: commands.Command) -> None:
-        cog = _command.cog
-        if _command.root_parent:
-            name = _command.root_parent.name
-        else:
-            name = _command.name
-
-        channel = self.get_destination()
-
-        try:
-            help_message = getattr(cog.help_command(self.context.clean_prefix), f'{name}_help')()
-        except TypeError:
-            await channel.send(f"I couldn't find any help for `{_command.qualified_name}`")
-            return
-
-        embed = HelpEmbed(title=f'{_command.qualified_name.capitalize()} Help',
-                          description=help_message,
-                          bot=self.context.bot)
-        await channel.send(embed=embed)
-
-    async def send_group_help(self, group: commands.Group) -> None:
-        cog = group.cog
-
-        channel = self.get_destination()
-
-        try:
-            help_message = getattr(cog.help_command(self.context.clean_prefix), f'{group.name}_help')()
-        except TypeError:
-            await channel.send(f"I couldn't find any help for `{group.qualified_name}`")
-            return
-
-        embed = HelpEmbed(title=f'{group.name.capitalize()} Help',
-                          description=help_message,
-                          bot=self.context.bot)
-
         await channel.send(embed=embed)
 
     async def command_not_found(self, string: str) -> str:
