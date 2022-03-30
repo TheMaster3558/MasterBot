@@ -1,7 +1,8 @@
 import asyncio
-
+import inspect
 import requests
 import aiohttp
+import os
 
 
 def cleanup_params(params: dict) -> dict:
@@ -35,6 +36,32 @@ class AsyncHTTPClient:
             return
         if not self.session.closed:
             await self.session.close()
+
+
+def cached_return(func):
+    random = os.urandom(8).hex()
+
+    func._value = random  # can't use None here
+    func._original_call = func.__call__
+
+    if inspect.iscoroutinefunction(func):
+        async def call(*args, **kwargs):
+            cache = getattr(func, '__value')
+            if cache != random:
+                return cache
+            ret = await func._original_call(*args, **kwargs)
+            func._value = ret
+            return ret
+    else:
+        def call(*args, **kwargs):
+            cache = getattr(func, '__value')
+            if cache != random:
+                return cache
+            ret = func._original_call(*args, **kwargs)
+            func._value = ret
+            return ret
+    func.__call__ = call
+    return func
 
 
 class RequestsHTTPClient:

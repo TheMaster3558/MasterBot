@@ -197,7 +197,7 @@ class Games(Cog, name='games'):
         self.word = random.choice(words)
         self.done.clear()
 
-    @commands.command()
+    @commands.command(description='Play tic tac toe against someone.')
     @commands.guild_only()
     async def tictactoe(self, ctx, *, member: discord.Member):
         view = TicTacToeView(ctx.author, member)
@@ -253,7 +253,7 @@ class Games(Cog, name='games'):
             return
         await interaction.followup.send("You couldn't finish in time.")
 
-    @commands.command(aliases=['rps', 'rockpaperscissors'])
+    @commands.command(aliases=['rps', 'rockpaperscissors'], description='Play rock paper scissors!')
     async def rock_paper_scissors(self, ctx: commands.Context, member: discord.Member = None):
         view = RockPaperScissors(ctx.author, member)
         member = member or ctx.me
@@ -331,7 +331,7 @@ class Games(Cog, name='games'):
 
         return "%d:%02d:%02d" % (hour, minutes, seconds)
 
-    @commands.command()
+    @commands.command(description='Play the popular game Wordle from New York Times')
     async def wordle(self, ctx):
         if ctx.author.id in self.done:  # id is used so `User` and `Member` are treated the same
             next_word = self.new_word.next_iteration - discord.utils.utcnow()

@@ -215,7 +215,7 @@ class Jokes(Cog, name='jokes'):
         await asyncio.sleep(0)
         await self.update_db()
 
-    @commands.command()
+    @commands.command(description='Let me tell you a joke.')
     async def joke(self, ctx, *categories):
         for category in categories:
             if category.lower() not in self.categories:
@@ -287,7 +287,7 @@ class Jokes(Cog, name='jokes'):
             await interaction.followup.send(embed=embed)
         self.used_jokes.append(joke_id)
 
-    @commands.command(name='blacklist')
+    @commands.command(name='blacklist', description='Make some jokes not allowed.')
     @commands.has_permissions(administrator=True)
     async def _blacklist(self, ctx, *, flags: BlacklistFlags):
         for k, v in vars(flags).items():
@@ -365,6 +365,7 @@ class Jokes(Cog, name='jokes'):
                            sexist='Sexist jokes',
                            racist='Racist jokes',
                            explicit='Explicit jokes')
+    @app_commands.checks.has_permissions(administrator=True)
     async def __blacklist(self,
                           interaction: discord.Interaction,
                           nsfw: str = None,
@@ -374,8 +375,6 @@ class Jokes(Cog, name='jokes'):
                           racist: str = None,
                           explicit: str = None):
 
-        if not interaction.user.guild_permissions.administrator:
-            await interaction.response.send_message('You need admin perms to run this!!')
         flags = QuickObject(
             nsfw=nsfw,
             religious=religious,

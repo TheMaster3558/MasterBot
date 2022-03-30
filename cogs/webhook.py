@@ -199,7 +199,7 @@ class Webhooks(Cog, name='webhooks'):
         await self.update_db()
         await self.session.close()
 
-    @commands.group()
+    @commands.group(description="Make a 'bot' account.")
     async def webhook(self, ctx: commands.Context):
         if ctx.invoked_subcommand is None:
             embed = discord.Embed(title='Categories',
@@ -207,7 +207,7 @@ class Webhooks(Cog, name='webhooks'):
             embed.set_footer(text='Use create to modify your webhook.')
             await ctx.send(embed=embed)
 
-    @webhook.command()
+    @webhook.command(description='Create your own user. (Kinda)')
     @commands.guild_only()
     @commands.bot_has_permissions(manage_webhooks=True)
     async def create(self, ctx: commands.Context, *, flags: WebhookUserFlags):
@@ -255,7 +255,7 @@ class Webhooks(Cog, name='webhooks'):
         else:
             raise error
 
-    @webhook.command()
+    @webhook.command(description='Send a message with that.')
     @commands.guild_only()
     @commands.bot_has_permissions(manage_webhooks=True)
     async def send(self, ctx: commands.Context, *, content):
@@ -282,7 +282,7 @@ class Webhooks(Cog, name='webhooks'):
         else:
             raise error
 
-    @webhook.command()
+    @webhook.command(description='Delete it.')
     async def delete(self, ctx):
         if not self.users.get(ctx.author.id):
             return await ctx.send("You don't even have one...")

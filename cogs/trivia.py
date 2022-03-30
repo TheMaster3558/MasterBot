@@ -80,7 +80,7 @@ class Trivia(Cog, name='trivia'):
         await super().cog_load()
         self.bot.loop.create_task(self.http.get_token())
 
-    @commands.command()
+    @commands.command(description='Play some trivia.')
     @commands.cooldown(1, 3, commands.BucketType.channel)
     async def trivia(self, ctx):
         data = await self.http.trivia()

@@ -29,7 +29,7 @@ class Translator(Cog, name='translation'):
         else:
             await self.bot.on_command_error(ctx, error)
 
-    @commands.command()
+    @commands.command(description='I can translate text because im cool')
     @commands.cooldown(1, 30, commands.BucketType.user)
     async def translate(self, ctx, lang='', *, text=''):
         if lang in LANGUAGES.keys() or lang in LANGUAGES.values():
@@ -46,7 +46,7 @@ class Translator(Cog, name='translation'):
         embed.set_footer(text=f'Text successfully translated to {LANGUAGES.get(lang)}')
         await ctx.send(embed=embed)
 
-    @commands.command()
+    @commands.command(description='What language is that text?')
     @commands.cooldown(1, 30, commands.BucketType.user)
     async def detect(self, ctx, *, text):
         result = await self.translator.detect(text)
@@ -62,7 +62,7 @@ class Translator(Cog, name='translation'):
         else:
             raise error
 
-    @commands.command(aliases=['codes', 'langs'])
+    @commands.command(aliases=['codes', 'langs'], description='Get a list of languages for language commands.')
     async def languages(self, ctx):
         await ctx.author.send(embed=lang_bed)
 

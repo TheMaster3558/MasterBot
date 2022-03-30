@@ -29,7 +29,19 @@ class HelpEmbed(discord.Embed):
 
 
 class HelpCommand(commands.HelpCommand):
-    async def send_command_help(self, _command: commands.Command, /, *, send: bool = True) -> discord.Embed:
+    async def send_bot_help(self, mapping: dict[Cog, list[commands.Command | commands.Group]], /) -> None:
+        del mapping[None]  # type: ignore # Non cog commands
+        embeds = [await self.send_cog_help(cog, send=False) for cog in mapping]
+
+        last = 0
+        for i in range(5, len(embeds), 5):
+            await self.context.author.send(embeds=embeds[last:i])
+            last = i
+
+    async def send_command_help(self, _command: commands.Command, /, *, send: bool = True) -> discord.Embed | None:
+        if not await self.can_run(self.context):
+            return
+
         embed = discord.Embed(
             title=f'{_command.qualified_name} Help',
             description=_command.description or 'No description'
@@ -42,13 +54,16 @@ class HelpCommand(commands.HelpCommand):
 
         return embed
 
-    async def send_group_help(self, group: commands.Group, /, *, send: bool = True) -> discord.Embed:
+    async def send_group_help(self, group: commands.Group, /, *, send: bool = True) -> discord.Embed | None:
+        if not await self.can_run(self.context):
+            return
+
         embed = discord.Embed(title=f'{group.qualified_name} Help',
                               description=f'`{self.get_command_signature(group)}`' + group.description or 'No '
                                                                                                           'description')
         for sub in group.commands:
             embed.add_field(name=sub.name, value=f'`{self.get_command_signature(sub)}`' + sub.description or 'No '
-                            'description')
+                                                                                                             'description')
 
         if send:
             channel = self.get_destination()
@@ -56,16 +71,26 @@ class HelpCommand(commands.HelpCommand):
 
         return embed
 
-    async def send_cog_help(self, cog: Cog, /) -> None:
+    async def send_cog_help(self, cog: Cog, /, *, send: bool = True) -> discord.Embed:
         embed = discord.Embed(title=f'{cog.qualified_name} Help')
 
         for cmd in cog.walk_commands():
+            try:
+                await cmd.can_run(self.context)
+            except commands.CheckFailure:
+                continue
+
             embed.add_field(
-            name=cmd.qualified_name, value=f'`{self.get_command_signature(cmd)}`\n{cmd.description or "No description"}'
+                name=cmd.qualified_name.capitalize(),
+                value=f'`{self.get_command_signature(cmd)}`\n{cmd.description or "No description"}',
+                inline=False
             )
 
-        channel = self.get_destination()
-        await channel.send(embed=embed)
+        if send:
+            channel = self.get_destination()
+            await channel.send(embed=embed)
+
+        return embed
 
     async def command_not_found(self, string: str) -> str:
         message = f"I couldn't find the command `{string}`"

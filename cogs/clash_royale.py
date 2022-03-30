@@ -2,7 +2,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 from typing import Optional, Union
-from cogs.utils.http import AsyncHTTPClient
+from cogs.utils.http import AsyncHTTPClient, cached_return
 from requests.structures import CaseInsensitiveDict
 from cogs.utils.cr_utils import ClashRoyaleUtils
 from bot import MasterBot
@@ -38,6 +38,7 @@ class ClashRoyaleHTTPClient(AsyncHTTPClient):
         """
         return await self.request(f'players/%23{tag}/battlelog')
 
+    @cached_return
     async def cards_request(self, **params) -> list:
         """
         :param params: limit, before, after
@@ -77,7 +78,7 @@ class ClashRoyale(Cog, name='clashroyale'):
         self.http = ClashRoyaleHTTPClient(self.api_key, loop=self.bot.loop)
         print('Clash Royale cog loaded')
 
-    @commands.command()
+    @commands.command(description='Get a list of locations to use for clash royale commands.')
     async def crlocations(self, ctx):
         await ctx.author.send(embed=cr_locations_embed)
 
@@ -85,7 +86,7 @@ class ClashRoyale(Cog, name='clashroyale'):
     async def _crlocations(self, interaction):
         await interaction.response.send_message(embed=cr_locations_embed, ephemeral=True)
 
-    @commands.command()
+    @commands.command(description='Get the stats of a clash royale player.')
     @commands.cooldown(1, 30, commands.BucketType.user)
     async def stats(self, ctx: commands.Context, *, player_tag: str):
         await ctx.trigger_typing()
@@ -99,11 +100,11 @@ class ClashRoyale(Cog, name='clashroyale'):
     async def error(self, ctx, error):
         if isinstance(error, commands.CommandInvokeError):
             await ctx.send('Try giving me a real tag.')
-            raise error
+            await self.bot.on_command_error(ctx, error)
         elif isinstance(error, commands.CommandOnCooldown):
             await ctx.send(f'Wait a bit. Try in {round(error.retry_after)}')
         else:
-            raise error
+            await self.bot.on_command_error(ctx, error)
 
     @command(name='stats', description='Get clash royale player stats.')
     @app_commands.describe(tag='The player tag')
@@ -114,7 +115,7 @@ class ClashRoyale(Cog, name='clashroyale'):
         embed = await ClashRoyaleUtils.build_player_embed(data)
         await interaction.response.send_message(embed=embed)
 
-    @commands.command()
+    @commands.command(description='Get a clash royale card.')
     @commands.cooldown(1, 30, commands.BucketType.user)
     async def card(self, ctx: commands.Context, *, name: str):
         await ctx.trigger_typing()
@@ -130,7 +131,7 @@ class ClashRoyale(Cog, name='clashroyale'):
         elif isinstance(error, commands.CommandOnCooldown):
             await ctx.send(f'Wait a bit. Try in {round(error.retry_after)} seconds.')
         else:
-            raise error
+            await self.bot.on_command_error(ctx, error)
 
     @command(name='card', description='Get a clash royale card.')
     @app_commands.describe(name='The card name')
@@ -144,13 +145,13 @@ class ClashRoyale(Cog, name='clashroyale'):
         embed = await ClashRoyaleUtils.build_card_embed(card)
         await interaction.response.send_message(embed=embed)
 
-    @commands.command()
+    @commands.command(description='Get clash royale clan stats.')
     @commands.cooldown(1, 30, commands.BucketType.user)
-    async def clan(self, ctx: commands.Context, tag: str):
+    async def clan(self, ctx: commands.Context, clan_tag: str):
         await ctx.trigger_typing()
-        if tag.startswith('#'):
-            tag = tag[1:]
-        clan = await self.http.clan_tag_request(tag)
+        if clan_tag.startswith('#'):
+            clan_tag = clan_tag[1:]
+        clan = await self.http.clan_tag_request(clan_tag)
         embed = await ClashRoyaleUtils.build_clan_embed(clan)
         await ctx.send(embed=embed)
 
@@ -158,13 +159,13 @@ class ClashRoyale(Cog, name='clashroyale'):
     async def error(self, ctx, error):
         if isinstance(error, commands.CommandInvokeError):
             await ctx.send('Try giving me a real tag.')
-            raise error
+            await self.bot.on_command_error(ctx, error)
         elif isinstance(error, commands.CommandOnCooldown):
             await ctx.send(f'Calm down! Try in {error.retry_after} seconds.')
         else:
-            raise error
+            await self.bot.on_command_error(ctx, error)
 
-    @command(name='clan', description='Get clash royale clan stats')
+    @command(name='clan', description='Get clash royale clan stats.')
     @app_commands.describe(tag='The clan tag')
     async def _clan(self, interaction, tag: str):
         if tag.startswith('#'):
@@ -174,7 +175,7 @@ class ClashRoyale(Cog, name='clashroyale'):
         embed = await ClashRoyaleUtils.build_clan_embed(clan)
         await interaction.response.send_message(embed=embed)
 
-    @commands.command(name='searchclan')
+    @commands.command(name='searchclan', description='Search up a clan in clash royale')
     @commands.cooldown(1, 30, commands.BucketType.user)
     async def search_clan(self, ctx: commands.Context, *, flags):
         await ctx.trigger_typing()
@@ -208,13 +209,13 @@ class ClashRoyale(Cog, name='clashroyale'):
             embed = discord.Embed(title='Invalid Country',
                                   description=f'You may have a bad country. Use `{self.bot.command_prefix(self.bot, ctx.message)[2]}crlocations` for a list. ')
             await ctx.send(embed=embed)
-            raise error
+            await self.bot.on_command_error(ctx, error)
         elif isinstance(error, commands.CommandOnCooldown):
             await ctx.send(f'Wait a bit. Try in {round(error.retry_after)} seconds.')
         else:
-            raise error
+            await self.bot.on_command_error(ctx, error)
 
-    @command(name='searchclan', description='Search up a clan in clash royale')
+    @command(name='searchclan', description='Search up a clan in clash royale.')
     @app_commands.describe(name='The clans name',
                            location='The clan location',
                            min='The minimum amount of members',

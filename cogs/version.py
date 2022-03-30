@@ -11,7 +11,7 @@ class Version(Cog, name='version'):
         super().__init__(bot)
         print('Version cog loaded')
 
-    @commands.command(aliases=['whatsnew'])
+    @commands.command(aliases=['whatsnew'], description='Find out what came in a new update. Starts from 1.4.0')
     async def new(self, ctx, version):
         path = version.replace('.', '-')
         path += '.txt'

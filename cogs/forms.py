@@ -98,7 +98,7 @@ class Forms(Cog, name='forms'):
         else:
             await self.bot.on_command_error(ctx, error)
 
-    @commands.command()
+    @commands.command(description='Create a form for other users to take. Anonymous.')
     @commands.guild_only()
     async def form(self, ctx, title, expire: int = 3):
         if expire > 48:
@@ -154,7 +154,7 @@ class Forms(Cog, name='forms'):
             embed.add_field(name=k, value='\n'.join(v))
         await ctx.author.send(embed=embed)
 
-    @command(name='form', description='Create a form for other users to take')
+    @command(name='form', description='Create a form for other users to take.')
     @app_commands.describe(title='The title', expire='The hours it will expire in. Defaults to 3.')
     @app_guild_only()
     async def _form(self,
@@ -214,7 +214,7 @@ class Forms(Cog, name='forms'):
             embed.add_field(name=k, value='\n'.join(v))
         await interaction.user.send(embed=embed)
 
-    @commands.command()
+    @commands.command(description='Take a form anonymously from another user.')
     @commands.guild_only()
     async def takeform(self, ctx):
         modals = self.modal[ctx.guild.id]

@@ -66,7 +66,7 @@ class Math(Cog, name='botmath'):
             expression = expression.replace(find, '')
         return variables, expression
 
-    @commands.command()
+    @commands.command(description='I can do some math for you.')
     async def math(self, ctx, *, expression: str):
         variables, expression = self.remove_vars(expression)
         if ctx.author.id in self.states:
@@ -92,32 +92,32 @@ class Math(Cog, name='botmath'):
             return
         raise error
 
-    @commands.group()
+    @commands.group(description='Create a `state` to save variables across commands.')
     async def state(self, ctx: commands.Context):
         if ctx.invoked_subcommand is None:
             await ctx.send(f'Options are `{ctx.clean_prefix}state create` or `{ctx.clean_prefix}state delete`')
 
-    @state.command()
+    @state.command(description='Create the state.')
     async def create(self, ctx, *, variables=''):
         variables, _ = self.parse_for_vars(variables)
         self.states[ctx.author.id] = variables
 
-    @state.command(aliases=['del', 'destroy'])
+    @state.command(aliases=['del', 'destroy'], description='Destory that state')
     async def delete(self, ctx):
         try:
             del self.states[ctx.author.id]
         except KeyError:
             pass
 
-    @commands.command()
+    @commands.command(description='3.14')
     async def pi(self, ctx):
         await ctx.send(expr.pi)
 
-    @commands.command()
+    @commands.command(description='Get the value of **phi**')
     async def phi(self, ctx):
         await ctx.send(expr.phi)
 
-    @commands.command()
+    @commands.command(description='Get the value of **e**')
     async def e(self, ctx):
         await ctx.send(expr.e)
 

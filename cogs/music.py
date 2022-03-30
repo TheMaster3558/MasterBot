@@ -211,7 +211,7 @@ class Music(Cog, name='music'):
         if before.channel.name.endswith("'s room") and len(before.channel.members) < 1:
             await before.channel.delete(reason='All members left')
 
-    @commands.command(aliases=['j'])
+    @commands.command(aliases=['j'], description='I join your vc and you get happy!')
     async def join(self, ctx: commands.Context, *, channel: discord.VoiceChannel = None):
         if ctx.voice_client:
             await ctx.send("I'm already in a voice channel.")
@@ -233,7 +233,7 @@ class Music(Cog, name='music'):
 
         await ctx.send(f'Joined {vc.channel.mention}')
 
-    @commands.command(aliases=['p'])
+    @commands.command(aliases=['p'], description='Music is good.')
     async def play(self, ctx: commands.Context, *, search: str):
         if ctx.author.voice and ctx.author.voice.channel:
             if ctx.voice_client and ctx.voice_client.channel != ctx.author.voice.channel:

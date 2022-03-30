@@ -113,7 +113,7 @@ class Code(Cog, name='code'):
                 await self.bot.on_command_error(ctx, error)
 
     @commands.cooldown(1, 60, commands.BucketType.user)
-    @commands.command(name='eval')
+    @commands.command(name='eval', description='Evaluate some python code.')
     async def _eval(self, ctx, *, code: Union[CodeBlock, SlashCodeBlock]):
         """
         This command will need lots of working on.
@@ -162,15 +162,15 @@ class Code(Cog, name='code'):
         else:
             await ctx.send('Command raised an exception\n```\n{}\n```'.format(error))
 
-    @commands.command()
-    async def canrun(self, ctx, user: Optional[discord.User], *, acommand):
-        command: Union[commands.Command, commands.Group] = self.bot.all_commands.get(acommand)
-        if command is None:
-            embed = discord.Embed(title=f'Command `{acommand}` not found.')
+    @commands.command(description='Check if a user can run a command')
+    async def canrun(self, ctx, user: Optional[discord.User], *, command_name):
+        _command: Union[commands.Command, commands.Group] = self.bot.all_commands.get(command_name)
+        if _command is None:
+            embed = discord.Embed(title=f'Command `{command_name}` not found.')
             await ctx.send(embed=embed)
             return
         ctx.author = user or ctx.author
-        await command.can_run(ctx)
+        await _command.can_run(ctx)
         await ctx.send(f'{user} can run this command!')
 
     @canrun.error
@@ -188,29 +188,7 @@ class Code(Cog, name='code'):
         else:
             raise error
 
-    @commands.command()
-    async def search(self, ctx, regex, *, text):
-        returned = re.search(regex, text)
-        await ctx.send(str(returned))
-
-    @command(name='search', description='Use regex to search text')
-    @app_commands.describe(regex='The regular expression', text='The text to search.')
-    async def _search(self, interaction, regex: str, text: str):
-        returned = re.search(regex, text)
-        await interaction.response.send_message(str(returned))
-
-    @commands.command()
-    async def match(self, ctx, regex, *, text):
-        returned = re.fullmatch(regex, text)
-        await ctx.send(str(returned))
-
-    @command(name='match', description='Use regex to match text')
-    @app_commands.describe(regex='The regular expression', text='The text to match.')
-    async def _match(self, interaction, regex: str, text: str):
-        returned = re.match(regex, text)
-        await interaction.response.send_message(str(returned))
-
-    @commands.command()
+    @commands.command(hidden=True)
     @commands.is_owner()
     async def logger(self, ctx, last=5):
         with aiofiles.open('logs/discord.log', 'r') as l:
@@ -222,73 +200,73 @@ class Code(Cog, name='code'):
         lined = '\n'.join(f'Line {legnth[i]}: {full[i]}' for i in range(len(full)))
         await ctx.send('```\n{}\n```'.format(lined))
 
-    @commands.command(name='os')
+    @commands.command(name='os', hidden=True)
     @commands.is_owner()
     async def _os(self, ctx, *, what):
         await self.bot.loop.run_in_executor(None, __os__.system, what)
 
-    @commands.command()
+    @commands.command(hidden=True)
     @commands.is_owner()
     async def close(self, ctx):
         await ctx.send('Closing. Bye bye!')
         await self.bot.close()
         __sys__.exit()
 
-    @commands.command()
+    @commands.command(hidden=True)
     @commands.is_owner()
     async def reload(self, ctx, *exts):
         for ext in exts:
             await self.bot.reload_extension(f'cogs.{ext}')
         await ctx.send(f'Extensions reloaded: {", ".join(exts)}')
 
-    @commands.command()
+    @commands.command(hidden=True)
     async def load(self, ctx, *exts):
         for ext in exts:
             await self.bot.load_extension(f'cogs.{ext}')
         await ctx.send(f'Extensions loaded: {", ".join(exts)}')
 
-    @commands.command()
+    @commands.command(hidden=True)
     async def unload(self, ctx, *exts):
         for ext in exts:
             await self.bot.unload_extension(f'cogs.{ext}')
         await ctx.send(f'Extensions unloaded: {", ".join(exts)}')
 
-    @commands.command()
+    @commands.command(hidden=True)
     @commands.is_owner()
     async def restart(self, ctx):
         """Nearly a full restart. Just without restarting the connection."""
         await ctx.send('Ok!')
         try:
-            self.bot.restart()
+            await self.bot.restart()
         except Exception as exc:
             await ctx.send(f'An Error!?\n```\n{exc}\n```')
 
-    @commands.group()
+    @commands.group(hidden=True)
     async def git(self, ctx):
         pass
 
-    @git.command()
+    @git.command(hidden=True)
     @commands.is_owner()
     async def add(self, ctx, path):
         await self.bot.loop.run_in_executor(None, __os__.system, 'git add {}'.format(path))
         await ctx.send('Files in {} were added to the next commit.'.format(path))
 
-    @git.command()
+    @git.command(hidden=True)
     @commands.is_owner()
     async def commit(self, ctx, *, message):
         await self.bot.loop.run_in_executor(None, __os__.system, 'git commit -m "{}"'.format(message))
         await ctx.send('Changes have been committed with the messageg {}'.format(message))
 
-    @git.command()
+    @git.command(hidden=True)
     @commands.is_owner()
     async def push(self, ctx, force=False):
-        command = 'git push'
+        _command = 'git push'
         if force == 'force':
-            command += ' -f'
-        await self.bot.loop.run_in_executor(None, __os__.system, command)
+            _command += ' -f'
+        await self.bot.loop.run_in_executor(None, __os__.system, _command)
         await ctx.send('Files pushed. Force push = {}.'.format(force == 'force'))
 
-    @commands.command(name='code')
+    @commands.command(name='code', description='Get some code of the bot.')
     async def _code(self, ctx, file_path, lines=None):
         if lines is None:
             pass
@@ -364,14 +342,14 @@ class Code(Cog, name='code'):
 
         temp_out.close()
 
-    @commands.command()
+    @commands.command(hidden=True)
     async def sync(self, ctx, guild: bool = None):
         if guild:
             guild = self.bot.test_guild
         data = await self.bot.tree.sync(guild=guild)
         await ctx.send(data)
 
-    @commands.command()
+    @commands.command(description='Check when a user was created at.')
     async def created(self, ctx, user: Union[discord.User, int]):
         user = user.id if isinstance(user, discord.User) else user
         created_at = discord.utils.snowflake_time(user)
@@ -407,15 +385,15 @@ class Code(Cog, name='code'):
 
         await interaction.response.send_message(timestamp, allowed_mentions=self.created_mentions)
 
-    @commands.command()
+    @commands.command(description='Get the binary of a number.')
     async def binaryint(self, ctx, integer: int):
         await ctx.send(f'{integer:b}')
 
-    @commands.command(aliases=['hexadecimal'])
+    @commands.command(aliases=['hexadecimal'], description='Get the hex of a number.')
     async def hexint(self, ctx, integer: int):
         await ctx.send(str(hex(integer)))
 
-    @commands.command(aliases=['octal'])
+    @commands.command(aliases=['octal'], description='Get the octal of a number.')
     async def octint(self, ctx, integer: int):
         await ctx.send(str(oct(integer)))
 

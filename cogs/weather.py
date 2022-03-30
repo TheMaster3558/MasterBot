@@ -105,6 +105,8 @@ class Weather(Cog, name='weather'):
         await self.update_db()
 
     async def cog_command_error(self, ctx, error):
+        error: commands.CommandError
+
         if not ctx.command:
             return
         if isinstance(error, commands.MissingRequiredArgument):
@@ -113,7 +115,7 @@ class Weather(Cog, name='weather'):
             if not ctx.command.has_error_handler():
                 await self.bot.on_command_error(ctx, error)
 
-    @commands.command()
+    @commands.command(description='Change the units to use for weather.')
     @commands.has_permissions(administrator=True)
     async def units(self, ctx, *, flags: Union[FlagUnits, str] = None):
         if isinstance(flags, FlagUnits):
@@ -168,7 +170,7 @@ class Weather(Cog, name='weather'):
         else:
             raise error
 
-    @commands.command()
+    @commands.command(description='Get the current weather of a place.')
     async def current(self, ctx, *, location):
         data = await self.http.current(location)
         if data.get('error'):
@@ -194,7 +196,7 @@ class Weather(Cog, name='weather'):
             return
         await interaction.response.send_message(embed=embed)
 
-    @commands.command()
+    @commands.command(description='Get the forcast of a place.')
     async def forecast(self, ctx, days: Optional[int] = 1, *, location):
         data = await self.http.forecast(location, days)
         if data.get('error'):
@@ -220,7 +222,7 @@ class Weather(Cog, name='weather'):
             return
         await interaction.response.send_message(embed=embed)
 
-    @commands.command(aliases=['place', 'town'])
+    @commands.command(aliases=['place', 'town'], description='Search a city.')
     async def city(self, ctx, index: Optional[int] = 1, *, query):
         data = await self.http.search(query)
         if data.get('error'):
@@ -232,7 +234,7 @@ class Weather(Cog, name='weather'):
             return
         await ctx.send(embed=embed)
 
-    @command(name='city', description='Search a city')
+    @command(name='city', description='Search a city.')
     @app_commands.describe(query='The query')
     async def _city(self, interaction, index: int = 1, *, query: str):
         data = await self.http.search(query)
@@ -246,7 +248,7 @@ class Weather(Cog, name='weather'):
             return
         await interaction.response.send_message(embed=embed)
 
-    @commands.command(aliases=['tz'])
+    @commands.command(aliases=['tz'], description='Get the timezone of a place.')
     async def timezone(self, ctx, *, location):
         data = await self.http.timezone(location)
         if data.get('error'):

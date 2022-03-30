@@ -80,7 +80,7 @@ class ReactionRoles(Cog, name='reactions'):
     async def after(self):
         await self.update_file()
 
-    @commands.command(aliases=['rr', 'reactionrole'])
+    @commands.command(aliases=['rr', 'reactionrole'], description='Rework soon because it sucks!')
     @commands.has_permissions(administrator=True)
     @commands.bot_has_permissions(manage_roles=True)
     async def reaction_role(self, ctx, *, flags: ReactionRoleFlags):
@@ -145,7 +145,7 @@ class ReactionRoles(Cog, name='reactions'):
         else:
             raise error
 
-    @commands.command(aliases=['crr', 'customreactionrole'])
+    @commands.command(aliases=['crr', 'customreactionrole'], description='Rework soonnnn.')
     @commands.has_permissions(administrator=True)
     @commands.bot_has_permissions(manage_roles=True)
     async def custom_reaction_role(self, ctx, *, flags: CustomReactionRoleFlags):
@@ -246,7 +246,7 @@ class ReactionRoles(Cog, name='reactions'):
         if role in member.roles:
             await member.remove_roles(role)
 
-    @commands.command()
+    @commands.command(description='Delete a reaction roles message')
     async def delete(self, ctx, message: discord.Message):
         if message.author.id != ctx.author.id:
             return
