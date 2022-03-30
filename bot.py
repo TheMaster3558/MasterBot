@@ -15,7 +15,7 @@ from discord import app_commands
 from discord.ext import commands
 from cogs.utils.app_and_cogs import Cog, NoPrivateMessage
 from time import perf_counter
-from typing import Optional, Iterable, TypeVar
+from typing import Optional, Iterable, TypeVar, Union, Any
 import logging
 import asyncio
 import traceback
@@ -30,8 +30,21 @@ with warnings.catch_warnings():
 CogT = TypeVar('CogT', bound=Cog)
 
 
+class MasterBotCommandTree(app_commands.CommandTree):
+    async def on_error(
+        self,
+        interaction: discord.Interaction,
+        command: Optional[Union[app_commands.ContextMenu, app_commands.Command[Any, ..., Any]]],
+        error: app_commands.AppCommandError,
+    ) -> None:
+        if isinstance(error, NoPrivateMessage):
+            await interaction.response.send_message('Try this in a server.')
+            return
+        traceback.print_exception(error, file=sys.stderr)
+
+
 class MasterBot(commands.Bot):
-    __version__ = '1.5.1'
+    __version__ = '1.6.0'
     test_guild = discord.Object(id=878431847162466354)
 
     def __init__(self, cr_api_key: str, weather_api_key: str, mongo_db: str, /, *, token: str, **options) -> None:
@@ -42,8 +55,6 @@ class MasterBot(commands.Bot):
         options['intents'] = intents
 
         super().__init__(**options)
-
-        self.tree.error(self.command_tree_error)
 
         self.start_time = perf_counter()
         self.on_ready_time = None
@@ -75,7 +86,8 @@ class MasterBot(commands.Bot):
             activity=discord.Game(f'version {cls.__version__}'),
             strip_after_prefix=True,
             enable_debug_events=True,
-            token=token
+            token=token,
+            tree_cls=MasterBotCommandTree
         )
 
     def acquire_lock(self, cog: CogT) -> asyncio.Lock:
@@ -133,18 +145,11 @@ class MasterBot(commands.Bot):
 
         traceback.print_exception(exception, file=sys.stderr)
 
-    async def command_tree_error(self, interaction, command, error):
-        if isinstance(error, NoPrivateMessage):
-            await interaction.response.send_message(error.message)
-            return
-
-        traceback.print_exception(error, file=sys.stderr)
-
-    def restart(self):
+    async def restart(self):
         """Reloads all extensions and clears the cache"""
         extensions = list(self.extensions).copy()
         for ext in extensions:
-            self.reload_extension(ext)
+            await self.reload_extension(ext)
         self.clear()
 
     @property
