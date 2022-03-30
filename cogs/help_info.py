@@ -72,7 +72,7 @@ class HelpCommand(commands.HelpCommand):
         return embed
 
     async def send_cog_help(self, cog: Cog, /, *, send: bool = True) -> discord.Embed:
-        embed = discord.Embed(title=f'{cog.qualified_name} Help')
+        embed = discord.Embed(title=f'{cog.qualified_name.capitalize()} Help')
 
         for cmd in cog.walk_commands():
             try:

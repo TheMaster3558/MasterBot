@@ -2,12 +2,13 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 from typing import Optional, Union
-from cogs.utils.http import AsyncHTTPClient, cached_return
+from cogs.utils.http import AsyncHTTPClient
 from requests.structures import CaseInsensitiveDict
 from cogs.utils.cr_utils import ClashRoyaleUtils
 from bot import MasterBot
 from static_embeds import cr_locations_embed, locations
 from cogs.utils.app_and_cogs import Cog, command
+from functools import lru_cache
 
 
 class CountryError(Exception):
@@ -38,7 +39,7 @@ class ClashRoyaleHTTPClient(AsyncHTTPClient):
         """
         return await self.request(f'players/%23{tag}/battlelog')
 
-    @cached_return
+    @lru_cache(maxsize=110)
     async def cards_request(self, **params) -> list:
         """
         :param params: limit, before, after
