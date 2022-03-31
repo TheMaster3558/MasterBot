@@ -13,11 +13,11 @@ from __future__ import annotations
 
 def installer():
     import os
-    for module in ('discord', 'aiosqlite', 'fuzzywuzzy',):
+    for module, install in {'discord': None, 'fuzzywuzzy': None, 'aiosqlite': None, 'async_google_trans_new': 'async-google-trans-new'}:
         try:
             __import__(module)
         except ModuleNotFound:
-            os.system(f'pip install {module}')
+            os.system(f'pip install {install or module}')
            
         
 installer()
