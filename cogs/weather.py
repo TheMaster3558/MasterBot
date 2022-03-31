@@ -103,6 +103,7 @@ class Weather(Cog, name='weather'):
     @update_db.after_loop
     async def after(self):
         await self.update_db()
+        await self.db.close()
 
     async def cog_command_error(self, ctx, error):
         error: commands.CommandError
