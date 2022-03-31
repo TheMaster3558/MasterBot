@@ -128,7 +128,7 @@ class Jokes(Cog, name='jokes'):
         self.db = None
         self.blacklist = {}
         self.http = JokeAPIHTTPClient(self.bot.loop)
-        self.used_jokes = [12345]  # 12345 is so the while loop starts
+        self.used_jokes: set = {12345}  # 12345 is so the while loop starts
         print('Jokes cog loaded')
     
     async def cog_load(self):
@@ -244,7 +244,7 @@ class Jokes(Cog, name='jokes'):
             embed = discord.Embed(title=data.get('joke'))
             embed.set_footer(text=f'Category: {data.get("category")}')
             await ctx.send(embed=embed)
-        self.used_jokes.append(joke_id)
+        self.used_jokes.add(joke_id)
 
     @command(name='joke', description='Let me tell you a joke!')
     async def _joke(self, interaction: discord.Interaction):
@@ -285,7 +285,7 @@ class Jokes(Cog, name='jokes'):
             embed = discord.Embed(title=data.get('joke'))
             embed.set_footer(text=f'Category: {data.get("category")}')
             await interaction.followup.send(embed=embed)
-        self.used_jokes.append(joke_id)
+        self.used_jokes.add(joke_id)
 
     @commands.command(name='blacklist', description='Make some jokes not allowed.')
     @commands.has_permissions(administrator=True)
