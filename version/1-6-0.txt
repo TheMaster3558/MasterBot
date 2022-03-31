@@ -1,4 +1,7 @@
 New Music cog!
+New economy + leveling cog.
 
 Code Changes:
 - Help command rework phase 2
+
+This will be one of the bigger updates the bot will get.
