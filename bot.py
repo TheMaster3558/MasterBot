@@ -11,24 +11,6 @@ a Discord Bot with many uses and more to come
 from __future__ import annotations
 
 
-def installer():
-    import os
-    for module, install in {
-        'discord': None,
-        'fuzzywuzzy': None,
-        'aiosqlite': None,
-        'async_google_trans_new': 'async-google-trans-new',
-        'PyDB': 'git+https://github.com/Dark-Light007/PyDB'
-    }:
-        try:
-            __import__(module)
-        except ModuleNotFound:
-            os.system(f'pip install {install or module}')
-           
-        
-installer()
-
-
 import discord
 from discord import app_commands
 from discord.ext import commands
@@ -118,7 +100,7 @@ class MasterBot(commands.Bot):
         await self.http.bulk_upsert_global_commands(self.application_id, payload=[])
 
     async def load_extensions(self):
-        cogs = [
+        cogs = (
             'cogs.clash_royale',
             'cogs.help_info',
             'cogs.code',
@@ -132,8 +114,8 @@ class MasterBot(commands.Bot):
             'cogs.weather',
             'cogs.jokes',
             'cogs.version',
-            'cogs.music'
-        ]
+            'cogs.music',
+        )
         for cog in cogs:
             await self.load_extension(cog)
 
