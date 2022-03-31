@@ -197,6 +197,7 @@ class Webhooks(Cog, name='webhooks'):
     async def close_session(self):
         await asyncio.sleep(1.5)
         await self.update_db()
+        await db.close()
         await self.session.close()
 
     @commands.group(description="Make a 'bot' account.")
