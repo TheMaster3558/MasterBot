@@ -10,6 +10,19 @@ a Discord Bot with many uses and more to come
 
 from __future__ import annotations
 
+
+def installer():
+    import os
+    for module in ('discord', 'aiosqlite', 'fuzzywuzzy',):
+        try:
+            __import__(module)
+        except ModuleNotFound:
+            os.system(f'pip install {module}')
+           
+        
+installer()
+
+
 import discord
 from discord import app_commands
 from discord.ext import commands
