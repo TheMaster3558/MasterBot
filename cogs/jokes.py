@@ -214,6 +214,7 @@ class Jokes(Cog, name='jokes'):
     async def after(self):
         await asyncio.sleep(0)
         await self.update_db()
+        await self.db.close()
 
     @commands.command(description='Let me tell you a joke.')
     async def joke(self, ctx, *categories):
