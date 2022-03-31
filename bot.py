@@ -13,7 +13,13 @@ from __future__ import annotations
 
 def installer():
     import os
-    for module, install in {'discord': None, 'fuzzywuzzy': None, 'aiosqlite': None, 'async_google_trans_new': 'async-google-trans-new'}:
+    for module, install in {
+        'discord': None,
+        'fuzzywuzzy': None,
+        'aiosqlite': None,
+        'async_google_trans_new': 'async-google-trans-new',
+        'PyDB': 'git+https://github.com/Dark-Light007/PyDB'
+    }:
         try:
             __import__(module)
         except ModuleNotFound:
