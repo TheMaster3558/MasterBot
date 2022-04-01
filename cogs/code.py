@@ -134,7 +134,7 @@ class Code(Cog, name='code'):
             try:
                 try:
                     async with EventLoopThread() as thr:
-                        await self.bot.loop.run_in_executor(None, thr.run_coro, aexec(code.source, temp_out), 60)
+                        await asyncio.to_thread(thr.run_coro, aexec(code.source, temp_out), 60)
                         # to prevent blocking event loop if they use time.sleep etc
                 except TimeoutError:
                     await ctx.reply('Your code took too long to run.')
@@ -203,7 +203,7 @@ class Code(Cog, name='code'):
     @commands.command(name='os', hidden=True)
     @commands.is_owner()
     async def _os(self, ctx, *, what):
-        await self.bot.loop.run_in_executor(None, __os__.system, what)
+        await asyncio.to_thread(__os__.system, what)
 
     @commands.command(hidden=True)
     @commands.is_owner()
@@ -248,13 +248,13 @@ class Code(Cog, name='code'):
     @git.command(hidden=True)
     @commands.is_owner()
     async def add(self, ctx, path):
-        await self.bot.loop.run_in_executor(None, __os__.system, 'git add {}'.format(path))
+        await asyncio.to_thread(__os__.system, 'git add {}'.format(path))
         await ctx.send('Files in {} were added to the next commit.'.format(path))
 
     @git.command(hidden=True)
     @commands.is_owner()
     async def commit(self, ctx, *, message):
-        await self.bot.loop.run_in_executor(None, __os__.system, 'git commit -m "{}"'.format(message))
+        await asyncio.to_thread(__os__.system, 'git commit -m "{}"'.format(message))
         await ctx.send('Changes have been committed with the messageg {}'.format(message))
 
     @git.command(hidden=True)
@@ -263,7 +263,7 @@ class Code(Cog, name='code'):
         _command = 'git push'
         if force == 'force':
             _command += ' -f'
-        await self.bot.loop.run_in_executor(None, __os__.system, _command)
+        await asyncio.to_thread(__os__.system, _command)
         await ctx.send('Files pushed. Force push = {}.'.format(force == 'force'))
 
     @commands.command(name='code', description='Get some code of the bot.')
@@ -327,7 +327,7 @@ class Code(Cog, name='code'):
         try:
             try:
                 async with EventLoopThread() as thr:
-                    await self.bot.loop.run_in_executor(None, thr.run_coro, aexec(code.source, temp_out), 60)
+                    await asyncio.to_thread(thr.run_coro, aexec(code.source, temp_out), 60)
                     # to prevent blocking event loop if they use time.sleep etc
             except TimeoutError:
                 await interaction.followup.send('Your code took too long to run.')

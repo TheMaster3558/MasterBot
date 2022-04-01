@@ -35,7 +35,7 @@ class ReactionRoles(Cog, name='reactions'):
     
     async def cog_load(self):
         await super().cog_load()
-        await self.bot.loop.run_in_executor(None, self.fetch_role_dict)
+        await asyncio.to_thread(self.fetch_role_dict)
         self.update_file.start()
     
     async def cog_unload(self):
@@ -70,7 +70,7 @@ class ReactionRoles(Cog, name='reactions'):
     @tasks.loop(seconds=30)
     async def update_file(self):
         async with self.bot.acquire_lock(self):  # type: ignore
-            await self.bot.loop.run_in_executor(None, self._update)
+            await asyncio.to_thread(self._update)
 
     @update_file.before_loop
     async def before_update(self):
