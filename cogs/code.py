@@ -89,8 +89,8 @@ class Code(Cog, name='code'):
     """
     Many of the commands are owner only
     """
-    forbidden_imports = ['os', 'sys', 'subprocess', 'setuptools', 'distutils', 'threading', 'multiprocessing', 'Cython']
-    forbidden_words = ['ctx', '__os__', '__sys__', 'self', 'open(', 'sys']
+    forbidden_imports = ['sys', 'subprocess', 'setuptools', 'distutils', 'threading', 'multiprocessing', 'Cython', 'aioconsole', 'gc']
+    forbidden_words = ['ctx', '__os__', '__sys__', 'self', 'open(', 'eval(', 'exec']
 
     def __init__(self, bot: MasterBot):
         super().__init__(bot)
@@ -125,12 +125,9 @@ class Code(Cog, name='code'):
             if any([word in code.source for word in self.forbidden_words]):
                 await ctx.send('Your code has a word that would be risky to eval.')
                 return
-            if any([f'import {word}' in code.source or f'__import__("{word}")' in code.source or f"__import__('{word}')" in code.source for word in self.forbidden_imports]):
-                await ctx.send("You can't import that.")
-                return
 
             temp_out = io.StringIO()
-    
+
             try:
                 try:
                     async with EventLoopThread() as thr:
