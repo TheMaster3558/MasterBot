@@ -45,7 +45,9 @@ class Translator(Cog, name='translation'):
             return
 
         result = await self.translator.translate(text=text, lang_tgt=lang)
-        embed = discord.Embed(description=f'Original: {text}\nTranslated: {result}')
+        embed = discord.Embed()
+        embed.add_field(name='Original', value=text)
+        embed.add_field(name='Translated', value=result)
         embed.set_footer(text=f'Text successfully translated to {LANGUAGES.get(lang)}')
         await ctx.send(embed=embed)
 
