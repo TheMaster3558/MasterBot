@@ -2,27 +2,27 @@
 
 from __future__ import annotations
 
+import asyncio
+import random
+from datetime import time
+from typing import Literal
+from io import BytesIO
+
 import discord
 from discord import app_commands
 from discord.ext import commands, tasks
+from PIL import Image, ImageDraw, ImageFont
+from english_words import english_words_lower_set
+import enchant
+
 from bot import MasterBot
 from cogs.utils.view import View, smart_send
-from typing import Literal, Optional, TypeVar, Type
-import asyncio
-import random
-from cogs.utils.app_and_cogs import Cog, command
-from PIL import Image, ImageDraw, ImageFont
-from io import BytesIO
-from english_words import english_words_lower_set
-from datetime import time
-import enchant
+from cogs.utils.app_and_cogs import Cog
 
 
 words = [word for word in english_words_lower_set if len(word) == 5 and "'" not in word]
 
 
-UserT = TypeVar('UserT', bound=discord.User)
-UserID = TypeVar('UserID', bound=Type[int])
 Num = Literal[1, 2, 3]
 
 
@@ -35,9 +35,11 @@ class TicTacToeButton(discord.ui.Button['TicTacToeView']):
 
     async def callback(self, interaction: discord.Interaction):
         self.label = self.emojis[self.view.turn]
+
         for child in self.view.children:
             if (child.x, child.y) == (self.x, self.y):  # type: ignore
                 self.disabled = True
+
                 break
         if self.view.turn == 0:
             self.view.x.append((self.x, self.y))
@@ -45,8 +47,10 @@ class TicTacToeButton(discord.ui.Button['TicTacToeView']):
         else:
             self.view.o.append((self.x, self.y))
             player = 'o'
+
         finished = False
         moves = getattr(self.view, player)
+
         for combo in self.view.diags:
             if all([c in moves for c in combo]):
                 print(combo)
@@ -83,6 +87,7 @@ class TicTacToeButton(discord.ui.Button['TicTacToeView']):
                         break
 
         await interaction.message.edit(view=self.view)
+
         if finished:
             await self.view.disable_all(interaction.message)
             self.view.stop()
@@ -138,11 +143,13 @@ class RockPaperScissorsButton(discord.ui.Button['RockPaperScissors']):
             self.view.value1 = self.name
         else:
             self.view.value2 = self.name
+
         if self.view.p2 is None:
             self.view.value2 = random.choice([name for name, emoji in self.view.options])
             await self.view.disable_all(interaction.message)
             self.view.stop()
             return
+
         if self.view.value1 and self.view.value2:
             await self.view.disable_all(interaction.message)
             self.view.stop()
@@ -151,7 +158,7 @@ class RockPaperScissorsButton(discord.ui.Button['RockPaperScissors']):
 class RockPaperScissors(View):
     options = (('Rock', '🪨'), ('Paper', '📜'), ('Scissors', '✂'))
 
-    def __init__(self, p1: discord.User, p2: Optional[discord.User] = None):
+    def __init__(self, p1: discord.User, p2: discord.User | None = None):
         self.p1 = p1
         self.p2 = p2
         self.value1 = None
@@ -164,6 +171,7 @@ class RockPaperScissors(View):
         if interaction.user not in (self.p1, self.p2):
             await interaction.response.send_message('You are not in this game.')
             return False
+
         else:
             if interaction.user == self.p1 and self.value1:
                 await interaction.response.send_message(f'You already selected {self.value1}')
@@ -173,7 +181,7 @@ class RockPaperScissors(View):
                 return True
         return False
 
-    def get_value(self, player: UserT):
+    def get_value(self, player: discord.User):
         if player == self.p1:
             return self.value1
         elif player == self.p2:
@@ -187,7 +195,7 @@ class Games(Cog, name='games'):
 
     def __init__(self, bot: MasterBot):
         super().__init__(bot)
-        self.done: list[UserID] = []
+        self.done: list[int] = []
         self.new_word.start()
         self.d = enchant.Dict('en_US')
         print('Games cog loaded')
@@ -203,12 +211,15 @@ class Games(Cog, name='games'):
         view = TicTacToeView(ctx.author, member)
         embed = discord.Embed(title=f'{ctx.author.display_name} vs {member.display_name}')
         embed.set_footer(text='You have 3 minutes.')
+
         msg = await ctx.send(member.mention, embed=embed, view=view)
         await view.wait()
+
         if view.winner:
             winner = ctx.guild.get_member(view.winner)
             await msg.reply(f'The winner is {winner.display_name}!')
             return
+
         if view.winner == 0:
             await msg.reply('You tied. You both suck.')
         await msg.reply("You couldn't finish in time.")
@@ -235,31 +246,37 @@ class Games(Cog, name='games'):
                 return
             await self.tictactoe(ctx, member=member)
 
-    @command(name='tictactoe', description='Challenge a user to Tic Tac Toe!')
+    @app_commands.command(name='tictactoe', description='Challenge a user to Tic Tac Toe!')
     @app_commands.describe(member='The member to challenge.')
     async def _tictactoe(self, interaction: discord.Interaction, member: discord.Member):
         view = TicTacToeView(interaction.user, member)
         embed = discord.Embed(title=f'{interaction.user.display_name} vs {member.display_name}')
         embed.set_footer(text='You have 3 minutes.')
+
         await interaction.response.send_message(embed=embed, view=view)
         await interaction.followup.send(member.mention)
         await view.wait()
+
         if view.winner:
             winner = interaction.guild.get_member(view.winner)
             await interaction.followup.send(f'The winner is {winner.display_name}!')
             return
+
         if view.winner == 0:
             await interaction.followup.send('You tied. You both suck.')
             return
+
         await interaction.followup.send("You couldn't finish in time.")
 
     @commands.command(aliases=['rps', 'rockpaperscissors'], description='Play rock paper scissors!')
     async def rock_paper_scissors(self, ctx: commands.Context, member: discord.Member = None):
         view = RockPaperScissors(ctx.author, member)
         member = member or ctx.me
+
         embed = discord.Embed(title=f'{ctx.author.display_name} vs {member.display_name}')
         msg = await ctx.send(member.mention, embed=embed, view=view)
         await view.wait()
+
         winner = None
         v1 = view.value1
         v2 = view.value2
@@ -287,14 +304,16 @@ class Games(Cog, name='games'):
                               description=f'{view.get_value(winner)} beats {view.get_value(loser)}')
         await msg.reply(embed=embed)
 
-    @command(name='rockpaperscissors', description='Play a quick game of rock paper scissors')
+    @app_commands.command(name='rockpaperscissors', description='Play a quick game of rock paper scissors')
     @app_commands.describe(member='If you want you can challenge a member')
     async def _rock_paper_scissors(self, interaction, member: discord.Member = None):
         view = RockPaperScissors(interaction.user, member)
         member = member or interaction.guild.me
+
         embed = discord.Embed(title=f'{interaction.user.display_name} vs {member.display_name}')
         await interaction.response.send(member.mention, embed=embed, view=view)
         await view.wait()
+
         winner = None
         v1 = view.value1
         v2 = view.value2
@@ -313,9 +332,11 @@ class Games(Cog, name='games'):
                 winner = member
             elif v2 == 'Paper':
                 winner = interaction.user
+
         if winner is None:
             await interaction.followup.send('Tie. They both picked the same thing LOL.')
             return
+
         loser = interaction.user if winner is not interaction.user else member
         embed = discord.Embed(title=f'The winner is {winner.display_name}!',
                               description=f'{view.get_value(winner)} beats {view.get_value(loser)}')  # type: ignore
@@ -402,7 +423,7 @@ class Games(Cog, name='games'):
 
         await sent.reply(f'It took you {attempt} tries.')
 
-    @command(name='wordle', description='Play the popular game wordle. (Not created by us)')
+    @app_commands.command(name='wordle', description='Play the popular game wordle. (Not created by us)')
     async def _wordle(self, interaction):
         if interaction.user.id in self.done:  # id is used so `User` and `Member` are treated the same
             next_word = self.new_word.next_iteration - discord.utils.utcnow()

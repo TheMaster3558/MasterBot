@@ -1,12 +1,14 @@
-import discord
-from discord import app_commands
-from discord.ext import commands
-from cogs.utils.view import View
-from bot import MasterBot
 import asyncio
 import time
 import datetime
-from cogs.utils.app_and_cogs import Cog, command, app_guild_only
+
+import discord
+from discord import app_commands
+from discord.ext import commands
+
+from cogs.utils.view import View
+from bot import MasterBot
+from cogs.utils.app_and_cogs import Cog, app_guild_only
 from cogs.utils.modal import Modal
 
 
@@ -104,6 +106,7 @@ class Forms(Cog, name='forms'):
         if expire > 48:
             await ctx.send("`expire` cannot be over 48 hours.")
             return
+
         questions = []
         await ctx.send('Type `stop` when you want to finish the form.')
         while True:
@@ -116,26 +119,31 @@ class Forms(Cog, name='forms'):
                     await ctx.send('You need over 0 questions?')
                     return
                 break
+
             view = QuestionView()
             embed = discord.Embed(title='Select the type of question',
                                   description=msg.content)
             embed.set_footer(text='You have 30 seconds')
+
             await ctx.send(embed=embed, view=view)
             await view.wait()
             if view.value is None:
                 await ctx.send("You didn't click anything :(")
                 return
+
             questions.append((msg.content, view.value))
         #  copies the dynamic slash_util modal instead of the discord.py modal
         items = [discord.ui.TextInput(custom_id=question,
                                       label=question,
                                       style=style) for question, style in questions]
+
         modal = Modal(title=title, items=items)
         self.modal[ctx.guild.id].append(modal)
         now = datetime.datetime.now() + datetime.timedelta(hours=expire)  # type: ignore
         expire_time = round(time.mktime(now.timetuple()))
         embed = discord.Embed(title=f'Ok! Users can now use `{ctx.clean_prefix}takeform` to take this form',
                               description=f'expires <t:{expire_time}:R>')
+
         await ctx.send(embed=embed)
         await asyncio.sleep(expire * 3600)  # type: ignore
         self.modal[ctx.guild.id].remove(modal)
@@ -144,6 +152,7 @@ class Forms(Cog, name='forms'):
             await ctx.author.send('Your form got no responses :(')
             return
         embed = discord.Embed(title=f'Results for {title}')
+
         results_dict = {}
         for question, _ in questions:
             results_dict[question] = []
@@ -154,7 +163,7 @@ class Forms(Cog, name='forms'):
             embed.add_field(name=k, value='\n'.join(v))
         await ctx.author.send(embed=embed)
 
-    @command(name='form', description='Create a form for other users to take.')
+    @app_commands.command(name='form', description='Create a form for other users to take.')
     @app_commands.describe(title='The title', expire='The hours it will expire in. Defaults to 3.')
     @app_guild_only()
     async def _form(self,
@@ -164,6 +173,7 @@ class Forms(Cog, name='forms'):
         if not interaction.guild:
             await interaction.response.send_message('Try this in a server.', ephemeral=True)
             return
+
         questions = []
         await interaction.response.send_message('Type `stop` when you want to finish the form.')
         while True:
@@ -176,6 +186,7 @@ class Forms(Cog, name='forms'):
                     await interaction.followup.send('You need over 0 questions?')
                     return
                 break
+
             view = QuestionView()
             embed = discord.Embed(title='Select the type of question',
                                   description=msg.content)
@@ -194,6 +205,7 @@ class Forms(Cog, name='forms'):
         self.modal[interaction.guild.id].append(modal)
         now = datetime.datetime.now() + datetime.timedelta(hours=expire)  # type: ignore
         expire_time = round(time.mktime(now.timetuple()))
+
         embed = discord.Embed(title='Ok! Users can now use `/takeform` to take this form',
                               description=f'expires <t:{expire_time}:R>')
         await interaction.followup.send(embed=embed)
@@ -203,6 +215,7 @@ class Forms(Cog, name='forms'):
         if not results:
             await interaction.user.send('Your form got no responses :(')
             return
+
         embed = discord.Embed(title=f'Results for {title}')
         results_dict = {}
         for question, _ in questions:
@@ -221,19 +234,23 @@ class Forms(Cog, name='forms'):
         if len(modals) == 0:
             await ctx.send('There are no forms to take.')
             return
+
         view = FormView(modals, ctx.author)
         msg = await ctx.send('Select one', view=view)
         await view.wait()
+
         try:
             value = view.item.values[0]
         except IndexError:
             await msg.reply('You did not choose anything')
             return
+
         modal = None
         for m in modals:
             if m.title == value:
                 modal = m
                 break
+
         view = ConfirmView(modal)
         await msg.edit('Click to start! Your results will be anonymously sent to the creator of this form.', view=view)
         await view.wait()
@@ -247,29 +264,34 @@ class Forms(Cog, name='forms'):
         self.results[modal].append(response)
         await view.interaction.response.send_message('Your response has been recorded.')
 
-    @command(name='takeform', description='Take a form from another user!')
+    @app_commands.command(name='takeform', description='Take a form from another user!')
     @app_guild_only()
     async def _takeform(self, interaction):
         if not interaction.guild:
             await interaction.response.send_message('Try this in a server.')
             return
+
         modals = self.modal[interaction.guild.id]
         if len(modals) == 0:
             await interaction.response.send_message('There are no forms to take.')
             return
+
         view = FormView(modals, interaction.user)
         msg = await interaction.response.send_message('Select one', view=view)
         await view.wait()
+
         try:
             value = view.item.values[0]
         except IndexError:
             await interaction.followup.send('You did not choose anything')
             return
+
         modal = None
         for m in modals:
             if m.title == value:
                 modal = m
                 break
+
         view = ConfirmView(modal)
         await msg.edit('Click to start! Your results will be anonymously sent to the creator of this form.', view=view)
         await view.wait()

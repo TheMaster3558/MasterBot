@@ -1,10 +1,10 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import discord
 from discord.ext import commands
 from discord import app_commands
-import re
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from bot import MasterBot
@@ -27,18 +27,6 @@ class Cog(commands.Cog):
     async def setup(cls, bot: MasterBot):
         self = cls(bot)
         await bot.add_cog(self)
-
-
-def command(**kwargs):
-    def inner(coro):
-        testing = kwargs.pop('testing', None)
-        func = app_commands.command(**kwargs)(coro)
-        if testing:
-            func = app_commands.guilds(discord.Object(id=878431847162466354))(func)
-        if not re.search(r'^[\w-]{1,32}$', func.name):
-            raise ValueError(r'name must follow regex ^[\w-]{1,32}$')
-        return func
-    return inner
 
 
 class NoPrivateMessage(app_commands.CheckFailure):

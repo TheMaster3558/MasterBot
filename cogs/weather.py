@@ -1,13 +1,15 @@
+from typing import Optional, Literal
+from sqlite3 import IntegrityError
+
 import discord
 from discord import app_commands
 from discord.ext import commands, tasks
-from cogs.utils.http import AsyncHTTPClient
-from bot import MasterBot
-from typing import Optional, Union, Literal
 import aiosqlite
-from sqlite3 import IntegrityError
+
+from cogs.utils.http import AsyncHTTPClient
 from cogs.utils.weather_utils import WeatherUtils
-from cogs.utils.app_and_cogs import Cog, command
+from cogs.utils.app_and_cogs import Cog
+from bot import MasterBot
 
 
 class FlagUnits(commands.FlagConverter):
@@ -67,6 +69,7 @@ class Weather(Cog, name='weather'):
             data = await cursor.fetchone()
             if data is None:
                 continue
+
             temp, speed = data
             self.temp_units[guild.id] = temp
             self.speed_units[guild.id] = speed
@@ -118,20 +121,27 @@ class Weather(Cog, name='weather'):
 
     @commands.command(description='Change the units to use for weather.')
     @commands.has_permissions(administrator=True)
-    async def units(self, ctx, *, flags: Union[FlagUnits, str] = None):
+    async def units(self, ctx, *, flags: FlagUnits | str = None):
         if isinstance(flags, FlagUnits):
             if not flags.temp and not flags.speed:
-                return await ctx.send(f'You forgot the flag arguments. `{ctx.prefix}units <flags_args>`. **Args:**\n`temp` `C` or `F`\n`speed` `mph` or `kph``')
+                await ctx.send(
+                    f'You forgot the flag arguments. `{ctx.prefix}units <flags_args>`. **Args:**\n`temp` `C` or '
+                    f'`F`\n`speed` `mph` or `kph`` '
+                )
+                return
+
             if flags.temp:
                 if flags.temp.upper() in ('C', 'F'):
                     self.temp_units[ctx.guild.id] = flags.temp.upper()
                 else:
                     return await ctx.send('Temp can only be **c** or **f**')
+
             if flags.speed:
                 if flags.speed.lower() in ('mph', 'kph'):
                     self.speed_units[ctx.guild.id] = flags.speed.lower()
                 else:
                     return await ctx.send('Speed can only be **kph** or **mph**')
+
         elif isinstance(flags, str):
             if flags == 'metric':
                 self.temp_units[ctx.guild.id] = self.metric['temp']
@@ -139,24 +149,33 @@ class Weather(Cog, name='weather'):
             else:
                 self.temp_units[ctx.guild.id] = self.customary['temp']
                 self.speed_units[ctx.guild.id] = self.customary['speed']
+
         else:
-            return await ctx.send(f'You forgot the flag arguments. `{ctx.prefix}units <flags_args>`. **Args:**\n`temp` `C` or `F`\n`speed` `mph` or `kph``')
+            await ctx.send(
+                f'You forgot the flag arguments. `{ctx.prefix}units <flags_args>`. **Args:**\n`temp` `C` or '
+                f'`F`\n`speed` `mph` or `kph`` '
+            )
+            return
+
         await ctx.send(f'New settings! Temp: `{self.temp_units[ctx.guild.id]}` Speed: `{self.speed_units[ctx.guild.id]}`')
 
-    @command(name='units', description='Change the weather units')
+    @app_commands.command(name='units', description='Change the weather units')
     @app_commands.describe(temp='The temperature unit', speed='The speed unit')
     async def _units(self, interaction: discord.Interaction, temp: Literal["C", "F"] = None, speed: Literal["kph", "mph"] = None):
         if not interaction.user.guild_permissions.administrator:
             await interaction.response.send_message('You need admin perms.')
             return
+
         if not temp and not speed:
             await interaction.response.send_message('You must give at least one argument.')
             return
+
         if temp:
             if temp.upper() in ('C', 'F'):
                 self.temp_units[interaction.guild.id] = temp.upper()
             else:
                 return await interaction.response.send_message('Temp can only be **c** or **f**')
+
         if speed:
             if speed.lower() in ('mph', 'kph'):
                 self.speed_units[interaction.guild.id] = speed.lower()
@@ -177,13 +196,15 @@ class Weather(Cog, name='weather'):
         if data.get('error'):
             error = discord.Embed(title='Error',
                                   description=data.get('error').get('message'))
-            return await ctx.send(embed=error)
+            await ctx.send(embed=error)
+            return
+
         embed = await WeatherUtils.build_current_embed(data, ctx, self)
         if embed is None:
             return
         await ctx.send(embed=embed)
 
-    @command(name='current', description='Get the current weather of a location')
+    @app_commands.command(name='current', description='Get the current weather of a location')
     @app_commands.describe(location='The location')
     async def _current(self, interaction, location: str):
         data = await self.http.current(location)
@@ -192,6 +213,7 @@ class Weather(Cog, name='weather'):
                                   description=data.get('error').get('message'))
             await interaction.response.send_message(embed=error)
             return
+
         embed = await WeatherUtils.build_current_embed(data, interaction, self)
         if embed is None:
             return
@@ -200,25 +222,30 @@ class Weather(Cog, name='weather'):
     @commands.command(description='Get the forcast of a place.')
     async def forecast(self, ctx, days: Optional[int] = 1, *, location):
         data = await self.http.forecast(location, days)
+
         if data.get('error'):
             error = discord.Embed(title='Error',
                                   description=data.get('error').get('message'))
-            return await ctx.send(embed=error)
+            await ctx.send(embed=error)
+            return
+
         embed = await WeatherUtils.build_forecast_embed(data, ctx, self, days)
         if embed is None:
             return
         await ctx.send(embed=embed)
 
-    @command(name='forecast', description='Get the forecast for a location')
+    @app_commands.command(name='forecast', description='Get the forecast for a location')
     @app_commands.describe(days='The amount of days in the future', location='The location')
     async def _forecast(self, interaction, days: int = 1, *, location: str):
         data = await self.http.forecast(location, days)
+
         if data.get('error'):
             error = discord.Embed(title='Error',
                                   description=data.get('error').get('message'))
             await interaction.response.send_message(embed=error)
             return
         embed = await WeatherUtils.build_forecast_embed(data, interaction, self, days)
+
         if embed is None:
             return
         await interaction.response.send_message(embed=embed)
@@ -226,24 +253,29 @@ class Weather(Cog, name='weather'):
     @commands.command(aliases=['place', 'town'], description='Search a city.')
     async def city(self, ctx, index: Optional[int] = 1, *, query):
         data = await self.http.search(query)
+
         if data.get('error'):
             error = discord.Embed(title='Error',
                                   description=data.get('error').get('message'))
-            return await ctx.send(embed=error)
+            await ctx.send(embed=error)
+            return
         embed = await WeatherUtils.build_search_embed(data, ctx, index)
+
         if embed is None:
             return
         await ctx.send(embed=embed)
 
-    @command(name='city', description='Search a city.')
+    @app_commands.command(name='city', description='Search a city.')
     @app_commands.describe(query='The query')
     async def _city(self, interaction, index: int = 1, *, query: str):
         data = await self.http.search(query)
+
         if data.get('error'):
             error = discord.Embed(title='Error',
                                   description=data.get('error').get('message'))
             await interaction.response.send_message(embed=error)
             return
+
         embed = await WeatherUtils.build_search_embed(data, interaction.response, index)
         if embed is None:
             return
@@ -252,21 +284,27 @@ class Weather(Cog, name='weather'):
     @commands.command(aliases=['tz'], description='Get the timezone of a place.')
     async def timezone(self, ctx, *, location):
         data = await self.http.timezone(location)
+
         if data.get('error'):
             error = discord.Embed(title='Error',
                                   description=data.get('error').get('message'))
-            return await ctx.send(embed=error)
+            await ctx.send(embed=error)
+            return
+
         embed = await WeatherUtils.build_tz_embed(data)
         await ctx.send(embed=embed)
 
-    @command(name='timezone', description='Get the timezone of a location')
+    @app_commands.command(name='timezone', description='Get the timezone of a location')
     @app_commands.describe(location='The location')
     async def _timezone(self, interaction, location: str):
         data = await self.http.timezone(location)
+
         if data.get('error'):
             error = discord.Embed(title='Error',
                                   description=data.get('error').get('message'))
-            return await interaction.response.send_message(embed=error)
+            await interaction.response.send_message(embed=error)
+            return
+
         embed = await WeatherUtils.build_tz_embed(data)
         await interaction.response.send_message(embed=embed)
 

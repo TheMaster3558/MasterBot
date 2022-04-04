@@ -1,13 +1,15 @@
+import asyncio
+from typing import Optional
+from sqlite3 import IntegrityError
+
 import discord
 from discord import app_commands
 from discord.ext import commands, tasks
+import aiosqlite
+
 from cogs.utils.http import AsyncHTTPClient
 from cogs.utils.view import View
-import asyncio
-from typing import Optional, Union
 from bot import MasterBot
-import aiosqlite
-from sqlite3 import IntegrityError
 from static_embeds import (
     joke_category_embed,
     nsfw_embed,
@@ -20,7 +22,7 @@ from static_embeds import (
     confirm_bed,
     cancel_bed,
 )
-from cogs.utils.app_and_cogs import Cog, command
+from cogs.utils.app_and_cogs import Cog
 
 
 class BlacklistView(View):
@@ -58,6 +60,7 @@ class QuickObject:
 class CategorySelect(discord.ui.Select):
     def __init__(self, author):
         self.author = author
+
         options = [
             discord.SelectOption(label='Any'),
             discord.SelectOption(label='Misc'),
@@ -74,8 +77,10 @@ class CategorySelect(discord.ui.Select):
 
     async def callback(self, interaction: discord.Interaction):
         if interaction.user != self.author:
-            return await interaction.response.send_message("Only the person that used the command can use this.",
+            await interaction.response.send_message("Only the person that used the command can use this.",
                                                            ephemeral=True)
+            return
+
         await self._view.disable_all(interaction.message)
         self.view.stop()
 
@@ -104,11 +109,12 @@ class JokeAPIHTTPClient(AsyncHTTPClient):
         if len(categories) == 0:
             categories = ['Any']
         if blacklist_flags:
+
             return await self.request(','.join(categories), blacklistFlags=','.join(blacklist_flags))
         return await self.request(','.join(categories))
 
 
-def decode_sql_bool(data: Union[tuple, list]) -> list[bool]:
+def decode_sql_bool(data: tuple | list) -> list[bool]:
     converted = []
     for num in data:
         if num == 1:
@@ -166,6 +172,7 @@ class Jokes(Cog, name='jokes'):
                 data = await cursor.fetchone()
             data = decode_sql_bool(data)
             converted_dict = {}
+
             for num, key in enumerate(self.default_options.keys()):
                 converted_dict[key] = data[num]
             self.blacklist[guild.id] = converted_dict
@@ -220,72 +227,92 @@ class Jokes(Cog, name='jokes'):
     async def joke(self, ctx, *categories):
         for category in categories:
             if category.lower() not in self.categories:
-                return await ctx.send(f"That isn't a category! The categories are `{'`, `'.join(self.categories)}`.")
+                await ctx.send(f"That isn't a category! The categories are `{'`, `'.join(self.categories)}`.")
+                return
+
         blacklist = self.blacklist.get(ctx.guild.id)
         if blacklist:
             blacklist_flags = [k for k, v in blacklist.items() if not v]
         else:
             blacklist_flags = None
+
         joke_id = 12345
         data = {}  # to make pycharm stop complaining
+
         while joke_id in self.used_jokes:
             data: dict = await self.http.get_joke(categories, blacklist_flags)
             joke_id = data.get('id')
+
         if data.get('error') is True:
             await ctx.send(data)
-            return await ctx.send('An unexpected error occurred :( Try again later.')
+            await ctx.send('An unexpected error occurred :( Try again later.')
+            return
+
         if data.get('type') == 'twopart':
             embed = discord.Embed(title=data.get('setup'))
             embed.set_footer(text=f'Category: {data.get("category")}')
             msg = await ctx.send(embed=embed)
+
             await asyncio.sleep(5)
             embed2 = discord.Embed(title=data.get('delivery'))
             await msg.reply(embed=embed2)
+
         elif data.get('type') == 'single':
             embed = discord.Embed(title=data.get('joke'))
             embed.set_footer(text=f'Category: {data.get("category")}')
             await ctx.send(embed=embed)
+
         self.used_jokes.add(joke_id)
 
-    @command(name='joke', description='Let me tell you a joke!')
+    @app_commands.command(name='joke', description='Let me tell you a joke!')
     async def _joke(self, interaction: discord.Interaction):
         view = CategoryView(interaction.user)
         await interaction.response.send_message(embed=joke_category_embed, view=view)
         await view.wait()
+
         categories = view.item.values
         if len(categories) > 1 and 'Any' in categories:
             await interaction.followup.send(f'{interaction.user.mention} You cannot select **Any** and other categories.')
             return
+
         if len(categories) == 0:
             await interaction.followup.send("You didn't select anything =(")
         for category in categories:
             if category.lower() not in self.categories:
                 await interaction.followup.send(f"That isn't a category! The categories are `{'`, `'.join(self.categories)}`.")
                 return
+
         blacklist = self.blacklist.get(interaction.guild.id)
         if blacklist:
             blacklist_flags = [k for k, v in blacklist.items() if not v]
         else:
             blacklist_flags = None
+
         joke_id = 12345
         data = {}  # to make pycharm stop complaining
+
         while joke_id in self.used_jokes:
             data: dict = await self.http.get_joke(categories, blacklist_flags)
             joke_id = data.get('id')
+
         if data.get('error') is True:
             await interaction.followup.send('An unexpected error occurred :( Try again later.')
             return
+
         if data.get('type') == 'twopart':
             embed = discord.Embed(title=data.get('setup'))
             embed.set_footer(text=f'Category: {data.get("category")}')
             msg = await interaction.followup.send(embed=embed)
+
             await asyncio.sleep(5)
             embed2 = discord.Embed(title=data.get('delivery'))
             await msg.reply(embed=embed2)
+
         elif data.get('type') == 'single':
             embed = discord.Embed(title=data.get('joke'))
             embed.set_footer(text=f'Category: {data.get("category")}')
             await interaction.followup.send(embed=embed)
+
         self.used_jokes.add(joke_id)
 
     @commands.command(name='blacklist', description='Make some jokes not allowed.')
@@ -308,6 +335,7 @@ class Jokes(Cog, name='jokes'):
                 elif new == 'False':
                     new = False
                 setattr(flags, k, new)
+
         options = vars(flags)
         embed = discord.Embed(title='New Joke Blacklist Settings',
                               description='**True = Turned on**\n' + '\n'.join(f'{k}: {v}' for k, v in options.items()))
@@ -315,41 +343,51 @@ class Jokes(Cog, name='jokes'):
         view = BlacklistView(ctx.author)
         msg = await ctx.send(embed=embed, view=view)
         secondary = False
+
         if options.get('nsfw') is True:
-            await asyncio.sleep(0.4)
+            await asyncio.sleep(0.25)
             await msg.reply(embed=nsfw_embed)
             secondary = True
+
         if options.get('religious') is True:
-            await asyncio.sleep(0.4)
+            await asyncio.sleep(0.25)
             await msg.reply(embed=religious_embed)
             secondary = True
+
         if options.get('political') is True:
-            await asyncio.sleep(0.4)
+            await asyncio.sleep(0.25)
             await msg.reply(embed=political_embed)
             secondary = True
         if options.get('sexist') is True:
-            await asyncio.sleep(0.4)
+            await asyncio.sleep(0.25)
             await ctx.send(embed=sexist_embed)
             secondary = True
+
         if options.get('racist') is True:
-            await asyncio.sleep(0.4)
+            await asyncio.sleep(0.25)
             await msg.reply(embed=racist_embed)
             secondary = True
+
         if options.get('explicit') is True:
-            await asyncio.sleep(0.4)
+            await asyncio.sleep(0.25)
             await msg.reply(embed=explicit_embed)
             secondary = True
+
         if secondary is True:
-            await asyncio.sleep(0.4)
+            await asyncio.sleep(0.25)
             await ctx.send(embed=alert_bed)
         await view.wait()
+
         if view.choice is None:
             await msg.reply(embed=discord.Embed(title='Cancelled'))
             await view.disable_all(msg)
+
         elif view.choice is True:
             await msg.reply(emebed=confirm_bed)
+
         elif view.choice is False:
             await msg.reply(embed=cancel_bed)
+
         self.blacklist[ctx.guild.id] = options
 
     @_blacklist.error
@@ -359,7 +397,7 @@ class Jokes(Cog, name='jokes'):
         else:
             raise error
 
-    @command(name='blacklist', description='Turn off some possible jokes.')
+    @app_commands.command(name='blacklist', description='Turn off some possible jokes.')
     @app_commands.describe(nsfw='NSFW jokes',
                            religious='Religious jokes',
                            political='Political jokes',
@@ -401,48 +439,62 @@ class Jokes(Cog, name='jokes'):
                 elif new == 'False':
                     new = False
                 setattr(flags, k, new)
+
         options = vars(flags)
         embed = discord.Embed(title='New Joke Blacklist Settings',
                               description='**True = Turned on**\n' + '\n'.join(f'{k}: {v}' for k, v in options.items()))
         embed.set_footer(text='Choose an option')
         view = BlacklistView(interaction.user)
-        msg = await interaction.response.send_message(embed=embed, view=view)
+        await interaction.response.send_message(embed=embed, view=view)
+        msg = interaction.message
         secondary = False
+
         if options.get('nsfw') is True:
-            await asyncio.sleep(0.4)
+            await asyncio.sleep(0.25)
             await msg.reply(embed=nsfw_embed)
             secondary = True
+
         if options.get('religious') is True:
-            await asyncio.sleep(0.4)
+            await asyncio.sleep(0.25)
             await msg.reply(embed=religious_embed)
             secondary = True
+
         if options.get('political') is True:
-            await asyncio.sleep(0.4)
+            await asyncio.sleep(0.25)
             await msg.reply(embed=political_embed)
             secondary = True
+
         if options.get('sexist') is True:
-            await asyncio.sleep(0.4)
+            await asyncio.sleep(0.25)
             await msg.reply(embed=sexist_embed)
             secondary = True
+
         if options.get('racist') is True:
-            await asyncio.sleep(0.4)
+            await asyncio.sleep(0.25)
             await msg.reply(embed=racist_embed)
             secondary = True
+
         if options.get('explicit') is True:
-            await asyncio.sleep(0.4)
+            await asyncio.sleep(0.25)
             await msg.reply(embed=explicit_embed)
             secondary = True
+
         if secondary is True:
-            await asyncio.sleep(0.4)
+            await asyncio.sleep(0.25)
             await msg.reply(embed=alert_bed)
+
         await view.wait()
+
         if view.choice is None:
             await msg.reply(embed=discord.Embed(title='Cancelled'))
             await view.disable_all(msg)
+
         elif view.choice is True:
             await msg.reply(emebed=confirm_bed)
+
         elif view.choice is False:
             await msg.reply(embed=cancel_bed)
+
         self.blacklist[interaction.guild.id] = options
 
 

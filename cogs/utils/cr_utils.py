@@ -1,5 +1,6 @@
-import discord
 import re
+
+import discord
 
 
 class ClashRoyaleUtils:

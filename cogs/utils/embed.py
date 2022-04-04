@@ -1,9 +1,10 @@
+from typing import Tuple, Any
+
 import discord
-from typing import Tuple, Any, Union, Optional
 
 
 class EmbedField:
-    def __init__(self, name: str, value: Any, inline: Optional[bool] = False):
+    def __init__(self, name: str, value: Any, inline: bool = False):
         self.name = name
         self.value = value
         self.inline = inline
@@ -16,7 +17,7 @@ class EmbedField:
 
 
 class Embed(discord.Embed):
-    def add_fields(self, *fields: Union[EmbedField, Tuple[str, Any, Optional[bool]]]):
+    def add_fields(self, *fields: EmbedField | Tuple[str, Any, bool]):
         for field in fields:
             if isinstance(field, (list, tuple)):
                 if len(field) == 2:

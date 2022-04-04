@@ -1,5 +1,6 @@
-import discord
 from typing import TypeVar
+
+import discord
 
 
 ItemT = TypeVar('ItemT', bound=discord.ui.Item)

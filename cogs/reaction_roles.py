@@ -1,10 +1,12 @@
-import discord
-from discord import app_commands
-from discord.ext import commands, tasks
 import asyncio
 from typing import Tuple, Optional, Union
 import json
 from copy import deepcopy
+
+import discord
+from discord import app_commands
+from discord.ext import commands, tasks
+
 from bot import MasterBot
 from cogs.utils.app_and_cogs import Cog
 
@@ -12,14 +14,14 @@ from cogs.utils.app_and_cogs import Cog
 class ReactionRoleFlags(commands.FlagConverter):
     title: Optional[str] = None
     names: Tuple[str, ...] = None
-    emojis: Tuple[Union[discord.Emoji, str], ...]
+    emojis: Tuple[discord.Emoji | str, ...]
     roles: Tuple[discord.Role, ...]
 
 
 class CustomReactionRoleFlags(commands.FlagConverter):
-    title: Optional[Union[str, bool]] = None
-    description: Optional[Union[str, bool]] = None
-    emojis: Tuple[Union[discord.Emoji, str], ...]
+    title: Optional[Union[str]] = None
+    description: Optional[str] = None
+    emojis: Tuple[discord.Emoji | str, ...]
     roles: Tuple[discord.Role, ...]
 
 

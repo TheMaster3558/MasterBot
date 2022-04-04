@@ -4,10 +4,13 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 import wavelink
-from cogs.utils.app_and_cogs import Cog, command
+from cogs.utils.app_and_cogs import Cog
 from bot import MasterBot
 import asyncio
 from cogs.utils.view import View
+
+
+MISSING = discord.utils.MISSING
 
 
 def humanize_time(seconds: int | float) -> str:
@@ -61,14 +64,14 @@ class Player(wavelink.Player):
         self.client: MasterBot
         self.cog: Music = self.client.get_cog('music')  # type: ignore
 
-        self.message: discord.Message = None  # type: ignore
+        self.message: discord.Message = MISSING  # type: ignore
 
-        self.queue: asyncio.Queue = None  # type: ignore
+        self.queue: asyncio.Queue = MISSING  # type: ignore
         self._event = asyncio.Event()
         self.started = False
         self._first_iteration = True
-        self._waiting_task: asyncio.Task = None  # type: ignore
-        self.current: wavelink.Track = None  # type: ignore
+        self._waiting_task: asyncio.Task = MISSING  # type: ignore
+        self.current: wavelink.Track = MISSING  # type: ignore
 
     async def make_embed(self, edit: bool = True) -> discord.Embed:
         track: wavelink.Track = self.current
@@ -169,7 +172,7 @@ class Music(Cog, name='music'):
     def __init__(self, bot: MasterBot):
         super().__init__(bot)
         self.queues: dict[int, asyncio.Queue[wavelink.Track]] = {}
-        self.node_pool: wavelink.NodePool | None = None
+        self.node_pool: wavelink.NodePool = MISSING
         print('Music cog loaded')
 
     async def cog_load(self):

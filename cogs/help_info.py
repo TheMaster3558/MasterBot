@@ -1,18 +1,16 @@
+import re
+import sys
+
 import discord
 from discord import app_commands
 from discord.ext import commands
-from bot import MasterBot
-
-import re
-
-import sys
 from async_google_trans_new import __version__ as agtn_version
 import aiohttp
 import fuzzywuzzy
-import Cython
 
+from bot import MasterBot
 from cogs.utils.view import View
-from cogs.utils.app_and_cogs import Cog, command
+from cogs.utils.app_and_cogs import Cog
 
 
 class InviteView(View):
@@ -39,7 +37,7 @@ class HelpCommand(commands.HelpCommand):
             last = i
 
     async def send_command_help(self, _command: commands.Command, /, *, send: bool = True) -> discord.Embed | None:
-        if not await self.can_run(self.context):
+        if not await _command.can_run(self.context):
             return
 
         embed = discord.Embed(
@@ -55,13 +53,13 @@ class HelpCommand(commands.HelpCommand):
         return embed
 
     async def send_group_help(self, group: commands.Group, /, *, send: bool = True) -> discord.Embed | None:
-        if not await self.can_run(self.context):
+        if not await group.can_run(self.context):
             return
 
         embed = discord.Embed(title=f'{group.qualified_name} Help',
                               description=f'`{self.get_command_signature(group)}`' + group.description or 'No '
                                                                                                           'description')
-        for sub in group.commands:
+        for sub in group.walk_commands():
             embed.add_field(name=sub.name, value=f'`{self.get_command_signature(sub)}`' + sub.description or 'No '
                                                                                                              'description')
 
@@ -130,7 +128,7 @@ class Help(Cog):
     async def ping(self, ctx):
         await ctx.send(f'Pong! `{str(round(self.bot.latency * 1000))}ms`')
 
-    @command(name='ping', description='Pong!')
+    @app_commands.command(name='ping', description='Pong!')
     async def _ping(self, interaction):
         await interaction.response.send_message(f'Pong! `{str(round(self.bot.latency * 1000))}ms`')
 
@@ -139,7 +137,7 @@ class Help(Cog):
         embed = discord.Embed(title=f'{self.bot.user.name} Invite')
         await ctx.author.send(embed=embed, view=InviteView(self.bot))
 
-    @command(name='invite', description='Invite me!')
+    @app_commands.command(name='invite', description='Invite me!')
     async def _invite(self, interaction):
         await interaction.response.send_message('Check ur DMs.')
         embed = discord.Embed(title=f'{self.bot.user.name} Invite')
@@ -154,13 +152,12 @@ class Help(Cog):
                                                    f'[async-google-trans-new {agtn_version}](https://github.com/Theelx/async-google-trans-new)\n'
                                                    f'[aiohttp {aiohttp.__version__}](https://docs.aiohttp.org/en/stable/)\n'
                                                    f'[fuzzywuzzy {fuzzywuzzy.__version__}](https://github.com/seatgeek/thefuzz)\n'
-                                                   f'[Cython {Cython.__version__}](https://cython.org/)\n'
                                                    f'Platform {sys.platform}\n')
         embed.add_field(name='Stats',
                         value=f'Servers: {len(self.bot.guilds)}\nUnique Users: {len(set(self.bot.users))}')
         await ctx.send(embed=embed)
 
-    @command(name='info', description='Get info about the bot')
+    @app_commands.command(name='info', description='Get info about the bot')
     async def _info(self, interaction):
         embed = discord.Embed(title=f'{self.bot.user.name} Info')
         embed.add_field(name='Version Info', value=f'{self.bot.user.name} version {self.bot.__version__}\n'
@@ -169,7 +166,6 @@ class Help(Cog):
                                                    f'[async-google-trans-new {agtn_version}](https://github.com/Theelx/async-google-trans-new)\n'
                                                    f'[aiohttp {aiohttp.__version__}](https://docs.aiohttp.org/en/stable/)\n'
                                                    f'[fuzzywuzzy {fuzzywuzzy.__version__}](https://github.com/seatgeek/thefuzz)\n'
-                                                   f'[Cython {Cython.__version__}](https://cython.org/)\n'
                                                    f'Platform {sys.platform}')
         embed.add_field(name='Stats',
                         value=f'Servers: {len(self.bot.guilds)}\nUnique Users: {len(set(self.bot.users))}')

@@ -1,18 +1,19 @@
 import asyncio
 from concurrent.futures import TimeoutError
+from typing import Optional, Union
+import os as __os__
+import sys as __sys__
+import builtins
+import io
+import threading
+
 import discord
 from discord import app_commands
 from discord.ext import commands
-from typing import Optional, Union
-import re
-import os as __os__
-import sys as __sys__
-from bot import MasterBot
 import aiofiles
-import builtins
-import io
-from cogs.utils.app_and_cogs import Cog, command
-import threading
+
+from cogs.utils.app_and_cogs import Cog
+from bot import MasterBot
 
 
 class EventLoopThread(threading.Thread):
@@ -162,10 +163,12 @@ class Code(Cog, name='code'):
     @commands.command(description='Check if a user can run a command')
     async def canrun(self, ctx, user: Optional[discord.User], *, command_name):
         _command: Union[commands.Command, commands.Group] = self.bot.all_commands.get(command_name)
+
         if _command is None:
             embed = discord.Embed(title=f'Command `{command_name}` not found.')
             await ctx.send(embed=embed)
             return
+
         ctx.author = user or ctx.author
         await _command.can_run(ctx)
         await ctx.send(f'{user} can run this command!')
@@ -271,11 +274,13 @@ class Code(Cog, name='code'):
             lines = [int(line) for line in lines.split('-')]
         else:
             lines = int(lines)
+
         try:
             async with aiofiles.open(file_path, 'r') as file:
                 content = (await file.read()).split('\n')
         except FileNotFoundError:
-            await ctx.send("I couldn't find that file.")
+            await ctx.send("I "
+                           "couldn't find that file.")
             return
         if isinstance(lines, list):
             content = '\n'.join(content[lines[0]+1:lines[1]+1])
@@ -283,6 +288,7 @@ class Code(Cog, name='code'):
             content = '\n'.join(content)
         else:
             content = content[lines]
+
         content = content.replace('`', r'\`')
         try:
             embed = discord.Embed(title=f'Code for {file_path}',
@@ -298,13 +304,15 @@ class Code(Cog, name='code'):
         else:
             raise error
 
-    @command(name='eval', description='Run a Python file')
+    @app_commands.command(name='eval', description='Run a Python file')
     async def __eval(self, interaction: discord.Interaction, file: discord.Attachment):
         if not file.filename.endswith('.py'):
             await interaction.response.send_message('It must be a `python` file.')
             return
+
         code = await file.read()
         code = SlashCodeBlock(code.decode('utf-8'))
+
         if len(code.source.split('\n')) > 300:
             await interaction.response.send_message("You can't eval over 300 lines.")
             return
@@ -362,7 +370,7 @@ class Code(Cog, name='code'):
         else:
             raise error
 
-    @command(name='created', description='See when a discord user or snowflake was created at')
+    @app_commands.command(name='created', description='See when a discord user or snowflake was created at')
     @app_commands.describe(user='A discord user', snowflake='A discord ID')
     async def _created(self, interaction, user: discord.User = None, snowflake: int = None):
         if not user and not snowflake:

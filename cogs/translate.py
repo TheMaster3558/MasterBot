@@ -3,9 +3,10 @@ from discord import app_commands
 from discord.ext import commands
 from async_google_trans_new import AsyncTranslator
 from async_google_trans_new.constant import LANGUAGES
+
 from bot import MasterBot
 from static_embeds import lang_bed
-from cogs.utils.app_and_cogs import Cog, command
+from cogs.utils.app_and_cogs import Cog
 
 
 class Translator(Cog, name='translation'):
@@ -38,9 +39,11 @@ class Translator(Cog, name='translation'):
         else:
             text = lang + ' ' + text
             lang = 'en'
+
         if not text or not any([char != ' ' for char in list(text)]):
             await ctx.send('Give me something to translate.')
             return
+
         result = await self.translator.translate(text=text, lang_tgt=lang)
         embed = discord.Embed(description=f'Original: {text}\nTranslated: {result}')
         embed.set_footer(text=f'Text successfully translated to {LANGUAGES.get(lang)}')
@@ -50,6 +53,7 @@ class Translator(Cog, name='translation'):
     @commands.cooldown(1, 30, commands.BucketType.user)
     async def detect(self, ctx, *, text):
         result = await self.translator.detect(text)
+
         embed = discord.Embed(title=f'I detected the language as {result[1]}',
                               description=f'Text: {text}')
         embed.set_footer(text='Google translate did its best')
@@ -66,7 +70,7 @@ class Translator(Cog, name='translation'):
     async def languages(self, ctx):
         await ctx.author.send(embed=lang_bed)
 
-    @command(name='translate', description='Translate using google translate!')
+    @app_commands.command(name='translate', description='Translate using google translate!')
     @app_commands.describe(lang='The language to translate to. Use /languages for a list.')
     async def _translate(self, interaction, lang: str, text: str):
         if lang in LANGUAGES.keys() or lang in LANGUAGES.values():
@@ -75,20 +79,22 @@ class Translator(Cog, name='translation'):
         else:
             await interaction.response.send_message('Use /languages for a valid list of languages.')
             return
+
         result = await self.translator.translate(text=text, lang_tgt=lang)
         embed = discord.Embed(description=f'Original: {text}\nTranslated: {result}')
         embed.set_footer(text=f'Text successfully translated to {LANGUAGES.get(lang)}')
         await interaction.response.send_message(embed=embed)
 
-    @command(name='languages', description='Get a valid list of languages.')
+    @app_commands.command(name='languages', description='Get a valid list of languages.')
     async def _languages(self, interaction):
         await self.languages(interaction)
         await interaction.response.send_message('Check ur DMs')
 
-    @command(name='detect', description='Detect the language of your text.')
+    @app_commands.command(name='detect', description='Detect the language of your text.')
     @app_commands.describe(text='The text to detect the language of.')
     async def _detect(self, interaction, text: str):
         result = await self.translator.detect(text)
+
         embed = discord.Embed(title=f'I detected the language as {result[1]}',
                               description=f'Text: {text}')
         embed.set_footer(text='Google translate did its best')
@@ -98,6 +104,7 @@ class Translator(Cog, name='translation'):
 @app_commands.context_menu()
 async def translate(interaction: discord.Interaction, message: discord.Message):
     translator: AsyncTranslator = interaction.client.translator  # type: ignore
+
     result = await translator.translate(message.content, lang_tgt='en')
     embed = discord.Embed(description=f'Original: {message.content}\nTranslated: {result}')
     embed.set_footer(text='Text successfully translated to English')
@@ -107,6 +114,7 @@ async def translate(interaction: discord.Interaction, message: discord.Message):
 @app_commands.context_menu()
 async def detect(interaction: discord.Interaction, message: discord.Message):
     translator: AsyncTranslator = interaction.client.translator  # type: ignore
+
     result = await translator.detect(message.content)
     embed = discord.Embed(title=f'I detected the language as {result[1]}',
                           description=f'Text: {message.content}')
@@ -116,6 +124,7 @@ async def detect(interaction: discord.Interaction, message: discord.Message):
 
 async def setup(bot: MasterBot):
     await Translator.setup(bot)
+
     try:
         bot.tree.add_command(translate)
         bot.tree.add_command(detect)

@@ -1,14 +1,16 @@
+from functools import lru_cache
+from typing import Optional
+from requests.structures import CaseInsensitiveDict
+
 import discord
 from discord import app_commands
 from discord.ext import commands
-from typing import Optional, Union
+
 from cogs.utils.http import AsyncHTTPClient
-from requests.structures import CaseInsensitiveDict
 from cogs.utils.cr_utils import ClashRoyaleUtils
 from bot import MasterBot
 from static_embeds import cr_locations_embed, locations
-from cogs.utils.app_and_cogs import Cog, command
-from functools import lru_cache
+from cogs.utils.app_and_cogs import Cog
 
 
 class CountryError(Exception):
@@ -65,7 +67,7 @@ class ClashRoyaleHTTPClient(AsyncHTTPClient):
 
 class ClanSearchFlags(commands.FlagConverter):
     name: Optional[str]
-    location: Optional[Union[str, int]]
+    location: Optional[str | int]
     min: Optional[int]
     max: Optional[int]
     score: Optional[int]
@@ -83,7 +85,7 @@ class ClashRoyale(Cog, name='clashroyale'):
     async def crlocations(self, ctx):
         await ctx.author.send(embed=cr_locations_embed)
 
-    @command(name='crlocations', description='Get a list of locations to use.')
+    @app_commands.command(name='crlocations', description='Get a list of locations to use.')
     async def _crlocations(self, interaction):
         await interaction.response.send_message(embed=cr_locations_embed, ephemeral=True)
 
@@ -93,6 +95,7 @@ class ClashRoyale(Cog, name='clashroyale'):
         await ctx.trigger_typing()
         if player_tag.startswith('#'):
             player_tag = player_tag[1:]
+
         data = await self.http.player_request(player_tag)
         embed = await ClashRoyaleUtils.build_player_embed(data)
         await ctx.send(embed=embed)
@@ -107,11 +110,12 @@ class ClashRoyale(Cog, name='clashroyale'):
         else:
             await self.bot.on_command_error(ctx, error)
 
-    @command(name='stats', description='Get clash royale player stats.')
+    @app_commands.command(name='stats', description='Get clash royale player stats.')
     @app_commands.describe(tag='The player tag')
     async def _stats(self, interaction, tag: str):
         if tag.startswith('#'):
             tag = tag[1:]
+
         data = await self.http.player_request(tag)
         embed = await ClashRoyaleUtils.build_player_embed(data)
         await interaction.response.send_message(embed=embed)
@@ -121,6 +125,7 @@ class ClashRoyale(Cog, name='clashroyale'):
     async def card(self, ctx: commands.Context, *, name: str):
         await ctx.trigger_typing()
         cards = await self.http.cards_request()
+
         card = ClashRoyaleUtils.search_for_card(cards, name)
         embed = await ClashRoyaleUtils.build_card_embed(card)
         await ctx.send(embed=embed)
@@ -134,7 +139,7 @@ class ClashRoyale(Cog, name='clashroyale'):
         else:
             await self.bot.on_command_error(ctx, error)
 
-    @command(name='card', description='Get a clash royale card.')
+    @app_commands.command(name='card', description='Get a clash royale card.')
     @app_commands.describe(name='The card name')
     async def _card(self, interaction, name: str):
         cards = await self.http.cards_request()
@@ -143,6 +148,7 @@ class ClashRoyale(Cog, name='clashroyale'):
         except ValueError as exc:
             await interaction.response.send_message(exc, ephemeral=True)
             return
+
         embed = await ClashRoyaleUtils.build_card_embed(card)
         await interaction.response.send_message(embed=embed)
 
@@ -152,6 +158,7 @@ class ClashRoyale(Cog, name='clashroyale'):
         await ctx.trigger_typing()
         if clan_tag.startswith('#'):
             clan_tag = clan_tag[1:]
+
         clan = await self.http.clan_tag_request(clan_tag)
         embed = await ClashRoyaleUtils.build_clan_embed(clan)
         await ctx.send(embed=embed)
@@ -166,7 +173,7 @@ class ClashRoyale(Cog, name='clashroyale'):
         else:
             await self.bot.on_command_error(ctx, error)
 
-    @command(name='clan', description='Get clash royale clan stats.')
+    @app_commands.command(name='clan', description='Get clash royale clan stats.')
     @app_commands.describe(tag='The clan tag')
     async def _clan(self, interaction, tag: str):
         if tag.startswith('#'):
@@ -180,6 +187,7 @@ class ClashRoyale(Cog, name='clashroyale'):
     @commands.cooldown(1, 30, commands.BucketType.user)
     async def search_clan(self, ctx: commands.Context, *, flags):
         await ctx.trigger_typing()
+
         flags = await ClanSearchFlags().convert(ctx, flags)
         if isinstance(flags.location, str):
             flags.location = locations.get(flags.location.lower())
@@ -187,11 +195,13 @@ class ClashRoyale(Cog, name='clashroyale'):
                 raise CountryError()
         elif isinstance(flags.location, int):
             pass
+
         clans = await self.http.clans_request(name=flags.name,
                                               locationId=flags.location,
                                               minMembers=flags.min,
                                               maxMembers=flags.max,
                                               minScore=flags.score)
+
         try:
             clan = clans[flags.result - 1]
         except IndexError:
@@ -216,7 +226,7 @@ class ClashRoyale(Cog, name='clashroyale'):
         else:
             await self.bot.on_command_error(ctx, error)
 
-    @command(name='searchclan', description='Search up a clan in clash royale.')
+    @app_commands.command(name='searchclan', description='Search up a clan in clash royale.')
     @app_commands.describe(name='The clans name',
                            location='The clan location',
                            min='The minimum amount of members',
@@ -235,17 +245,20 @@ class ClashRoyale(Cog, name='clashroyale'):
         if not location and not name and not min and not max and not score:
             await interaction.response.send_message('You must give me an argument. (other than result)', ephemeral=True)
             return
+
         if location is not None:
             try:
                 location = int(location)
             except ValueError:
                 pass
+
         if isinstance(location, str):
             location = locations.get(location.lower())
             if location is None:
                 raise CountryError()
         elif isinstance(location, int):
             pass
+
         clans = await self.http.clans_request(name=name,
                                               locationId=location,
                                               minMembers=min,
@@ -256,6 +269,7 @@ class ClashRoyale(Cog, name='clashroyale'):
         except IndexError:
             await interaction.response.send_message('Not enough clans were found.')
             return
+
         if clan.get('tag').startswith('#'):
             clan['tag'] = clan['tag'][1:]
         clan = await self.http.clan_tag_request(clan.get('tag'))

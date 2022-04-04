@@ -1,16 +1,21 @@
 from __future__ import annotations
 
+from typing import Optional
+import asyncio
+from sqlite3 import IntegrityError
+
 import discord
 from discord import app_commands
 from discord.ext import commands, tasks
 import aiohttp
-from typing import Optional
-import asyncio
-from bot import MasterBot
 import aiosqlite
-from sqlite3 import IntegrityError
-from cogs.utils.app_and_cogs import Cog, command, NoPrivateMessage
+
+from bot import MasterBot
+from cogs.utils.app_and_cogs import Cog, NoPrivateMessage
 from cogs.utils.view import View, smart_send
+
+
+MISSING = discord.utils.MISSING
 
 
 class WebhookUserFlags(commands.FlagConverter):
@@ -20,7 +25,7 @@ class WebhookUserFlags(commands.FlagConverter):
 
 class ConfirmView(View):
     def __init__(self):
-        self.value: Optional[bool] = None
+        self.value: bool = MISSING
         super().__init__(timeout=60)
 
     @discord.ui.button(emoji='✅', style=discord.ButtonStyle.grey)
@@ -46,7 +51,7 @@ class WebhookGroup(app_commands.Group):
             return True
         raise NoPrivateMessage('Try this in a server.')
 
-    @command(description='Create a webhook user.')
+    @app_commands.command(description='Create a webhook user.')
     async def create(self, interaction: discord.Interaction, name: str, avatar: str = None):
         if self.cog.users.get(interaction.user.id):
             view = ConfirmView()
@@ -61,20 +66,24 @@ class WebhookGroup(app_commands.Group):
             else:
                 await interaction.followup.send('You did not click a button in time.')
                 return
+
         if name.lower() == 'clyde':
             await smart_send(interaction, f'The name cannot be `{name}`')
             return
+
         embed = discord.Embed(title='New Webhook User!')
         embed.add_field(name='Name', value=name)
+
         if avatar is not None:
             if not avatar.startswith('http://') and not avatar.startswith('https://'):
                 await smart_send(interaction, 'Avatar must be a url starting with `http://` or `https://`')
                 return
             embed.set_thumbnail(url=avatar)
+
         self.cog.users[interaction.user.id] = {'name': name, 'avatar': avatar}
         await smart_send(interaction, embed=embed)
 
-    @command(description='Send a message with your webhook.')
+    @app_commands.command(description='Send a message with your webhook.')
     async def send(self, interaction: discord.Interaction, content: str):
         data = self.cog.users.get(interaction.user.id)
         if data is None:
@@ -82,11 +91,13 @@ class WebhookGroup(app_commands.Group):
                                   description=f'Use `/webhook create` to create one')
             await interaction.response.send_message(embed=embed)
             return
+
         try:
             webhook = self.cog.webhooks[interaction.channel.id]
         except KeyError:
             webhook = await interaction.channel.create_webhook(name='MasterBotWebhook')
             self.cog.webhooks[interaction.channel.id] = webhook
+
         await webhook.send(content=content,
                            username=data['name'],
                            avatar_url=data['avatar'])
@@ -98,7 +109,7 @@ class Webhooks(Cog, name='webhooks'):
         super().__init__(bot)
         self.session = None
         self.webhooks: dict[int, discord.Webhook] = {}
-        self.users: dict[int, dict[str, Optional[str]]] = {}
+        self.users: dict[int, dict[str, str | None]] = {}
         self.db = None
         print('Webhook cog loaded')
 
@@ -142,6 +153,7 @@ class Webhooks(Cog, name='webhooks'):
                 session=self.session,
                 bot_token=self.bot.http.token
             )
+
         users = list(set(self.bot.users))  # to remove dupes
         for user in users:
             cursor = await self.db.execute(f"""SELECT name, avatar FROM users
@@ -197,7 +209,7 @@ class Webhooks(Cog, name='webhooks'):
     async def close_session(self):
         await asyncio.sleep(1.5)
         await self.update_db()
-        await db.close()
+        await self.db.close()
         await self.session.close()
 
     @commands.group(description="Make a 'bot' account.")
@@ -286,7 +298,9 @@ class Webhooks(Cog, name='webhooks'):
     @webhook.command(description='Delete it.')
     async def delete(self, ctx):
         if not self.users.get(ctx.author.id):
-            return await ctx.send("You don't even have one...")
+            await ctx.send("You don't even have one...")
+            return
+
         del self.users[ctx.author.id]
         await ctx.send('Done.')
 

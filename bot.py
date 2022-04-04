@@ -10,32 +10,29 @@ a Discord Bot with many uses and more to come
 
 from __future__ import annotations
 
-
-import discord
-from discord import app_commands
-from discord.ext import commands
-from cogs.utils.app_and_cogs import Cog, NoPrivateMessage
 from time import perf_counter
-from typing import Optional, Iterable, TypeVar, Union, Any
+from typing import Iterable, Any
 import logging
 import asyncio
 import traceback
 import sys
 import warnings
 
+import discord
+from discord import app_commands
+from discord.ext import commands
+from cogs.utils.app_and_cogs import Cog, NoPrivateMessage
+
 with warnings.catch_warnings():
     warnings.filterwarnings('ignore', category=UserWarning, module='fuzzywuzzy')
     from fuzzywuzzy import fuzz
-
-
-CogT = TypeVar('CogT', bound=Cog)
 
 
 class MasterBotCommandTree(app_commands.CommandTree):
     async def on_error(
         self,
         interaction: discord.Interaction,
-        command: Optional[Union[app_commands.ContextMenu, app_commands.Command[Any, ..., Any]]],
+        command: app_commands.ContextMenu | app_commands.Command[Any, ..., Any] | None,
         error: app_commands.AppCommandError,
     ) -> None:
         if isinstance(error, NoPrivateMessage):
@@ -74,7 +71,7 @@ class MasterBot(commands.Bot):
         handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
         logger.addHandler(handler)
 
-        self.locks: dict[CogT, asyncio.Lock] = {}
+        self.locks: dict[Cog, asyncio.Lock] = {}
 
     @classmethod
     def default(cls, cr_api_key: str, weather_api_key: str, mongo_db: str, /, *, token: str):
@@ -91,7 +88,7 @@ class MasterBot(commands.Bot):
             tree_cls=MasterBotCommandTree
         )
 
-    def acquire_lock(self, cog: CogT) -> asyncio.Lock:
+    def acquire_lock(self, cog: Cog) -> asyncio.Lock:
         if cog not in self.locks:
             self.locks[cog] = asyncio.Lock()
         return self.locks[cog]
@@ -154,9 +151,9 @@ class MasterBot(commands.Bot):
         self.clear()
 
     @property
-    def oath_url(self) -> Optional[str]:
+    def oath_url(self) -> str | None:
         if not self.user:
-            raise
+            return None
         permissions = discord.Permissions(manage_roles=True,
                                           manage_channels=True,
                                           kick_members=True,
@@ -169,10 +166,10 @@ class MasterBot(commands.Bot):
                                        permissions=permissions,
                                        )
 
-    def custom_oath_url(self, permissions: Optional[discord.Permissions] = None,
-                        scopes: Optional[Iterable[str]] = None) -> Optional[str]:
+    def custom_oath_url(self, permissions: discord.Permissions | None = None,
+                        scopes: Iterable[str] | None = None) -> str | None:
         if not self.user:
-            return
+            return None
         return discord.utils.oauth_url(self.user.id,
                                        permissions=permissions,
                                        scopes=scopes)

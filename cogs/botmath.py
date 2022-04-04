@@ -1,11 +1,13 @@
-import discord
-from discord import app_commands
-from discord.ext import commands
 import expr
 from bot import MasterBot
 import re
 from typing import Type, TypeVar
-from cogs.utils.app_and_cogs import Cog, command
+
+import discord
+from discord import app_commands
+from discord.ext import commands
+
+from cogs.utils.app_and_cogs import Cog
 
 
 N = TypeVar('N', int, float)
@@ -72,16 +74,18 @@ class Math(Cog, name='botmath'):
         if ctx.author.id in self.states:
             self.states[ctx.author.id].update(variables)
             variables = self.states[ctx.author]
+
         result = evaluate(expression, variables=variables)
         await ctx.reply(result, mention_author=False)
 
-    @command(name='domath', description="I'll do some math for you!")
+    @app_commands.command(name='domath', description="I'll do some math for you!")
     @app_commands.describe(expression='The math expression')
     async def _math(self, interaction, expression: str):
         variables, expression = self.remove_vars(expression)
         if interaction.user.id in self.states:
             self.states[interaction.user].update(variables)
             variables = self.states[interaction.user.id]
+
         result = evaluate(expression, variables=variables)
         await interaction.response.send_message(result)
 

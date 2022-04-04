@@ -1,12 +1,14 @@
+import random
+from html import unescape
+
 import discord
 from discord import app_commands
 from discord.ext import commands
+
 from cogs.utils.http import AsyncHTTPClient
-import random
-from html import unescape
 from cogs.utils.view import View
+from cogs.utils.app_and_cogs import Cog
 from bot import MasterBot
-from cogs.utils.app_and_cogs import Cog, command
 
 
 class OpenTDBHTTPClient(AsyncHTTPClient):
@@ -31,18 +33,21 @@ class TriviaButton(discord.ui.Button['MultipleChoice']):
         super().__init__(style=color, label=choice)
 
     async def callback(self, interaction: discord.Interaction):
-        assert self.view is not None
         if self.correct is True:
             self.view.done = True
             await self.view.disable_all(message=interaction.message)
+
             embed = discord.Embed(title=f'{interaction.user.display_name} got it right!',
                                   description=f'The answer was {self.label}')
+
             if len(self.view.tries) > 0:
                 embed.add_field(name='Wrong guesses', value='\n'.join(f'{k}: {v}' for k, v in self.view.tries.items()))
+
             await interaction.response.send_message(embed=embed)
-            return self.view.stop()
-        await interaction.response.send_message('Wrong answer.', ephemeral=True)
-        self.view.tries[interaction.user.display_name] = self.label
+            self.view.stop()
+        else:
+            await interaction.response.send_message('Wrong answer.', ephemeral=True)
+            self.view.tries[interaction.user.display_name] = self.label
 
 
 class MultipleChoice(View):
@@ -51,9 +56,12 @@ class MultipleChoice(View):
         self.choices: list = incorrect + [correct]
         self.choices = [unescape(choice) for choice in self.choices]
         random.shuffle(self.choices)
+
         self.done = False
         self.tries = {}
+
         super().__init__(timeout=30)
+
         for index, choice in enumerate(self.choices):
             answer = False
             if choice == correct:
@@ -64,6 +72,7 @@ class MultipleChoice(View):
         if self.done:
             self.stop()
             return False
+
         if interaction.user.display_name in self.tries.keys():
             await interaction.response.send_message('You already tried and failed.', ephemeral=True)
             return False
@@ -84,17 +93,21 @@ class Trivia(Cog, name='trivia'):
     @commands.cooldown(1, 3, commands.BucketType.channel)
     async def trivia(self, ctx):
         data = await self.http.trivia()
+
         if data.get('response_code') != 0:
-            return await ctx.send('We encountered an unexpected error. Try again later.')
+            await ctx.send('We encountered an unexpected error. Try again later.')
+            return
         data = data.get('results')[0]
         question = unescape(data.get('question'))
         embed = discord.Embed(title=question)
         embed.set_footer(text='The difficulty is {}'.format(data.get('difficulty')))
         my_view = MultipleChoice(data.get('correct_answer'), data.get('incorrect_answers'))
+
         message = await ctx.send(embed=embed, view=my_view)
         await my_view.wait()
         if my_view.done is False:
             await my_view.disable_all(message=message)
+
             embed = discord.Embed(title='No one got it right in time.',
                                   description='The answer was {}'.format(unescape(data.get('correct_answer'))))
             embed.add_field(name='Wrong guesses', value='\n'.join(f'{k}: {v}' for k, v in my_view.tries.items()) or 'No guesses')
@@ -107,9 +120,10 @@ class Trivia(Cog, name='trivia'):
         else:
             raise error
 
-    @command(name='playtrivia', description='Get trivia from opentdb.com!')
+    @app_commands.command(name='playtrivia', description='Get trivia from opentdb.com!')
     async def _trivia(self, interaction: discord.Interaction):
         data = await self.http.trivia()
+
         if data.get('response_code') != 0:
             await interaction.response.send_message('We encountered an unexpected error. Try again later.')
             return
@@ -118,12 +132,14 @@ class Trivia(Cog, name='trivia'):
         embed = discord.Embed(title=question)
         embed.set_footer(text='The difficulty is {}'.format(data.get('difficulty')))
         my_view = MultipleChoice(data.get('correct_answer'), data.get('incorrect_answers'))
+
         await interaction.response.send_message(embed=embed, view=my_view)
         await my_view.wait()
         if my_view.done is False:
             for child in my_view.children:
                 child.disabled = True  # type: ignore
             await interaction.edit_original_message(view=my_view)  # used instead of disabled_all
+
             embed = discord.Embed(title='No one got it right in time.',
                                   description='The answer was {}'.format(unescape(data.get('correct_answer'))))
             embed.add_field(name='Wrong guesses', value='\n'.join(f'{k}: {v}' for k, v in my_view.tries.items()) or 'No guesses')
