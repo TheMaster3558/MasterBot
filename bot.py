@@ -113,8 +113,7 @@ class MasterBot(commands.Bot):
             'cogs.version',
             'cogs.music',
         )
-        for cog in cogs:
-            await self.load_extension(cog)
+        await asyncio.gather(*(self.loop.create_task(self.load_extension(cog)) for cog in cogs))
 
     async def setup_hook(self) -> None:
         await self.load_extensions()
