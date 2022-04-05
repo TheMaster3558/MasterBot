@@ -116,13 +116,19 @@ class MasterBot(commands.Bot):
         await asyncio.gather(*(self.loop.create_task(self.load_extension(cog)) for cog in cogs))
 
     async def setup_hook(self) -> None:
+        await self.sync_once()
         await self.load_extensions()
+
+    async def sync_once(self):
+        # to make sure tree only gets synced once
+        # put in setup hook
+        await self.wait_until_ready()
+        await self.tree.sync()
 
     async def on_ready(self):
         self.on_ready_time = perf_counter()
         print('Logged in as {0} ID: {0.id}'.format(self.user))
         print('Time taken to start up:', round(self.on_ready_time - self.start_time, 1), 'seconds')
-        await self.tree.sync()
 
     def possible_commands(self, context: commands.Context, ratio: int = 70):
         return [cmd for cmd in self.all_commands if fuzz.ratio(
