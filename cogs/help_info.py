@@ -154,7 +154,7 @@ class Help(Cog):
                                                    f'[fuzzywuzzy {fuzzywuzzy.__version__}](https://github.com/seatgeek/thefuzz)\n'
                                                    f'Platform {sys.platform}\n')
         embed.add_field(name='Stats',
-                        value=f'Servers: {len(self.bot.guilds)}\nUnique Users: {len(set(self.bot.users))}')
+                        value=f'Servers: {len(self.bot.guilds)}\nMembers: {sum(guild.member_count for guild in self.bot.guilds)}')
         await ctx.send(embed=embed)
 
     @app_commands.command(name='info', description='Get info about the bot')
@@ -168,7 +168,7 @@ class Help(Cog):
                                                    f'[fuzzywuzzy {fuzzywuzzy.__version__}](https://github.com/seatgeek/thefuzz)\n'
                                                    f'Platform {sys.platform}')
         embed.add_field(name='Stats',
-                        value=f'Servers: {len(self.bot.guilds)}\nUnique Users: {len(set(self.bot.users))}')
+                        value=f'Servers: {len(self.bot.guilds)}\nMembers: {sum(guild.member_count for guild in self.bot.guilds)}')
         await interaction.response.send_message(embed=embed)
 
 

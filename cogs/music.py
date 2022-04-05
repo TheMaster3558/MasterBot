@@ -1,12 +1,15 @@
 from __future__ import annotations
 
+import asyncio
+from typing import ClassVar
+
 import discord
 from discord import app_commands
 from discord.ext import commands
 import wavelink
+
 from cogs.utils.app_and_cogs import Cog
 from bot import MasterBot
-import asyncio
 from cogs.utils.view import View
 
 
@@ -130,26 +133,31 @@ class Player(wavelink.Player):
 
 
 class WavelinkConverter(commands.Converter):
+    types: ClassVar[tuple[wavelink.abc.Playable]] = (wavelink.YouTubeTrack, wavelink.SoundCloudTrack)
+
     def __init__(self, items):
         self.tracks = []
         for iterable in items:
             self.tracks.extend(iterable)
         self.__iter_count = 0
 
+    def __class_getitem__(cls, *items):
+        cls.types = items
+
     @classmethod
     async def convert(cls, ctx: commands.Context[MasterBot], argument: str
                       ) -> WavelinkConverter:
         done, pending = await asyncio.wait([
-            ctx.bot.loop.create_task(wavelink.YouTubeTrack.search(query=argument, return_first=False)),
-            ctx.bot.loop.create_task(wavelink.SoundCloudTrack.search(query=argument, return_first=False))
+            ctx.bot.loop.create_task(track.search(query=argument, return_first=False)) for track in cls.types
         ], timeout=10)
+
         items = [item.result() for item in done]
         return cls(items)
 
     def __len__(self):
         return len(self.tracks)
 
-    def __getitem__(self, item):
+    def __getitem__(self, item):  # for future type hints
         return self.tracks[item]
 
     def __iter__(self):
