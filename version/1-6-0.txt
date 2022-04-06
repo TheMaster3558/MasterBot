@@ -3,3 +3,4 @@ New Music cog!
 Code Changes:
 - Help command rework phase 2
 - More typing and PEP8
+- More optimization

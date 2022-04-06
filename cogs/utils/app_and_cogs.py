@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, final
 
 import discord
 from discord.ext import commands
@@ -11,7 +11,6 @@ if TYPE_CHECKING:
 
 
 class Cog(commands.Cog):
-
     def __init__(self, bot: MasterBot):
         self.bot = bot
 
