@@ -58,8 +58,7 @@ class QuickObject:
 
 
 class CategorySelect(discord.ui.Select):
-    def __init__(self, author):
-        self.author = author
+    def __init__(self):
 
         options = [
             discord.SelectOption(label='Any'),
@@ -76,19 +75,22 @@ class CategorySelect(discord.ui.Select):
                          options=options)
 
     async def callback(self, interaction: discord.Interaction):
-        if interaction.user != self.author:
-            await interaction.response.send_message("Only the person that used the command can use this.",
-                                                           ephemeral=True)
-            return
-
-        await self._view.disable_all(interaction.message)
+        await self.view.disable_all(interaction.message)
         self.view.stop()
 
 
 class CategoryView(View):
     def __init__(self, author):
         super().__init__(timeout=30)
-        self.item = self.add_item(CategorySelect(author))
+        self.item = self.add_item(CategorySelect())
+        self.author = author
+
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        if interaction.user != self.author:
+            await interaction.response.send_message("Only the person that used the command can use this.",
+                                                    ephemeral=True)
+            return False
+        return True
 
 
 class BlacklistFlags(commands.FlagConverter):
