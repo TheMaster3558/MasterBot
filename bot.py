@@ -74,7 +74,7 @@ class MasterBot(commands.Bot):
         self.locks: dict[Cog, asyncio.Lock] = {}
 
     @classmethod
-    def default(cls, cr_api_key: str, weather_api_key: str, mongo_db: str, /, *, token: str):
+    def default(cls, cr_api_key: str, weather_api_key: str, mongo_db: str, /, *, token: str) -> MasterBot:
         """The default options"""
         return cls(
             cr_api_key,
@@ -93,10 +93,10 @@ class MasterBot(commands.Bot):
             self.locks[cog] = asyncio.Lock()
         return self.locks[cog]
 
-    async def delete_app_commands(self):
+    async def delete_app_commands(self) -> None:
         await self.http.bulk_upsert_global_commands(self.application_id, payload=[])
 
-    async def load_extensions(self):
+    async def load_extensions(self) -> None:
         cogs = (
             'cogs.clash_royale',
             'cogs.help_info',
@@ -116,21 +116,21 @@ class MasterBot(commands.Bot):
         await asyncio.gather(*(self.loop.create_task(self.load_extension(cog)) for cog in cogs))
 
     async def setup_hook(self) -> None:
-        await self.sync_once()
+        self.loop.create_task(self.sync_once())
         await self.load_extensions()
 
-    async def sync_once(self):
+    async def sync_once(self) -> None:
         # to make sure tree only gets synced once
         # put in setup hook
         await self.wait_until_ready()
         await self.tree.sync()
 
-    async def on_ready(self):
+    async def on_ready(self) -> None:
         self.on_ready_time = perf_counter()
         print('Logged in as {0} ID: {0.id}'.format(self.user))
         print('Time taken to start up:', round(self.on_ready_time - self.start_time, 1), 'seconds')
 
-    def possible_commands(self, context: commands.Context, ratio: int = 70):
+    def possible_commands(self, context: commands.Context, ratio: int = 70) -> list[str]:
         return [cmd for cmd in self.all_commands if fuzz.ratio(
             context.message.content,
             cmd
@@ -148,7 +148,7 @@ class MasterBot(commands.Bot):
 
         traceback.print_exception(exception, file=sys.stderr)
 
-    async def restart(self):
+    async def restart(self) -> None:
         """Reloads all extensions and clears the cache"""
         extensions = list(self.extensions).copy()
         for ext in extensions:
