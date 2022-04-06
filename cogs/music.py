@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import asyncio
-from typing import ClassVar
+from typing import ClassVar, Any
 
 import discord
 from discord import app_commands
@@ -12,7 +12,6 @@ from cogs.utils.app_and_cogs import Cog
 from bot import MasterBot
 from cogs.utils.view import View
 
-
 MISSING = discord.utils.MISSING
 
 
@@ -22,6 +21,40 @@ def humanize_time(seconds: int | float) -> str:
     if len(str(remaining_seconds)) == 1:
         remaining_seconds = '0' + str(remaining_seconds)
     return f'{minutes}:{remaining_seconds}'
+
+
+class SongSelect(discord.ui.Select['SongSelectView']):
+    def __init__(self, items: WavelinkConverter):
+        items = items[:25]
+
+        options = [
+            discord.SelectOption(label=item.title,
+                                 description=f'{item.author} | {humanize_time(item.duration)}',
+                                 value=str(index)
+                                 ) for index, item in enumerate(items)
+        ]
+
+        super().__init__(placeholder='Select a song', options=options, max_values=1, min_values=1)
+
+    async def callback(self, interaction: discord.Interaction) -> Any:
+        self.view.song = self.values[0]
+        await self.view.disable_all(interaction.message)
+        self.view.stop()
+
+
+class SongSelectView(View):
+    def __init__(self, items: WavelinkConverter, author: discord.User):
+        self.song: int = 0
+        self.author = author
+        super().__init__()
+
+        self.add_item(SongSelect(items))
+
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        if interaction.user != self.author:
+            await interaction.response.send_message("This is not yours.", ephemeral=True)
+            return False
+        return True
 
 
 class SongView(View):
@@ -67,17 +100,21 @@ class Player(wavelink.Player):
         self.client: MasterBot
         self.cog: Music = self.client.get_cog('music')  # type: ignore
 
-        self.message: discord.Message = MISSING  # type: ignore
+        self.message: discord.Message = MISSING
 
-        self.queue: asyncio.Queue = MISSING  # type: ignore
+        self.queue: asyncio.Queue = MISSING
         self._event = asyncio.Event()
         self.started = False
         self._first_iteration = True
-        self._waiting_task: asyncio.Task = MISSING  # type: ignore
-        self.current: wavelink.Track = MISSING  # type: ignore
+        self._waiting_task: asyncio.Task = MISSING
+        self.current: wavelink.Track = MISSING
 
     async def make_embed(self, edit: bool = True) -> discord.Embed:
         track: wavelink.Track = self.current
+
+        while track is MISSING:
+            track = self.current
+            await asyncio.sleep(0.5)
 
         embed = discord.Embed(title=track.title)
         embed.add_field(name='Artist', value=track.author)
@@ -95,16 +132,9 @@ class Player(wavelink.Player):
         await super().play(source=source, replace=replace, start=start, end=end)
         self._event.clear()
 
-        async def sleep():
-            await asyncio.sleep(source.duration)
-            self._event.set()
-
-        self._waiting_task = self.client.loop.create_task(sleep())
-
     async def force_next(self):
         self._event.set()
-        self._waiting_task.cancel()
-        await self.pause()
+        await self.stop()
 
     async def _consume_queue(self):
         self.queue = self.cog.queues[self.channel.guild.id]
@@ -141,7 +171,7 @@ class WavelinkConverter(commands.Converter):
             self.tracks.extend(iterable)
         self.__iter_count = 0
 
-    def __class_getitem__(cls, *items):
+    def __class_getitem__(cls, *items):   # for future type hints
         cls.types = items
 
     @classmethod
@@ -157,7 +187,7 @@ class WavelinkConverter(commands.Converter):
     def __len__(self):
         return len(self.tracks)
 
-    def __getitem__(self, item):  # for future type hints
+    def __getitem__(self, item):
         return self.tracks[item]
 
     def __iter__(self):
@@ -261,32 +291,24 @@ class Music(Cog, name='music'):
 
         else:
             vc: Player = ctx.voice_client  # type: ignore
-            self.queues[ctx.guild.id] = asyncio.Queue()
 
         async with ctx.typing():
             search = await WavelinkConverter.convert(ctx, search)
 
-        vc.start()  # wont start in `join` for some reason
+        vc.start()  # if a user doesn't use `join`
 
         if len(search) == 1:
             track = search[0]
         else:
-            paginate = discord.Embed(title='Select a song',
-                                     description='\n'.join(
-                                         f'`{index}.` **{item.title}** by **{item.author}**' for index, item in
-                                         enumerate(search))
-                                     )
-            p_msg = await ctx.send(embed=paginate)
-            msg = await self.bot.wait_for('message',
-                                          check=lambda m: m.author == ctx.author and m.content.isnumeric() and int(
-                                              m.content) <= len(search)
-                                          )
-            await p_msg.delete()
-            track = search[int(msg.content)]
+            view = SongSelectView(search, ctx.author)
+            paginate = discord.Embed(title='Select a song')
+            msg = await ctx.send(embed=paginate, view=view)
+            await view.wait()
 
-        self.queues[ctx.guild.id].put_nowait(track)
+            track = search[int(view.song)]
+            await msg.delete()
 
-        await asyncio.sleep(0)
+        await self.queues[ctx.guild.id].put(track)
 
         if not vc.message:
             view = SongView(vc, loop=self.bot.loop)
@@ -296,6 +318,14 @@ class Music(Cog, name='music'):
             vc.message = msg
         else:
             await ctx.send(f'"{track.title}" added to queue.')
+
+    @play.error
+    async def error(self, ctx: commands.Context, error: commands.CommandError):
+        if isinstance(error, commands.CommandInvokeError):
+            if isinstance(error.original, wavelink.LoadTrackError):
+                await ctx.send('Something went wrong loading the track.')
+                return
+        await self.bot.on_command_error(ctx, error)
 
 
 async def setup(bot: MasterBot):
