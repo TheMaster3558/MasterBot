@@ -207,7 +207,6 @@ class Webhooks(Cog, name='webhooks'):
 
     @update_db.after_loop
     async def close_session(self):
-        await asyncio.sleep(1.5)
         await self.update_db()
         await self.db.close()
         await self.session.close()
