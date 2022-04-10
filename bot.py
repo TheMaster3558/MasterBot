@@ -46,6 +46,8 @@ class MasterBot(commands.Bot):
     test_guild = discord.Object(id=878431847162466354)
 
     def __init__(self, cr_api_key: str, weather_api_key: str, mongo_db: str, /, *, token: str, **options) -> None:
+        import monkeypatches
+
         intents = discord.Intents.default()
         intents.members = True
         intents.message_content = True
