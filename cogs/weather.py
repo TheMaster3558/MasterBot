@@ -64,9 +64,9 @@ class Weather(Cog, name='weather'):
 
     async def fetch_units(self):
         for guild in self.bot.guilds:
-            cursor = await self.db.execute(f"""SELECT temp, speed FROM units
-                                        WHERE id = {guild.id};""")
-            data = await cursor.fetchone()
+            async with self.db.execute(f"""SELECT temp, speed FROM units
+                                        WHERE id = {guild.id};""") as cursor:
+                data = await cursor.fetchone()
             if data is None:
                 continue
 

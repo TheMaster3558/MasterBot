@@ -142,9 +142,9 @@ class Webhooks(Cog, name='webhooks'):
 
     async def fetch_webhooks(self):
         for channel in self.bot.get_all_channels():
-            cursor = await self.db.execute(f"""SELECT webhook_id, webhook_token FROM webhooks
-                                           WHERE id = {channel.id};""")
-            data = await cursor.fetchone()
+            async with self.db.execute(f"""SELECT webhook_id, webhook_token FROM webhooks
+                                           WHERE id = {channel.id};""") as cursor:
+                data = await cursor.fetchone()
             if data is None:
                 continue
             webhook_id, webhook_token = data
