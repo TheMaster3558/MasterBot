@@ -1,9 +1,11 @@
 from typing import Tuple, Optional, Iterable, Literal
 import asyncio
+import json
 
 import discord
 from discord import app_commands
 from discord.ext import commands
+import aiosqlite
 
 from bot import MasterBot
 from cogs.utils.app_and_cogs import Cog
@@ -82,7 +84,33 @@ class RoleFlags(commands.FlagConverter):
 class ReactionRoles(Cog, name='reactions'):
     def __init__(self, bot: MasterBot):
         super().__init__(bot)
+        self.db: aiosqlite.Connection = MISSING
         print('Roles cog loaded')
+
+    async def fetch_from_db(self):
+        cursor = await self.db.execute("""SELECT * FROM sqlite_master where type='table'""")
+        tables = await cursor.fetchall()
+
+        for table in tables:
+            cursor = await self.db.execute(f"""SELECT * FROM {table}""")
+            data = await cursor.fetchall()
+            print(data)
+
+    async def insert_into_db(self, roles, emojis, message_id):
+        await self.db.execute(f"""CREATE TABLE IF NOT EXISTS {message_id} (
+                                        useless INTEGER PRIMARY KEY,
+                                        role INTEGER,
+                                        emoji TEXT 
+                                    );""")
+
+    async def cog_load(self):
+        await super().cog_load()
+        self.db = await aiosqlite.connect('databases/roles.db')
+        self.bot.loop.create_task(self.fetch_from_db())
+
+    async def cog_unload(self):
+        await super().cog_unload()
+        await self.db.close()
 
     async def cog_command_error(self, ctx, error) -> None:
         error: commands.CommandError
