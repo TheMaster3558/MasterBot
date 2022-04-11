@@ -268,6 +268,9 @@ class Code(Cog, name='code'):
 
     @commands.command(name='code', description='Get some code of the bot.')
     async def _code(self, ctx, file_path, lines=None):
+        if any(name in file_path for name in ('main.py', 'databases/', 'venv/')):
+            return
+
         if lines is None:
             pass
         elif '-' in lines:
