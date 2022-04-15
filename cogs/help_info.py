@@ -41,7 +41,7 @@ class HelpCommand(commands.HelpCommand):
             return
 
         embed = discord.Embed(
-            title=f'{_command.qualified_name} Help',
+            title=f'{_command.qualified_name.capitalize()} Help',
             description=_command.description or 'No description'
         )
         embed.add_field(name='Syntax', value=f'```{self.get_command_signature(_command)}```')
@@ -56,7 +56,7 @@ class HelpCommand(commands.HelpCommand):
         if not await group.can_run(self.context):
             return
 
-        embed = discord.Embed(title=f'{group.qualified_name} Help',
+        embed = discord.Embed(title=f'{group.qualified_name.capitalize()} Help',
                               description=f'`{self.get_command_signature(group)}`' + group.description or 'No '
                                                                                                           'description')
         for sub in group.walk_commands():

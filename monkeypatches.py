@@ -31,7 +31,7 @@ old_help_deco = commands.command
 
 # change default cls to our new cls
 def command(name: str = MISSING, cls: Type[commands.Command[Any, ..., Any]] = Command, **attrs):
-    return old_help_deco(name=name, cls=cls, attrs=attrs)
+    return old_help_deco(name=name, cls=cls, **attrs)
 
 
 commands.command = command

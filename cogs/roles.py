@@ -189,7 +189,6 @@ class ReactionRoles(Cog, name='reactions'):
         await self.bot.on_command_error(ctx, error)
 
     @commands.command(description='Set up a select menu for a similar version of "Reaction Roles"')
-    @commands.guild_only()
     @commands.has_permissions(manage_roles=True)
     async def role(self, ctx: commands.Context, *, flags: RoleFlags):
         if len(flags.roles) > 25:
