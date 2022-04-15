@@ -1,10 +1,10 @@
 from typing import Optional, Literal
-from sqlite3 import IntegrityError
 
 import discord
 from discord import app_commands
 from discord.ext import commands, tasks
 import aiosqlite
+from aiosqlite import IntegrityError
 
 from cogs.utils.http import AsyncHTTPClient
 from cogs.utils.weather_utils import WeatherUtils

@@ -2,13 +2,13 @@ from __future__ import annotations
 
 from typing import Optional
 import asyncio
-from sqlite3 import IntegrityError
 
 import discord
 from discord import app_commands
 from discord.ext import commands, tasks
 import aiohttp
 import aiosqlite
+from aiosqlite import IntegrityError
 
 from bot import MasterBot
 from cogs.utils.app_and_cogs import Cog, NoPrivateMessage
