@@ -24,7 +24,7 @@ from discord.ext import commands
 from cogs.utils.app_and_cogs import Cog, NoPrivateMessage
 
 with warnings.catch_warnings():
-    warnings.filterwarnings('ignore', category=UserWarning, module='fuzzywuzzy')
+    warnings.filterwarnings("ignore", category=UserWarning, module="fuzzywuzzy")
     from fuzzywuzzy import fuzz
 
 
@@ -36,23 +36,32 @@ class MasterBotCommandTree(app_commands.CommandTree):
         error: app_commands.AppCommandError,
     ) -> None:
         if isinstance(error, NoPrivateMessage):
-            await interaction.response.send_message('Try this in a server.')
+            await interaction.response.send_message("Try this in a server.")
             return
         traceback.print_exception(error, file=sys.stderr)
 
 
 class MasterBot(commands.Bot):
-    __version__ = '1.6.0'
+    __version__ = "1.6.0"
     test_guild = discord.Object(id=878431847162466354)
 
-    def __init__(self, cr_api_key: str, weather_api_key: str, mongo_db: str, /, *, token: str, **options) -> None:
+    def __init__(
+        self,
+        cr_api_key: str,
+        weather_api_key: str,
+        mongo_db: str,
+        /,
+        *,
+        token: str,
+        **options,
+    ) -> None:
         import monkeypatches
 
         intents = discord.Intents.default()
         intents.members = True
         intents.message_content = True
 
-        options['intents'] = intents
+        options["intents"] = intents
 
         super().__init__(**options)
 
@@ -67,27 +76,33 @@ class MasterBot(commands.Bot):
         self.prefixes_db = None
         self.moderation_mongo = mongo_db
 
-        logger = logging.getLogger('discord')
+        logger = logging.getLogger("discord")
         logger.setLevel(logging.DEBUG)
-        handler = logging.FileHandler(filename='logs/discord.log', encoding='utf-8', mode='w')
-        handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
+        handler = logging.FileHandler(
+            filename="logs/discord.log", encoding="utf-8", mode="w"
+        )
+        handler.setFormatter(
+            logging.Formatter("%(asctime)s:%(levelname)s:%(name)s: %(message)s")
+        )
         logger.addHandler(handler)
 
         self.locks: dict[Cog, asyncio.Lock] = {}
 
     @classmethod
-    def default(cls, cr_api_key: str, weather_api_key: str, mongo_db: str, /, *, token: str) -> MasterBot:
+    def default(
+        cls, cr_api_key: str, weather_api_key: str, mongo_db: str, /, *, token: str
+    ) -> MasterBot:
         """The default options"""
         return cls(
             cr_api_key,
             weather_api_key,
             mongo_db,
-            command_prefix=commands.when_mentioned_or('!'),
-            activity=discord.Game(f'version {cls.__version__}'),
+            command_prefix=commands.when_mentioned_or("!"),
+            activity=discord.Game(f"version {cls.__version__}"),
             strip_after_prefix=True,
             enable_debug_events=True,
             token=token,
-            tree_cls=MasterBotCommandTree
+            tree_cls=MasterBotCommandTree,
         )
 
     def acquire_lock(self, cog: Cog) -> asyncio.Lock:
@@ -100,22 +115,24 @@ class MasterBot(commands.Bot):
 
     async def load_extensions(self) -> None:
         cogs = (
-            'cogs.clash_royale',
-            'cogs.help_info',
-            'cogs.code',
-            'cogs.forms',
-            'cogs.games',
-            'cogs.botmath',
-            'cogs.roles',
-            'cogs.translate',
-            'cogs.trivia',
-            'cogs.webhook',
-            'cogs.weather',
-            'cogs.jokes',
-            'cogs.version',
-            'cogs.music',
+            "cogs.clash_royale",
+            "cogs.help_info",
+            "cogs.code",
+            "cogs.forms",
+            "cogs.games",
+            "cogs.botmath",
+            "cogs.roles",
+            "cogs.translate",
+            "cogs.trivia",
+            "cogs.webhook",
+            "cogs.weather",
+            "cogs.jokes",
+            "cogs.version",
+            "cogs.music",
         )
-        await asyncio.gather(*(self.loop.create_task(self.load_extension(cog)) for cog in cogs))
+        await asyncio.gather(
+            *(self.loop.create_task(self.load_extension(cog)) for cog in cogs)
+        )
 
     async def setup_hook(self) -> None:
         self.loop.create_task(self.sync_once())
@@ -129,22 +146,32 @@ class MasterBot(commands.Bot):
 
     async def on_ready(self) -> None:
         self.on_ready_time = perf_counter()
-        print('Logged in as {0} ID: {0.id}'.format(self.user))
-        print('Time taken to start up:', round(self.on_ready_time - self.start_time, 1), 'seconds')
+        print("Logged in as {0} ID: {0.id}".format(self.user))
+        print(
+            "Time taken to start up:",
+            round(self.on_ready_time - self.start_time, 1),
+            "seconds",
+        )
 
-    def possible_commands(self, context: commands.Context, ratio: int = 70) -> list[str]:
-        return [cmd for cmd in self.all_commands if fuzz.ratio(
-            context.message.content,
+    def possible_commands(
+        self, context: commands.Context, ratio: int = 70
+    ) -> list[str]:
+        return [
             cmd
-        ) > ratio
-         ]
+            for cmd in self.all_commands
+            if fuzz.ratio(context.message.content, cmd) > ratio
+        ]
 
-    async def on_command_error(self, context: commands.Context, exception: commands.errors.CommandError) -> None:
+    async def on_command_error(
+        self, context: commands.Context, exception: commands.errors.CommandError
+    ) -> None:
         if isinstance(exception, commands.CommandNotFound):
             possibles = self.possible_commands(context)
             if len(possibles) > 0:
-                embed = discord.Embed(title="I couldn't find that command",
-                                      description='Maybe you meant:\n`{}`'.format("`\n`".join(possibles)))
+                embed = discord.Embed(
+                    title="I couldn't find that command",
+                    description="Maybe you meant:\n`{}`".format("`\n`".join(possibles)),
+                )
                 await context.reply(embed=embed, mention_author=False)
             return
 
@@ -161,25 +188,31 @@ class MasterBot(commands.Bot):
     def oath_url(self) -> str | None:
         if not self.user:
             return None
-        permissions = discord.Permissions(manage_roles=True,
-                                          manage_channels=True,
-                                          kick_members=True,
-                                          ban_members=True,
-                                          manage_webhooks=True,
-                                          moderate_members=True,
-                                          send_messages=True,
-                                          add_reactions=True)
-        return discord.utils.oauth_url(self.user.id,
-                                       permissions=permissions,
-                                       )
+        permissions = discord.Permissions(
+            manage_roles=True,
+            manage_channels=True,
+            kick_members=True,
+            ban_members=True,
+            manage_webhooks=True,
+            moderate_members=True,
+            send_messages=True,
+            add_reactions=True,
+        )
+        return discord.utils.oauth_url(
+            self.user.id,
+            permissions=permissions,
+        )
 
-    def custom_oath_url(self, permissions: discord.Permissions | None = None,
-                        scopes: Iterable[str] | None = None) -> str | None:
+    def custom_oath_url(
+        self,
+        permissions: discord.Permissions | None = None,
+        scopes: Iterable[str] | None = None,
+    ) -> str | None:
         if not self.user:
             return None
-        return discord.utils.oauth_url(self.user.id,
-                                       permissions=permissions,
-                                       scopes=scopes)
+        return discord.utils.oauth_url(
+            self.user.id, permissions=permissions, scopes=scopes
+        )
 
     async def start(self, token: str = None, *, reconnect: bool = True) -> None:
         token = token or self.token
@@ -197,9 +230,9 @@ def run_many(*instances: MasterBot):
             try:
                 _tasks.append(loop.create_task(instance.start()))
             except Exception as exc:
-                _log.error(f'{instance} has failed to start', exc_info=exc)
+                _log.error(f"{instance} has failed to start", exc_info=exc)
             else:
-                _log.info(f'{instance} has started')
+                _log.info(f"{instance} has started")
 
         try:
             await asyncio.gather(*_tasks)

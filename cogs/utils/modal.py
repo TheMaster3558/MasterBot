@@ -11,20 +11,22 @@ import discord
 from discord import Interaction
 from discord.utils import MISSING
 
-__all__ = ['TextInput', 'Modal']
+__all__ = ["TextInput", "Modal"]
 
 
 class TextInput:
-    def __init__(self, *,
-                 label: str,
-                 style: discord.TextStyle,
-                 custom_id: str = MISSING,
-                 min_length: int | None = None,
-                 max_length: int | None = None,
-                 required: bool = True,
-                 default_value: str | None = None,
-                 placeholder: str | None = None
-                 ) -> None:
+    def __init__(
+        self,
+        *,
+        label: str,
+        style: discord.TextStyle,
+        custom_id: str = MISSING,
+        min_length: int | None = None,
+        max_length: int | None = None,
+        required: bool = True,
+        default_value: str | None = None,
+        placeholder: str | None = None,
+    ) -> None:
         if custom_id is MISSING:
             custom_id = os.urandom(16).hex()
 
@@ -32,7 +34,9 @@ class TextInput:
             raise ValueError("min_length must be greater or equal to 0")
 
         if max_length is not None and (max_length > 4000 or max_length < 1):
-            raise ValueError("max_length must be lower or equal to 4000 and greater or equal to 1")
+            raise ValueError(
+                "max_length must be lower or equal to 4000 and greater or equal to 1"
+            )
 
         self.style = style
         self.custom_id = custom_id
@@ -49,27 +53,31 @@ class TextInput:
             "style": int(self.style),
             "custom_id": self.custom_id,
             "label": self.label,
-            "required": self.required
+            "required": self.required,
         }
 
         if self.placeholder is not None:
-            data['placeholder'] = self.placeholder
+            data["placeholder"] = self.placeholder
         if self.default_value is not None:
-            data['value'] = self.default_value
+            data["value"] = self.default_value
         if self.min_length is not None:
-            data['min_length'] = self.min_length
+            data["min_length"] = self.min_length
         if self.max_length is not None:
-            data['max_length'] = self.max_length
+            data["max_length"] = self.max_length
 
         return data
 
 
 class Modal:
-    def __init__(self, *, title: str, custom_id: str = MISSING, items: list[TextInput] = MISSING):
+    def __init__(
+        self, *, title: str, custom_id: str = MISSING, items: list[TextInput] = MISSING
+    ):
         self.custom_id = os.urandom(16).hex() if custom_id is MISSING else custom_id
         self.title = title
 
-        self._items: dict[str, TextInput] = {} if items is MISSING else {item.custom_id: item for item in items}
+        self._items: dict[str, TextInput] = (
+            {} if items is MISSING else {item.custom_id: item for item in items}
+        )
 
         self._response: asyncio.Future[Interaction] = asyncio.Future()
 
@@ -78,8 +86,8 @@ class Modal:
     @staticmethod
     def parse_interaction(interaction: Interaction) -> dict[str, str]:
         return dict(
-            (d['components'][0]['custom_id'], d['components'][0]['value'])
-            for d in interaction.data['components']  # type: ignore
+            (d["components"][0]["custom_id"], d["components"][0]["value"])
+            for d in interaction.data["components"]  # type: ignore
         )
 
     def add_item(self, item: TextInput) -> None:
@@ -116,15 +124,10 @@ class Modal:
         return await asyncio.wait_for(self._response, timeout=timeout)
 
     def to_dict(self) -> dict[str, Any]:
-        data = {
-            "custom_id": self.custom_id,
-            "title": self.title,
-            "components": []
-        }
+        data = {"custom_id": self.custom_id, "title": self.title, "components": []}
         for item in self._items.values():
-            data["components"].append({
-                "type": 1,
-                "components": [item.to_component_dict()]  # type: ignore
-            })
+            data["components"].append(
+                {"type": 1, "components": [item.to_component_dict()]}  # type: ignore
+            )
 
         return data

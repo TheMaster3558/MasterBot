@@ -26,12 +26,12 @@ words = [word for word in english_words_lower_set if len(word) == 5 and "'" not 
 Num = Literal[1, 2, 3]
 
 
-class TicTacToeButton(discord.ui.Button['TicTacToeView']):
-    emojis = {0: '❌', 1: '⭕'}
+class TicTacToeButton(discord.ui.Button["TicTacToeView"]):
+    emojis = {0: "❌", 1: "⭕"}
 
     def __init__(self, x, y):
         self.x, self.y = x, y
-        super().__init__(style=discord.ButtonStyle.grey, row=y, label='\u0020')
+        super().__init__(style=discord.ButtonStyle.grey, row=y, label="\u0020")
 
     async def callback(self, interaction: discord.Interaction):
         self.label = self.emojis[self.view.turn]
@@ -43,10 +43,10 @@ class TicTacToeButton(discord.ui.Button['TicTacToeView']):
                 break
         if self.view.turn == 0:
             self.view.x.append((self.x, self.y))
-            player = 'x'
+            player = "x"
         else:
             self.view.o.append((self.x, self.y))
-            player = 'o'
+            player = "o"
 
         finished = False
         moves = getattr(self.view, player)
@@ -128,12 +128,12 @@ class TicTacToeView(View):
         if self.users[self.turn] == interaction.user.id:
             return True
         if interaction.user.id in self.users:
-            await smart_send(interaction, 'Wait for your turn', ephemeral=True)
-        await smart_send(interaction, 'You are not in this tic tac toe game')
+            await smart_send(interaction, "Wait for your turn", ephemeral=True)
+        await smart_send(interaction, "You are not in this tic tac toe game")
         return False
 
 
-class RockPaperScissorsButton(discord.ui.Button['RockPaperScissors']):
+class RockPaperScissorsButton(discord.ui.Button["RockPaperScissors"]):
     def __init__(self, name, emoji):
         self.name = name
         super().__init__(label=name, emoji=emoji)
@@ -145,7 +145,9 @@ class RockPaperScissorsButton(discord.ui.Button['RockPaperScissors']):
             self.view.value2 = self.name
 
         if self.view.p2 is None:
-            self.view.value2 = random.choice([name for name, emoji in self.view.options])
+            self.view.value2 = random.choice(
+                [name for name, emoji in self.view.options]
+            )
             await self.view.disable_all(interaction.message)
             self.view.stop()
             return
@@ -156,7 +158,7 @@ class RockPaperScissorsButton(discord.ui.Button['RockPaperScissors']):
 
 
 class RockPaperScissors(View):
-    options = (('Rock', '🪨'), ('Paper', '📜'), ('Scissors', '✂'))
+    options = (("Rock", "🪨"), ("Paper", "📜"), ("Scissors", "✂"))
 
     def __init__(self, p1: discord.User, p2: discord.User | None = None):
         self.p1 = p1
@@ -169,14 +171,18 @@ class RockPaperScissors(View):
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if interaction.user not in (self.p1, self.p2):
-            await interaction.response.send_message('You are not in this game.')
+            await interaction.response.send_message("You are not in this game.")
             return False
 
         else:
             if interaction.user == self.p1 and self.value1:
-                await interaction.response.send_message(f'You already selected {self.value1}')
+                await interaction.response.send_message(
+                    f"You already selected {self.value1}"
+                )
             elif interaction.user == self.p2 and self.value2:
-                await interaction.response.send_message(f'You already selected {self.value2}')
+                await interaction.response.send_message(
+                    f"You already selected {self.value2}"
+                )
             else:
                 return True
         return False
@@ -189,53 +195,57 @@ class RockPaperScissors(View):
         return None
 
 
-class Games(Cog, name='games'):
+class Games(Cog, name="games"):
     word = random.choice(words)
-    font = ImageFont.truetype('arial.ttf', 15)
+    font = ImageFont.truetype("arial.ttf", 15)
 
     def __init__(self, bot: MasterBot):
         super().__init__(bot)
         self.done: list[int] = []
         self.new_word.start()
-        self.d = enchant.Dict('en_US')
-        print('Games cog loaded')
+        self.d = enchant.Dict("en_US")
+        print("Games cog loaded")
 
     @tasks.loop(time=time(0, 0, 0))
     async def new_word(self):
         self.word = random.choice(words)
         self.done.clear()
 
-    @commands.command(description='Play tic tac toe against someone.')
+    @commands.command(description="Play tic tac toe against someone.")
     @commands.guild_only()
     async def tictactoe(self, ctx, *, member: discord.Member):
         view = TicTacToeView(ctx.author, member)
-        embed = discord.Embed(title=f'{ctx.author.display_name} vs {member.display_name}')
-        embed.set_footer(text='You have 3 minutes.')
+        embed = discord.Embed(
+            title=f"{ctx.author.display_name} vs {member.display_name}"
+        )
+        embed.set_footer(text="You have 3 minutes.")
 
         msg = await ctx.send(member.mention, embed=embed, view=view)
         await view.wait()
 
         if view.winner:
             winner = ctx.guild.get_member(view.winner)
-            await msg.reply(f'The winner is {winner.display_name}!')
+            await msg.reply(f"The winner is {winner.display_name}!")
             return
 
         if view.winner == 0:
-            await msg.reply('You tied. You both suck.')
+            await msg.reply("You tied. You both suck.")
         await msg.reply("You couldn't finish in time.")
 
     @tictactoe.error
     async def error(self, ctx, error):
         if isinstance(error, commands.NoPrivateMessage):
-            await ctx.send('You only can do this in a server.')
+            await ctx.send("You only can do this in a server.")
         elif isinstance(error, commands.MemberNotFound):
             await ctx.reply("I couldn't find that member")
         elif isinstance(error, commands.MissingRequiredArgument):
-            o_msg = await ctx.reply('Mention a user to play against.')
+            o_msg = await ctx.reply("Mention a user to play against.")
             try:
-                msg = await self.bot.wait_for('message',
-                                              check=lambda m: m.channel == ctx.channel and m.author == ctx.author,
-                                              timeout=30)
+                msg = await self.bot.wait_for(
+                    "message",
+                    check=lambda m: m.channel == ctx.channel and m.author == ctx.author,
+                    timeout=30,
+                )
             except asyncio.TimeoutError:
                 await o_msg.reply("You didn't respond in time.")
                 return
@@ -246,12 +256,18 @@ class Games(Cog, name='games'):
                 return
             await self.tictactoe(ctx, member=member)
 
-    @app_commands.command(name='tictactoe', description='Challenge a user to Tic Tac Toe!')
-    @app_commands.describe(member='The member to challenge.')
-    async def _tictactoe(self, interaction: discord.Interaction, member: discord.Member):
+    @app_commands.command(
+        name="tictactoe", description="Challenge a user to Tic Tac Toe!"
+    )
+    @app_commands.describe(member="The member to challenge.")
+    async def _tictactoe(
+        self, interaction: discord.Interaction, member: discord.Member
+    ):
         view = TicTacToeView(interaction.user, member)
-        embed = discord.Embed(title=f'{interaction.user.display_name} vs {member.display_name}')
-        embed.set_footer(text='You have 3 minutes.')
+        embed = discord.Embed(
+            title=f"{interaction.user.display_name} vs {member.display_name}"
+        )
+        embed.set_footer(text="You have 3 minutes.")
 
         await interaction.response.send_message(embed=embed, view=view)
         await interaction.followup.send(member.mention)
@@ -259,87 +275,101 @@ class Games(Cog, name='games'):
 
         if view.winner:
             winner = interaction.guild.get_member(view.winner)
-            await interaction.followup.send(f'The winner is {winner.display_name}!')
+            await interaction.followup.send(f"The winner is {winner.display_name}!")
             return
 
         if view.winner == 0:
-            await interaction.followup.send('You tied. You both suck.')
+            await interaction.followup.send("You tied. You both suck.")
             return
 
         await interaction.followup.send("You couldn't finish in time.")
 
-    @commands.command(aliases=['rps', 'rockpaperscissors'], description='Play rock paper scissors!')
-    async def rock_paper_scissors(self, ctx: commands.Context, member: discord.Member = None):
+    @commands.command(
+        aliases=["rps", "rockpaperscissors"], description="Play rock paper scissors!"
+    )
+    async def rock_paper_scissors(
+        self, ctx: commands.Context, member: discord.Member = None
+    ):
         view = RockPaperScissors(ctx.author, member)
         member = member or ctx.me
 
-        embed = discord.Embed(title=f'{ctx.author.display_name} vs {member.display_name}')
+        embed = discord.Embed(
+            title=f"{ctx.author.display_name} vs {member.display_name}"
+        )
         msg = await ctx.send(member.mention, embed=embed, view=view)
         await view.wait()
 
         winner = None
         v1 = view.value1
         v2 = view.value2
-        if v1 == 'Rock':
-            if v2 == 'Scissors':
+        if v1 == "Rock":
+            if v2 == "Scissors":
                 winner = ctx.author
-            elif v2 == 'Paper':
+            elif v2 == "Paper":
                 winner = member
-        elif v1 == 'Paper':
-            if v2 == 'Scissors':
+        elif v1 == "Paper":
+            if v2 == "Scissors":
                 winner = member
-            elif v2 == 'Rock':
+            elif v2 == "Rock":
                 winner = ctx.author
         else:
-            if v2 == 'Rock':
+            if v2 == "Rock":
                 winner = member
-            elif v2 == 'Paper':
+            elif v2 == "Paper":
                 winner = ctx.author
 
         if winner is None:
-            await msg.reply('Tie. They both picked the same thing LOL.')
+            await msg.reply("Tie. They both picked the same thing LOL.")
             return
         loser = ctx.author if winner is not ctx.author else member
-        embed = discord.Embed(title=f'The winner is {winner.display_name}!',
-                              description=f'{view.get_value(winner)} beats {view.get_value(loser)}')
+        embed = discord.Embed(
+            title=f"The winner is {winner.display_name}!",
+            description=f"{view.get_value(winner)} beats {view.get_value(loser)}",
+        )
         await msg.reply(embed=embed)
 
-    @app_commands.command(name='rockpaperscissors', description='Play a quick game of rock paper scissors')
-    @app_commands.describe(member='If you want you can challenge a member')
+    @app_commands.command(
+        name="rockpaperscissors", description="Play a quick game of rock paper scissors"
+    )
+    @app_commands.describe(member="If you want you can challenge a member")
     async def _rock_paper_scissors(self, interaction, member: discord.Member = None):
         view = RockPaperScissors(interaction.user, member)
         member = member or interaction.guild.me
 
-        embed = discord.Embed(title=f'{interaction.user.display_name} vs {member.display_name}')
+        embed = discord.Embed(
+            title=f"{interaction.user.display_name} vs {member.display_name}"
+        )
         await interaction.response.send(member.mention, embed=embed, view=view)
         await view.wait()
 
         winner = None
         v1 = view.value1
         v2 = view.value2
-        if v1 == 'Rock':
-            if v2 == 'Scissors':
+        if v1 == "Rock":
+            if v2 == "Scissors":
                 winner = interaction.user
-            elif v2 == 'Paper':
+            elif v2 == "Paper":
                 winner = member
-        elif v1 == 'Paper':
-            if v2 == 'Scissors':
+        elif v1 == "Paper":
+            if v2 == "Scissors":
                 winner = member
-            elif v2 == 'Rock':
+            elif v2 == "Rock":
                 winner = interaction.user
         else:
-            if v2 == 'Rock':
+            if v2 == "Rock":
                 winner = member
-            elif v2 == 'Paper':
+            elif v2 == "Paper":
                 winner = interaction.user
 
         if winner is None:
-            await interaction.followup.send('Tie. They both picked the same thing LOL.')
+            await interaction.followup.send("Tie. They both picked the same thing LOL.")
             return
 
         loser = interaction.user if winner is not interaction.user else member
-        embed = discord.Embed(title=f'The winner is {winner.display_name}!',
-                              description=f'{view.get_value(winner)} beats {view.get_value(loser)}')  # type: ignore
+        embed = discord.Embed(
+            title=f"The winner is {winner.display_name}!",
+            description=f"{view.get_value(winner)} beats {view.get_value(loser)}",
+        )  # type: ignore
         await interaction.followup.send(embed=embed)
 
     @staticmethod
@@ -352,14 +382,18 @@ class Games(Cog, name='games'):
 
         return "%d:%02d:%02d" % (hour, minutes, seconds)
 
-    @commands.command(description='Play the popular game Wordle from New York Times')
+    @commands.command(description="Play the popular game Wordle from New York Times")
     async def wordle(self, ctx):
-        if ctx.author.id in self.done:  # id is used so `User` and `Member` are treated the same
+        if (
+            ctx.author.id in self.done
+        ):  # id is used so `User` and `Member` are treated the same
             next_word = self.new_word.next_iteration - discord.utils.utcnow()
-            await ctx.reply(f"You've already done it. A new word comes in {self.convert(next_word.total_seconds())}")
+            await ctx.reply(
+                f"You've already done it. A new word comes in {self.convert(next_word.total_seconds())}"
+            )
             return
 
-        background = Image.new(mode='RGB', size=(185, 220), color='white')
+        background = Image.new(mode="RGB", size=(185, 220), color="white")
         results = {}
 
         attempt = 1
@@ -367,14 +401,16 @@ class Games(Cog, name='games'):
 
         success = False
 
-        sent = await ctx.send('Type a 5 letter word to guess.', )
+        sent = await ctx.send(
+            "Type a 5 letter word to guess.",
+        )
         check = lambda m: len(m.content) == 5 and m.author == ctx.author
 
         while attempt < 7:
             try:
-                msg = await self.bot.wait_for('message', check=check, timeout=600)
+                msg = await self.bot.wait_for("message", check=check, timeout=600)
             except asyncio.TimeoutError:
-                await sent.reply('Try guessing a bit faster next time.')
+                await sent.reply("Try guessing a bit faster next time.")
                 return
 
             content = msg.content.lower()
@@ -385,16 +421,16 @@ class Games(Cog, name='games'):
 
             for index, letter in enumerate(content):
                 if letter == self.word[index]:
-                    results[index] = (letter, 'green')
+                    results[index] = (letter, "green")
                 elif letter in self.word:
-                    results[index] = (letter, '#FFD700')
+                    results[index] = (letter, "#FFD700")
                 else:
-                    results[index] = (letter, 'gray')
+                    results[index] = (letter, "gray")
 
             x = 10
 
             for letter, color in results.values():
-                background.paste(Image.new('RGB', size=(25, 25), color=color), (x, y))
+                background.paste(Image.new("RGB", size=(25, 25), color=color), (x, y))
                 x += 35
 
             img = ImageDraw.Draw(background)
@@ -405,9 +441,9 @@ class Games(Cog, name='games'):
                 x += 35
 
             with BytesIO() as image_binary:
-                background.save(image_binary, 'PNG')
+                background.save(image_binary, "PNG")
                 image_binary.seek(0)
-                file = discord.File(image_binary, 'image.png')
+                file = discord.File(image_binary, "image.png")
             await msg.reply(file=file, mention_author=False)
 
             if content == self.word:
@@ -421,18 +457,22 @@ class Games(Cog, name='games'):
             await sent.reply(f"You didn't guess it. The word is ||{self.word}||")
             return
 
-        await sent.reply(f'It took you {attempt} tries.')
+        await sent.reply(f"It took you {attempt} tries.")
 
-    @app_commands.command(name='wordle', description='Play the popular game wordle. (Not created by us)')
+    @app_commands.command(
+        name="wordle", description="Play the popular game wordle. (Not created by us)"
+    )
     async def _wordle(self, interaction):
-        if interaction.user.id in self.done:  # id is used so `User` and `Member` are treated the same
+        if (
+            interaction.user.id in self.done
+        ):  # id is used so `User` and `Member` are treated the same
             next_word = self.new_word.next_iteration - discord.utils.utcnow()
             await interaction.response.send_message(
                 f"You've already done it. A new word comes in {self.convert(next_word.total_seconds())}"
             )
             return
 
-        background = Image.new(mode='RGB', size=(185, 200), color='white')
+        background = Image.new(mode="RGB", size=(185, 200), color="white")
         results = {}
 
         attempt = 1
@@ -440,14 +480,16 @@ class Games(Cog, name='games'):
 
         success = False
 
-        await interaction.response.send_message('Type a 5 letter word to guess.', )
+        await interaction.response.send_message(
+            "Type a 5 letter word to guess.",
+        )
         check = lambda m: len(m.content) == 5 and m.author == interaction.user
 
         while attempt < 7:
             try:
-                msg = await self.bot.wait_for('message', check=check, timeout=600)
+                msg = await self.bot.wait_for("message", check=check, timeout=600)
             except asyncio.TimeoutError:
-                await interaction.followup.send('Try guessing a bit faster next time.')
+                await interaction.followup.send("Try guessing a bit faster next time.")
                 return
 
             content = msg.content.lower()
@@ -458,16 +500,16 @@ class Games(Cog, name='games'):
 
             for index, letter in enumerate(content):
                 if letter == self.word[index]:
-                    results[index] = (letter, 'green')
+                    results[index] = (letter, "green")
                 elif letter in self.word:
-                    results[index] = (letter, '#FFD700')
+                    results[index] = (letter, "#FFD700")
                 else:
-                    results[index] = (letter, 'gray')
+                    results[index] = (letter, "gray")
 
             x = 10
 
             for letter, color in results.values():
-                background.paste(Image.new('RGB', size=(25, 25), color=color), (x, y))
+                background.paste(Image.new("RGB", size=(25, 25), color=color), (x, y))
                 x += 35
 
             img = ImageDraw.Draw(background)
@@ -478,9 +520,9 @@ class Games(Cog, name='games'):
                 x += 35
 
             with BytesIO() as image_binary:
-                background.save(image_binary, 'PNG')
+                background.save(image_binary, "PNG")
                 image_binary.seek(0)
-                file = discord.File(image_binary, 'image.png')
+                file = discord.File(image_binary, "image.png")
             await interaction.followup.send(file=file)
 
             if content == self.word:
@@ -491,10 +533,12 @@ class Games(Cog, name='games'):
             y += 29
 
         if not success:
-            await interaction.followup.send(f"You didn't guess it. The word is ||{self.word}||")
+            await interaction.followup.send(
+                f"You didn't guess it. The word is ||{self.word}||"
+            )
             return
 
-        await interaction.followup.send(f'It took you {attempt} tries.')
+        await interaction.followup.send(f"It took you {attempt} tries.")
 
 
 async def setup(bot: MasterBot):

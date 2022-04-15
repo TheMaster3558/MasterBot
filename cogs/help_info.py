@@ -17,17 +17,19 @@ class InviteView(View):
     def __init__(self, bot):
         super().__init__()
         url = bot.oath_url
-        self.add_item(discord.ui.Button(label='Click here!', url=url))
+        self.add_item(discord.ui.Button(label="Click here!", url=url))
 
 
 class HelpEmbed(discord.Embed):
     def __init__(self, bot, **kwargs):
         super().__init__(**kwargs)
-        self.set_footer(text=f'{bot.user.name} Help Menu', icon_url=bot.user.avatar.url)
+        self.set_footer(text=f"{bot.user.name} Help Menu", icon_url=bot.user.avatar.url)
 
 
 class HelpCommand(commands.HelpCommand):
-    async def send_bot_help(self, mapping: dict[Cog, list[commands.Command | commands.Group]], /) -> None:
+    async def send_bot_help(
+        self, mapping: dict[Cog, list[commands.Command | commands.Group]], /
+    ) -> None:
         del mapping[None]  # type: ignore # Non cog commands
         embeds = [await self.send_cog_help(cog, send=False) for cog in mapping]
 
@@ -36,15 +38,19 @@ class HelpCommand(commands.HelpCommand):
             await self.context.author.send(embeds=embeds[last:i])
             last = i
 
-    async def send_command_help(self, _command: commands.Command, /, *, send: bool = True) -> discord.Embed | None:
+    async def send_command_help(
+        self, _command: commands.Command, /, *, send: bool = True
+    ) -> discord.Embed | None:
         if not await _command.can_run(self.context):
             return
 
         embed = discord.Embed(
-            title=f'{_command.qualified_name.capitalize()} Help',
-            description=_command.description or 'No description'
+            title=f"{_command.qualified_name.capitalize()} Help",
+            description=_command.description or "No description",
         )
-        embed.add_field(name='Syntax', value=f'```{self.get_command_signature(_command)}```')
+        embed.add_field(
+            name="Syntax", value=f"```{self.get_command_signature(_command)}```"
+        )
 
         if send:
             channel = self.get_destination()
@@ -52,16 +58,23 @@ class HelpCommand(commands.HelpCommand):
 
         return embed
 
-    async def send_group_help(self, group: commands.Group, /, *, send: bool = True) -> discord.Embed | None:
+    async def send_group_help(
+        self, group: commands.Group, /, *, send: bool = True
+    ) -> discord.Embed | None:
         if not await group.can_run(self.context):
             return
 
-        embed = discord.Embed(title=f'{group.qualified_name.capitalize()} Help',
-                              description=f'`{self.get_command_signature(group)}`' + group.description or 'No '
-                                                                                                          'description')
+        embed = discord.Embed(
+            title=f"{group.qualified_name.capitalize()} Help",
+            description=f"`{self.get_command_signature(group)}`" + group.description
+            or "No " "description",
+        )
         for sub in group.walk_commands():
-            embed.add_field(name=sub.name, value=f'`{self.get_command_signature(sub)}`' + sub.description or 'No '
-                                                                                                             'description')
+            embed.add_field(
+                name=sub.name,
+                value=f"`{self.get_command_signature(sub)}`" + sub.description
+                or "No " "description",
+            )
 
         if send:
             channel = self.get_destination()
@@ -70,7 +83,7 @@ class HelpCommand(commands.HelpCommand):
         return embed
 
     async def send_cog_help(self, cog: Cog, /, *, send: bool = True) -> discord.Embed:
-        embed = discord.Embed(title=f'{cog.qualified_name.capitalize()} Help')
+        embed = discord.Embed(title=f"{cog.qualified_name.capitalize()} Help")
 
         for cmd in cog.walk_commands():
             try:
@@ -81,7 +94,7 @@ class HelpCommand(commands.HelpCommand):
             embed.add_field(
                 name=cmd.qualified_name.capitalize(),
                 value=f'`{self.get_command_signature(cmd)}`\n{cmd.description or "No description"}',
-                inline=False
+                inline=False,
             )
 
         if send:
@@ -95,7 +108,7 @@ class HelpCommand(commands.HelpCommand):
 
         close_commands = self.context.bot.possible_commands(self.context)  # type: ignore
         if len(close_commands) > 0:
-            message += '\n`{}`'.format("`\n`".join(close_commands))
+            message += "\n`{}`".format("`\n`".join(close_commands))
 
         return message
 
@@ -106,11 +119,11 @@ class Help(Cog):
     def __init__(self, bot: MasterBot):
         super().__init__(bot)
         bot.help_command = HelpCommand()
-        print('Help and Info cog loaded')
+        print("Help and Info cog loaded")
 
     async def get_regex(self):
         await self.bot.wait_until_ready()
-        self.mention_regex = re.compile(f'<@!?{self.bot.user.id}>')
+        self.mention_regex = re.compile(f"<@!?{self.bot.user.id}>")
 
     async def cog_load(self):
         await super().cog_load()
@@ -122,53 +135,65 @@ class Help(Cog):
             return
         if self.mention_regex.fullmatch(message.content):
             prefix = (await self.bot.get_prefix(message))[2]
-            await message.reply(f'My prefix is `{prefix}`', mention_author=False)
+            await message.reply(f"My prefix is `{prefix}`", mention_author=False)
 
     @commands.command()
     async def ping(self, ctx):
-        await ctx.send(f'Pong! `{str(round(self.bot.latency * 1000))}ms`')
+        await ctx.send(f"Pong! `{str(round(self.bot.latency * 1000))}ms`")
 
-    @app_commands.command(name='ping', description='Pong!')
+    @app_commands.command(name="ping", description="Pong!")
     async def _ping(self, interaction):
-        await interaction.response.send_message(f'Pong! `{str(round(self.bot.latency * 1000))}ms`')
+        await interaction.response.send_message(
+            f"Pong! `{str(round(self.bot.latency * 1000))}ms`"
+        )
 
     @commands.command()
     async def invite(self, ctx):
-        embed = discord.Embed(title=f'{self.bot.user.name} Invite')
+        embed = discord.Embed(title=f"{self.bot.user.name} Invite")
         await ctx.author.send(embed=embed, view=InviteView(self.bot))
 
-    @app_commands.command(name='invite', description='Invite me!')
+    @app_commands.command(name="invite", description="Invite me!")
     async def _invite(self, interaction):
-        await interaction.response.send_message('Check ur DMs.')
-        embed = discord.Embed(title=f'{self.bot.user.name} Invite')
+        await interaction.response.send_message("Check ur DMs.")
+        embed = discord.Embed(title=f"{self.bot.user.name} Invite")
         await interaction.user.send(embed=embed, view=InviteView(self.bot))
 
     @commands.command()
     async def info(self, ctx):
-        embed = discord.Embed(title=f'{self.bot.user.name} Info')
-        embed.add_field(name='Version Info', value=f'{self.bot.user.name} version {self.bot.__version__}\n'
-                                                   f'[Python {sys.version.split(" ")[0]}](https://www.python.org)\n'
-                                                   f'[discord.py {discord.__version__}](https://github.com/Rapptz/discord.py)\n'
-                                                   f'[async-google-trans-new {agtn_version}](https://github.com/Theelx/async-google-trans-new)\n'
-                                                   f'[aiohttp {aiohttp.__version__}](https://docs.aiohttp.org/en/stable/)\n'
-                                                   f'[fuzzywuzzy {fuzzywuzzy.__version__}](https://github.com/seatgeek/thefuzz)\n'
-                                                   f'Platform {sys.platform}\n')
-        embed.add_field(name='Stats',
-                        value=f'Servers: {len(self.bot.guilds)}\nMembers: {sum(guild.member_count for guild in self.bot.guilds)}')
+        embed = discord.Embed(title=f"{self.bot.user.name} Info")
+        embed.add_field(
+            name="Version Info",
+            value=f"{self.bot.user.name} version {self.bot.__version__}\n"
+            f'[Python {sys.version.split(" ")[0]}](https://www.python.org)\n'
+            f"[discord.py {discord.__version__}](https://github.com/Rapptz/discord.py)\n"
+            f"[async-google-trans-new {agtn_version}](https://github.com/Theelx/async-google-trans-new)\n"
+            f"[aiohttp {aiohttp.__version__}](https://docs.aiohttp.org/en/stable/)\n"
+            f"[fuzzywuzzy {fuzzywuzzy.__version__}](https://github.com/seatgeek/thefuzz)\n"
+            f"Platform {sys.platform}\n",
+        )
+        embed.add_field(
+            name="Stats",
+            value=f"Servers: {len(self.bot.guilds)}\nMembers: {sum(guild.member_count for guild in self.bot.guilds)}",
+        )
         await ctx.send(embed=embed)
 
-    @app_commands.command(name='info', description='Get info about the bot')
+    @app_commands.command(name="info", description="Get info about the bot")
     async def _info(self, interaction):
-        embed = discord.Embed(title=f'{self.bot.user.name} Info')
-        embed.add_field(name='Version Info', value=f'{self.bot.user.name} version {self.bot.__version__}\n'
-                                                   f'[Python {sys.version.split(" ")[0]}](https://www.python.org)\n'
-                                                   f'[discord.py {discord.__version__}](https://github.com/Rapptz/discord.py)\n'
-                                                   f'[async-google-trans-new {agtn_version}](https://github.com/Theelx/async-google-trans-new)\n'
-                                                   f'[aiohttp {aiohttp.__version__}](https://docs.aiohttp.org/en/stable/)\n'
-                                                   f'[fuzzywuzzy {fuzzywuzzy.__version__}](https://github.com/seatgeek/thefuzz)\n'
-                                                   f'Platform {sys.platform}')
-        embed.add_field(name='Stats',
-                        value=f'Servers: {len(self.bot.guilds)}\nMembers: {sum(guild.member_count for guild in self.bot.guilds)}')
+        embed = discord.Embed(title=f"{self.bot.user.name} Info")
+        embed.add_field(
+            name="Version Info",
+            value=f"{self.bot.user.name} version {self.bot.__version__}\n"
+            f'[Python {sys.version.split(" ")[0]}](https://www.python.org)\n'
+            f"[discord.py {discord.__version__}](https://github.com/Rapptz/discord.py)\n"
+            f"[async-google-trans-new {agtn_version}](https://github.com/Theelx/async-google-trans-new)\n"
+            f"[aiohttp {aiohttp.__version__}](https://docs.aiohttp.org/en/stable/)\n"
+            f"[fuzzywuzzy {fuzzywuzzy.__version__}](https://github.com/seatgeek/thefuzz)\n"
+            f"Platform {sys.platform}",
+        )
+        embed.add_field(
+            name="Stats",
+            value=f"Servers: {len(self.bot.guilds)}\nMembers: {sum(guild.member_count for guild in self.bot.guilds)}",
+        )
         await interaction.response.send_message(embed=embed)
 
 

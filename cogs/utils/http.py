@@ -7,8 +7,15 @@ def cleanup_params(params: dict) -> dict:
 
 
 class AsyncHTTPClient:
-    def __init__(self, base_url, *, connector: aiohttp.BaseConnector = None, headers=None, loop=None,
-                 session: aiohttp.ClientSession = None):
+    def __init__(
+        self,
+        base_url,
+        *,
+        connector: aiohttp.BaseConnector = None,
+        headers=None,
+        loop=None,
+        session: aiohttp.ClientSession = None
+    ):
         self.base = base_url
         self._connector = connector
         self.loop = loop
@@ -19,7 +26,9 @@ class AsyncHTTPClient:
         if self.session:
             if not self.session.closed:
                 await self.session.close()
-        self.session = aiohttp.ClientSession(connector=self._connector, headers=self.headers, loop=self.loop)
+        self.session = aiohttp.ClientSession(
+            connector=self._connector, headers=self.headers, loop=self.loop
+        )
 
     async def request(self, route, json=True, **params):
         params = cleanup_params(params)

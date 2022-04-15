@@ -12,41 +12,46 @@ class Help:
         self.prefix = prefix
 
     def auto_help(self):
-        message = f'`{self.prefix}auto enable <options>`: Turn on and off some of the builtin delete regex. They are email, phone, and token. All are disabled by default but token\n' \
-        f'`{self.prefix}auto disable <options>`: Disable some of the default delete regex\n'
+        message = (
+            f"`{self.prefix}auto enable <options>`: Turn on and off some of the builtin delete regex. They are email, phone, and token. All are disabled by default but token\n"
+            f"`{self.prefix}auto disable <options>`: Disable some of the default delete regex\n"
+        )
         return message
 
     def custom_help(self):
-        message = f'`{self.prefix}custom <name> <regex>`: Create a new regex to delete. Name it to identify\n' \
-        f'`{self.prefix}cdelete <name>`: Delete one of the customs with the name'
+        message = (
+            f"`{self.prefix}custom <name> <regex>`: Create a new regex to delete. Name it to identify\n"
+            f"`{self.prefix}cdelete <name>`: Delete one of the customs with the name"
+        )
         return message
 
     def full_help(self):
         help_list = [self.auto_help(), self.custom_help()]
-        return '\n'.join(help_list)
+        return "\n".join(help_list)
 
 
 class Auto(slash_util.ApplicationCog):
-    default_names = ['email', 'phone', 'token']
-    default_options = {'email': False, 'phone': False, 'token': True}
+    default_names = ["email", "phone", "token"]
+    default_options = {"email": False, "phone": False, "token": True}
 
     def __init__(self, bot):
         super().__init__(bot)
         self.defaults = {
-            'email': re.compile('\w+@[a-z]+\.[a-z]{2,3}'),
-            'phone': re.compile('\(?\d{3}\)?-\d{3}-\d{4}'),
-            'token': re.compile('[A-Za-z\d]{23}\.[\w-]{6}\.[\w-]{27}')
+            "email": re.compile("\w+@[a-z]+\.[a-z]{2,3}"),
+            "phone": re.compile("\(?\d{3}\)?-\d{3}-\d{4}"),
+            "token": re.compile("[A-Za-z\d]{23}\.[\w-]{6}\.[\w-]{27}"),
         }
-        print('Connected to mongodb... (Auto cog)')
+        print("Connected to mongodb... (Auto cog)")
         self.mongo_client = motor_asyncio.AsyncIOMotorClient(
-            'mongodb+srv://chawkk:Xboxone87@masterbotcluster.ezbjl.mongodb.net/test')
-        self.db = self.mongo_client['auto']['options']
-        self.log = self.bot.cogs.get('Moderation').log
-        print('Connected.')
+            "mongodb+srv://chawkk:Xboxone87@masterbotcluster.ezbjl.mongodb.net/test"
+        )
+        self.db = self.mongo_client["auto"]["options"]
+        self.log = self.bot.cogs.get("Moderation").log
+        print("Connected.")
         self.update_mongo.start()
         self.options = {}
         self.custom = {}
-        print('Auto cog loaded')
+        print("Auto cog loaded")
 
     @commands.Cog.listener()
     async def on_guild_join(self, guild):
@@ -72,13 +77,15 @@ class Auto(slash_util.ApplicationCog):
 
     async def fetch_data(self):
         for guild in self.bot.guilds:
-            data = await self.db.find_one({'_id': str(guild.id)})
+            data = await self.db.find_one({"_id": str(guild.id)})
             if data:
-                del data['_id']
-                self.options[str(guild.id)] = data.get('options')
+                del data["_id"]
+                self.options[str(guild.id)] = data.get("options")
                 remains = set(self.default_options) - set(self.options[str(guild.id)])
                 for option in remains:
-                    self.options[str(guild.id)][option] = self.default_options.get(option)
+                    self.options[str(guild.id)][option] = self.default_options.get(
+                        option
+                    )
             else:
                 self.options[str(guild.id)] = self.default_options
             self.custom[str(guild.id)] = {}
@@ -86,11 +93,11 @@ class Auto(slash_util.ApplicationCog):
     @tasks.loop(seconds=10)
     async def update_mongo(self):
         for k, v in self.options.items():
-            payload = {'_id': k, 'options': v}
+            payload = {"_id": k, "options": v}
             try:
                 await self.db.insert_one(payload)
             except DuplicateKeyError:
-                await self.db.update_one({'_id': k}, {'$set': {'options': v}})
+                await self.db.update_one({"_id": k}, {"$set": {"options": v}})
 
     @update_mongo.before_loop
     async def wait(self):
@@ -104,13 +111,13 @@ class Auto(slash_util.ApplicationCog):
     @commands.group()
     @commands.has_permissions(administrator=True)
     async def auto(self, ctx):
-        await ctx.send('`auto` categories are `disable` and `enable` and `custom`')
+        await ctx.send("`auto` categories are `disable` and `enable` and `custom`")
 
     @auto.command()
     @commands.has_permissions(administrator=True)
     async def disable(self, ctx, *options):
         if len(options) == 0:
-            return await ctx.send('Give something.')
+            return await ctx.send("Give something.")
         for option in options:
             if option in self.default_names:
                 self.options[str(ctx.guild.id)][option] = False
@@ -120,7 +127,7 @@ class Auto(slash_util.ApplicationCog):
     @commands.has_permissions(administrator=True)
     async def enable(self, ctx, *options):
         if len(options) == 0:
-            return await ctx.send('Give something.')
+            return await ctx.send("Give something.")
         for option in options:
             if option in self.default_names:
                 self.options[str(ctx.guild.id)][option] = True
@@ -131,17 +138,17 @@ class Auto(slash_util.ApplicationCog):
     async def custom(self, ctx, name, *, regex):
         if name in self.default_names:
             return await ctx.send("You can't use that name.")
-        regex = codecs.decode(regex, 'unicode_escape')
+        regex = codecs.decode(regex, "unicode_escape")
         self.custom[str(ctx.guild.id)][name] = regex
 
     @custom.error
     async def error(self, ctx, error):
         if isinstance(error, commands.MissingRequiredArgument):
-            if ctx.prefix == '!':
-                prefix = '!'
+            if ctx.prefix == "!":
+                prefix = "!"
             else:
-                prefix = f'@{self.bot.name}'
-            await ctx.send(f'Bad format. `{prefix}custom <name> <regex>`')
+                prefix = f"@{self.bot.name}"
+            await ctx.send(f"Bad format. `{prefix}custom <name> <regex>`")
         else:
             raise error
 
@@ -153,21 +160,24 @@ class Auto(slash_util.ApplicationCog):
             await ctx.send(f'Customs are {", ".join(guild_options.keys())} not {name}')
         del guild_options[name]
         await self.db.delete_many()
-        await ctx.send('Ok. Done.')
+        await ctx.send("Ok. Done.")
 
     @cdelete.error
     async def error(self, ctx, error):
         if isinstance(error, commands.MissingRequiredArgument):
-            if ctx.prefix == '!':
-                prefix = '!'
+            if ctx.prefix == "!":
+                prefix = "!"
             else:
-                prefix = f'@{self.bot.name}'
-            await ctx.send(f'Bad format. `{prefix}delete <name>`')
+                prefix = f"@{self.bot.name}"
+            await ctx.send(f"Bad format. `{prefix}delete <name>`")
         else:
             raise error
 
     async def check_delete(self, message: discord.Message):
-        if message.channel.permissions_for(message.guild.me).manage_messages and message.author.top_role.position <= message.guild.me.top_role.position:
+        if (
+            message.channel.permissions_for(message.guild.me).manage_messages
+            and message.author.top_role.position <= message.guild.me.top_role.position
+        ):
             await message.delete()
 
     async def search_message(self, message: discord.Message):
@@ -186,13 +196,13 @@ class Auto(slash_util.ApplicationCog):
                 return k
         return None
 
-    @commands.Cog.listener('on_message')
+    @commands.Cog.listener("on_message")
     async def delete_message(self, message: discord.Message):
         if not isinstance(message.author, discord.Member):
             return
         if not message.guild:
             return
-        if 'custom' in message.content:
+        if "custom" in message.content:
             return
         if message.author.top_role.position >= message.guild.me.top_role.position:
             return
@@ -201,15 +211,16 @@ class Auto(slash_util.ApplicationCog):
         result = await self.search_message(message)
         if result is None:
             return
-        log = await self.log.find_one({'_id': str(message.guild.id)})
+        log = await self.log.find_one({"_id": str(message.guild.id)})
         if log:
-            channel = self.bot.get_channel(int(log.get('channel')))
-            embed = discord.Embed(title='Suspicious message',
-                                  timestamp=message.created_at)
-            embed.add_field(name='Author', value=message.author.mention)
-            embed.add_field(name='Reason', value=f'Possible {result}')
-            embed.add_field(name='Content', value=message.content)
-            embed.set_footer(text='Message may have been deleted by me')
+            channel = self.bot.get_channel(int(log.get("channel")))
+            embed = discord.Embed(
+                title="Suspicious message", timestamp=message.created_at
+            )
+            embed.add_field(name="Author", value=message.author.mention)
+            embed.add_field(name="Reason", value=f"Possible {result}")
+            embed.add_field(name="Content", value=message.content)
+            embed.set_footer(text="Message may have been deleted by me")
             await channel.send(embed=embed)
 
 

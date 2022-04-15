@@ -10,10 +10,10 @@ class EmbedField:
         self.inline = inline
 
     def __str__(self):
-        return f'{self.name}: {self.value}'
+        return f"{self.name}: {self.value}"
 
     def __repr__(self):
-        return f'name={self.name}, value={self.value}, inline={self.inline}'
+        return f"name={self.name}, value={self.value}, inline={self.inline}"
 
 
 class Embed(discord.Embed):

@@ -30,7 +30,7 @@ class Cog(commands.Cog):
 
 class NoPrivateMessage(app_commands.CheckFailure):
     def __init__(self, message=None):
-        self.message = message or 'This command can only be used in a server.'
+        self.message = message or "This command can only be used in a server."
         super().__init__(message)
 
 
@@ -39,4 +39,5 @@ def app_guild_only():
         if interaction.guild:
             return True
         raise NoPrivateMessage()
+
     return app_commands.check(predicate)
