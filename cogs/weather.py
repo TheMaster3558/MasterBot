@@ -19,23 +19,23 @@ class FlagUnits(commands.FlagConverter):
 
 class WeatherAPIHTTPClient(AsyncHTTPClient):
     def __init__(self, api_key, loop):
-        super().__init__("http://api.weatherapi.com/v1/", loop=loop)
+        super().__init__("http://api.weatherapi.com/v1/", loop=loop, suffix='.json')
         self.api_key = api_key
 
     async def request(self, route, json=True, **params):
         return await super().request(route=route, json=json, key=self.api_key, **params)
 
     async def current(self, location):
-        return await self.request("current.json", q=location, aqi="no")
+        return await self.request("current", q=location, aqi="no")
 
     async def forecast(self, location, days):
-        return await self.request("forecast.json", q=location, days=days)
+        return await self.request("forecast", q=location, days=days)
 
     async def search(self, query):
-        return await self.request("search.json", q=query)
+        return await self.request("search", q=query)
 
     async def timezone(self, location):
-        return await self.request("timezone.json", q=location)
+        return await self.request("timezone", q=location)
 
 
 class Weather(Cog, name="weather"):

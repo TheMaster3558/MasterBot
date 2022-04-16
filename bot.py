@@ -21,7 +21,9 @@ import warnings
 import discord
 from discord import app_commands
 from discord.ext import commands
+
 from cogs.utils.app_and_cogs import Cog, NoPrivateMessage
+from cogs.code import EventLoopThread
 
 with warnings.catch_warnings():
     warnings.filterwarnings("ignore", category=UserWarning, module="fuzzywuzzy")
@@ -129,10 +131,18 @@ class MasterBot(commands.Bot):
             "cogs.jokes",
             "cogs.version",
             "cogs.music",
+            "cogs.f1"
         )
         await asyncio.gather(
             *(self.loop.create_task(self.load_extension(cog)) for cog in cogs)
         )
+
+    async def load_extension(self, name: str, *, package: str | None = None) -> None:
+        if name not in ('cogs.f1',):
+            return
+
+        with EventLoopThread() as thr:
+            await asyncio.to_thread(thr.run_coro, super().load_extension(name, package=package))
 
     async def setup_hook(self) -> None:
         self.loop.create_task(self.sync_once())

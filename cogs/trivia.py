@@ -13,14 +13,14 @@ from bot import MasterBot
 
 class OpenTDBHTTPClient(AsyncHTTPClient):
     def __init__(self, loop):
-        super().__init__("https://opentdb.com/", loop=loop)
+        super().__init__("https://opentdb.com/", loop=loop, suffix='.php')
         self.token = None
 
     async def trivia(self, amount=1):
-        return await self.request("api.php", amount=amount, token=self.token)
+        return await self.request("api", amount=amount, token=self.token)
 
     async def get_token(self):
-        resp = await self.request("api_token.php", command="request")
+        resp = await self.request("api_token", command="request")
         self.token = resp.get("token")
 
 

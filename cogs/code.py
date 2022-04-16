@@ -1,6 +1,8 @@
+from __future__ import annotations
+
 import asyncio
 from concurrent.futures import TimeoutError
-from typing import Optional, Union
+from typing import Optional, TYPE_CHECKING
 import os as __os__
 import sys as __sys__
 import builtins
@@ -13,7 +15,10 @@ from discord.ext import commands
 import aiofiles
 
 from cogs.utils.app_and_cogs import Cog
-from bot import MasterBot
+
+if TYPE_CHECKING:
+    from bot import MasterBot
+    # bot.py uses EventLoopThread
 
 
 class EventLoopThread(threading.Thread):
@@ -26,7 +31,7 @@ class EventLoopThread(threading.Thread):
         self.running = True
         self.loop.run_forever()
 
-    def run_coro(self, coro, timeout: Optional[int] = None):
+    def run_coro(self, coro, timeout: int | None = None):
         return asyncio.run_coroutine_threadsafe(coro, loop=self.loop).result(
             timeout=timeout
         )
@@ -36,11 +41,11 @@ class EventLoopThread(threading.Thread):
         self.join()
         self.running = False
 
-    async def __aenter__(self):
+    def __enter__(self):
         self.start()
         return self
 
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(self, exc_type, exc_val, exc_tb):
         self.stop()
 
 
@@ -135,7 +140,7 @@ class Code(Cog, name="code"):
 
     @commands.cooldown(1, 60, commands.BucketType.user)
     @commands.command(name="eval", description="Evaluate some python code.")
-    async def _eval(self, ctx, *, code: Union[CodeBlock, SlashCodeBlock]):
+    async def _eval(self, ctx, *, code: CodeBlock | SlashCodeBlock):
         """
         This command will need lots of working on.
         """
@@ -151,7 +156,7 @@ class Code(Cog, name="code"):
 
             try:
                 try:
-                    async with EventLoopThread() as thr:
+                    with EventLoopThread() as thr:
                         await asyncio.to_thread(
                             thr.run_coro, aexec(code.source, temp_out), 60
                         )
@@ -186,7 +191,7 @@ class Code(Cog, name="code"):
 
     @commands.command(description="Check if a user can run a command")
     async def canrun(self, ctx, user: Optional[discord.User], *, command_name):
-        _command: Union[commands.Command, commands.Group] = self.bot.all_commands.get(
+        _command: commands.Group | commands.Command = self.bot.all_commands.get(
             command_name
         )
 
@@ -370,7 +375,7 @@ class Code(Cog, name="code"):
 
         try:
             try:
-                async with EventLoopThread() as thr:
+                with EventLoopThread() as thr:
                     await asyncio.to_thread(
                         thr.run_coro, aexec(code.source, temp_out), 60
                     )
@@ -398,7 +403,7 @@ class Code(Cog, name="code"):
         await ctx.send(data)
 
     @commands.command(description="Check when a user was created at.")
-    async def created(self, ctx, user: Union[discord.User, int]):
+    async def created(self, ctx, user: discord.User | int):
         user = user.id if isinstance(user, discord.User) else user
         created_at = discord.utils.snowflake_time(user)
         timestamp = discord.utils.format_dt(created_at, "R")
