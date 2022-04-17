@@ -1,6 +1,8 @@
 New Music cog!
+New F1 Cog!
 
 Code Changes:
 - Help command rework phase 2
 - More typing and PEP8
 - More optimization
+- Format code with black
