@@ -73,7 +73,7 @@ class SongView(View):
     async def play_or_pause(
         self, interaction: discord.Interaction, button: discord.ui.Button
     ):
-        await interaction.response.send_message("Done.", ephemeral=True)
+        await interaction.response.defer()
 
         if button.custom_id == "0":
             self.loop.create_task(self.player.pause())
@@ -89,7 +89,7 @@ class SongView(View):
 
     @discord.ui.button(emoji="⏭", style=discord.ButtonStyle.primary)
     async def skip(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await interaction.response.send_message("Skipping...", ephemeral=True)
+        await interaction.response.defer()
         await self.player.force_next()
 
     @discord.ui.button(label="Leave", style=discord.ButtonStyle.danger)
