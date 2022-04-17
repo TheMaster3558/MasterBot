@@ -18,6 +18,7 @@ from cogs.utils.app_and_cogs import Cog
 
 if TYPE_CHECKING:
     from bot import MasterBot
+
     # bot.py uses EventLoopThread
 
 

@@ -1,4 +1,3 @@
-
 # -*- coding: utf-8 -*-
 
 from typing import TypeVar
@@ -48,13 +47,15 @@ class Paginator(View):
         self.message: discord.Message = MISSING
         self.embed: discord.Embed = MISSING
 
-    def configure_message(self, message: discord.Message, embed: discord.Embed | None = None):
+    def configure_message(
+        self, message: discord.Message, embed: discord.Embed | None = None
+    ):
         embed = embed or message.embeds[0]
 
         self.message = message
         self.embed = embed
 
-    @discord.ui.button(emoji='⬅', style=discord.ButtonStyle.primary)
+    @discord.ui.button(emoji="⬅", style=discord.ButtonStyle.primary)
     async def left(self, interaction: discord.Interaction, button):
         self.current_page -= 1
 
@@ -65,7 +66,7 @@ class Paginator(View):
         await self.message.edit(embed=self.embed)
         await interaction.response.defer()
 
-    @discord.ui.button(emoji='➡', style=discord.ButtonStyle.primary)
+    @discord.ui.button(emoji="➡", style=discord.ButtonStyle.primary)
     async def right(self, interaction: discord.Interaction, button):
         self.current_page += 1
 

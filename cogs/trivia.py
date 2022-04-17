@@ -13,7 +13,7 @@ from bot import MasterBot
 
 class OpenTDBHTTPClient(AsyncHTTPClient):
     def __init__(self, loop):
-        super().__init__("https://opentdb.com/", loop=loop, suffix='.php')
+        super().__init__("https://opentdb.com/", loop=loop, suffix=".php")
         self.token = None
 
     async def trivia(self, amount=1):

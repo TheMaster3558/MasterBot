@@ -15,7 +15,7 @@ class AsyncHTTPClient:
         headers=None,
         loop=None,
         session: aiohttp.ClientSession = None,
-        suffix: str = ''
+        suffix: str = ""
     ):
         self.base = base_url
         self.connector = connector
@@ -34,7 +34,9 @@ class AsyncHTTPClient:
 
     async def request(self, route, json=True, **params):
         params = cleanup_params(params)
-        async with self.session.get(self.base + route + self.suffix, params=params) as resp:
+        async with self.session.get(
+            self.base + route + self.suffix, params=params
+        ) as resp:
             if json:
                 return await resp.json()
             return await resp.text()

@@ -129,7 +129,7 @@ class MasterBot(commands.Bot):
             "cogs.jokes",
             "cogs.version",
             "cogs.music",
-            "cogs.f1"
+            "cogs.f1",
         )
         await asyncio.gather(
             *(self.loop.create_task(self.load_extension(cog)) for cog in cogs)
