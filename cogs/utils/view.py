@@ -55,6 +55,13 @@ class Paginator(View):
         self.message = message
         self.embed = embed
 
+    async def send(self, channel: discord.TextChannel):
+        self.embed = self.pages[self.current_page]
+        self.message = await channel.send(embed=self.embed, view=self)
+
+        await self.wait()
+        await self.disable_all(self.message)
+
     @discord.ui.button(emoji="⬅", style=discord.ButtonStyle.primary)
     async def left(self, interaction: discord.Interaction, button):
         self.current_page -= 1
