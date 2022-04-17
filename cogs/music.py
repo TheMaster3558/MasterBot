@@ -247,9 +247,9 @@ class Music(Cog, name="music"):
         await self.bot.wait_until_ready()
         self.node_pool = await wavelink.NodePool.create_node(
             bot=self.bot,
-            host="losingtime.dpaste.org",
-            port=2124,
-            password="SleepingOnTrains",
+            host="node2.lavalink.chiquicalris.me",
+            port=2392,
+            password="lavalink_is_cool",
         )
 
     @commands.Cog.listener()
