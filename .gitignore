@@ -4,4 +4,4 @@ venv/*
 masterbot/cogs/__pycache__dpy2
 main.py
 databases
-cogs/cache
+cache

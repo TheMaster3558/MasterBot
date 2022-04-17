@@ -1,3 +1,6 @@
+
+# -*- coding: utf-8 -*-
+
 from typing import TypeVar
 
 import discord
@@ -31,3 +34,44 @@ class View(discord.ui.View):
     def add_item(self, item: ItemT) -> ItemT:
         super().add_item(item)
         return item
+
+
+MISSING = discord.utils.MISSING
+
+
+class Paginator(View):
+    def __init__(self, pages: list[discord.Embed], *, timeout: float = 180):
+        self.pages = pages
+        self.current_page: int = 0
+        super().__init__(timeout=timeout)
+
+        self.message: discord.Message = MISSING
+        self.embed: discord.Embed = MISSING
+
+    def configure_message(self, message: discord.Message, embed: discord.Embed | None = None):
+        embed = embed or message.embeds[0]
+
+        self.message = message
+        self.embed = embed
+
+    @discord.ui.button(emoji='⬅', style=discord.ButtonStyle.primary)
+    async def left(self, interaction: discord.Interaction, button):
+        self.current_page -= 1
+
+        if self.current_page < 0:
+            self.current_page = len(self.pages) - 1
+
+        self.embed = self.pages[self.current_page]
+        await self.message.edit(embed=self.embed)
+        await interaction.response.defer()
+
+    @discord.ui.button(emoji='➡', style=discord.ButtonStyle.primary)
+    async def right(self, interaction: discord.Interaction, button):
+        self.current_page += 1
+
+        if self.current_page >= len(self.pages):
+            self.current_page = 0
+
+        self.embed = self.pages[self.current_page]
+        await self.message.edit(embed=self.embed)
+        await interaction.response.defer()
