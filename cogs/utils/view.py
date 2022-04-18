@@ -39,9 +39,15 @@ MISSING = discord.utils.MISSING
 
 
 class Paginator(View):
-    def __init__(self, pages: list[discord.Embed], *, timeout: float = 180):
+    def __init__(
+        self,
+        pages: list[discord.Embed],
+        *,
+        timeout: float = 180,
+        starting_page: int = 0
+    ):
         self.pages = pages
-        self.current_page: int = 0
+        self.current_page = starting_page
         super().__init__(timeout=timeout)
 
         self.message: discord.Message = MISSING

@@ -1,4 +1,12 @@
 import discord
+from discord.ext import commands
+
+
+class YearConverter(commands.Converter):
+    async def convert(self, ctx: commands.Context, argument: str) -> int:
+        if int(argument) >= 1950:
+            return int(argument)
+        raise commands.BadArgument("F1 did not exist back then.")
 
 
 class F1Utils:
@@ -79,3 +87,40 @@ class F1Utils:
             title="Constructors Standings", color=color, description="\n".join(lines)
         )
         return embed
+
+    @classmethod
+    async def build_drivers_standings_embed(cls, data) -> discord.Embed:
+        lines = []
+        color = discord.Color.from_rgb(
+            *(cls.team_colors[data[0]["Constructors"][0]["constructorId"]])
+        )
+
+        for driver in data:
+            name = f"{driver['Driver']['givenName']} {driver['Driver']['familyName']}"
+            position = driver["position"]
+            points = driver["points"]
+            wins = driver["wins"]
+            line = f"{position}. {name} | {points} points | {wins} wins"
+            lines.append(line)
+
+        embed = discord.Embed(
+            title="Drivers Standings", color=color, description="\n".join(lines)
+        )
+        return embed
+
+    @staticmethod
+    async def build_circuits_embed(data) -> list[discord.Embed]:
+        embeds = []
+
+        for circuit in data:
+            location = (
+                f"{circuit['Location']['locality']}, {circuit['Location']['country']}"
+            )
+            embed = discord.Embed(
+                title=circuit["circuitName"],
+                description=f"Located in {location}.",
+                url=circuit["url"],
+            )
+
+            embeds.append(embed)
+        return embeds
