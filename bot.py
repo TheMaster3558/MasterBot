@@ -161,7 +161,7 @@ class MasterBot(commands.Bot):
         ]
 
     async def on_command_error(
-        self, context: commands.Context, exception: commands.errors.CommandError
+        self, context: commands.Context, exception: commands.errors.CommandError | app_commands.AppCommandError
     ) -> None:
         if isinstance(exception, commands.CommandNotFound):
             possibles = self.possible_commands(context)
@@ -171,6 +171,9 @@ class MasterBot(commands.Bot):
                     description="Maybe you meant:\n`{}`".format("`\n`".join(possibles)),
                 )
                 await context.reply(embed=embed, mention_author=False)
+            return
+        if context.interaction:
+            await self.tree.on_error(context.interaction, exception)
             return
 
         traceback.print_exception(exception, file=sys.stderr)
