@@ -118,6 +118,8 @@ class Trivia(Cog, name="trivia"):
         )
 
         message = await ctx.send(embed=embed, view=my_view)
+        message = message or interaction.message
+
         await my_view.wait()
         if my_view.done is False:
             await my_view.disable_all(message=message)
@@ -141,45 +143,6 @@ class Trivia(Cog, name="trivia"):
             await ctx.send(error)
         else:
             raise error
-
-    @app_commands.command(name="playtrivia", description="Get trivia from opentdb.com!")
-    async def _trivia(self, interaction: discord.Interaction):
-        data = await self.http.trivia()
-
-        if data.get("response_code") != 0:
-            await interaction.response.send_message(
-                "We encountered an unexpected error. Try again later."
-            )
-            return
-        data = data.get("results")[0]
-        question = unescape(data.get("question"))
-        embed = discord.Embed(title=question)
-        embed.set_footer(text="The difficulty is {}".format(data.get("difficulty")))
-        my_view = MultipleChoice(
-            data.get("correct_answer"), data.get("incorrect_answers")
-        )
-
-        await interaction.response.send_message(embed=embed, view=my_view)
-        await my_view.wait()
-        if my_view.done is False:
-            for child in my_view.children:
-                child.disabled = True  # type: ignore
-            await interaction.edit_original_message(
-                view=my_view
-            )  # used instead of disabled_all
-
-            embed = discord.Embed(
-                title="No one got it right in time.",
-                description="The answer was {}".format(
-                    unescape(data.get("correct_answer"))
-                ),
-            )
-            embed.add_field(
-                name="Wrong guesses",
-                value="\n".join(f"{k}: {v}" for k, v in my_view.tries.items())
-                or "No guesses",
-            )
-            await interaction.followup.send(embed=embed)
 
 
 async def setup(bot: MasterBot):

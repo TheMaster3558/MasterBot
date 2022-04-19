@@ -18,7 +18,11 @@ class Version(Cog, name="version"):
         aliases=["whatsnew"],
         description="Find out what came in a new update. Starts from 1.4.0",
     )
-    async def new(self, ctx, version):
+    async def new(
+        self,
+        ctx,
+        version: Literal["1.4.0", "1.4.1", "1.4.2", "1.4.3", "1.5.0", "1.5.1", "1.6.0"],
+    ):
         path = version.replace(".", "-")
         path += ".txt"
         path = "version/" + path
@@ -32,28 +36,12 @@ class Version(Cog, name="version"):
 
         await ctx.send(embed=embed)
 
-    @app_commands.command(
-        name="whatsnew", description="Find out whats new in a version! Starts for 1.4.0"
-    )
-    async def _new(
-        self,
-        interaction,
-        version: Literal["1.4.0", "1.4.1", "1.4.2", "1.4.3", "1.5.0", "1.5.1", "1.6.0"],
-    ):
-
-        path = version.replace(".", "-")
-        path += ".txt"
-        path = "version/" + path
-        try:
-            async with aiofiles.open(path, "r") as v:
-                embed = discord.Embed(title=version, description=await v.read())
-        except FileNotFoundError:
-            await interaction.response.send_message(
-                "An unexpected error occurred with opening files. Try again later."
-            )
-            raise
-
-        await interaction.response.send_message(embed=embed)
+    @new.error
+    async def on_error(self, ctx, error):
+        if isinstance(commands.BadLiteralArgument):
+            await ctx.send("I couldn't find that version")
+            return
+        await self.bot.on_command_error(ctx, error)
 
 
 async def setup(bot: MasterBot):

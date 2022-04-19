@@ -37,3 +37,13 @@ def command(
 
 
 commands.command = command
+
+
+class FlagConverter(commands.FlagConverter):
+    @classmethod
+    def parse_flags(cls, argument: str):
+        print(str(argument))
+        return super().parse_flags(str(argument))
+
+
+commands.FlagConverter = FlagConverter

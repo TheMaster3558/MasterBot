@@ -201,6 +201,10 @@ class Weather(Cog, name="weather"):
                 )
                 return
 
+        await interaction.response.send_message(
+            "Settings have been changed.", ephemeral=True
+        )
+
     @units.error
     async def error(self, ctx, error):
         if isinstance(error, commands.MissingPermissions):
@@ -208,8 +212,9 @@ class Weather(Cog, name="weather"):
         else:
             raise error
 
-    @commands.command(description="Get the current weather of a place.")
-    async def current(self, ctx, *, location):
+    @commands.hybrid_command(description="Get the current weather of a place.")
+    @app_commands.describe(location="The place")
+    async def current(self, ctx, *, location: str):
         data = await self.http.current(location)
         if data.get("error"):
             error = discord.Embed(
@@ -223,26 +228,9 @@ class Weather(Cog, name="weather"):
             return
         await ctx.send(embed=embed)
 
-    @app_commands.command(
-        name="current", description="Get the current weather of a location"
-    )
-    @app_commands.describe(location="The location")
-    async def _current(self, interaction, location: str):
-        data = await self.http.current(location)
-        if data.get("error"):
-            error = discord.Embed(
-                title="Error", description=data.get("error").get("message")
-            )
-            await interaction.response.send_message(embed=error)
-            return
-
-        embed = await WeatherUtils.build_current_embed(data, interaction, self)
-        if embed is None:
-            return
-        await interaction.response.send_message(embed=embed)
-
-    @commands.command(description="Get the forcast of a place.")
-    async def forecast(self, ctx, days: Optional[int] = 1, *, location):
+    @commands.hybrid_command(description="Get the forcast of a place.")
+    @app_commands.describe(days="The days into the future", location="The location")
+    async def forecast(self, ctx, days: Optional[int] = 1, *, location: str):
         data = await self.http.forecast(location, days)
 
         if data.get("error"):
@@ -257,29 +245,11 @@ class Weather(Cog, name="weather"):
             return
         await ctx.send(embed=embed)
 
-    @app_commands.command(
-        name="forecast", description="Get the forecast for a location"
-    )
+    @commands.hybrid_command(aliases=["place", "town"], description="Search a city.")
     @app_commands.describe(
-        days="The amount of days in the future", location="The location"
+        query="The query", index="The result to pick. (Select menus soon)"
     )
-    async def _forecast(self, interaction, days: int = 1, *, location: str):
-        data = await self.http.forecast(location, days)
-
-        if data.get("error"):
-            error = discord.Embed(
-                title="Error", description=data.get("error").get("message")
-            )
-            await interaction.response.send_message(embed=error)
-            return
-        embed = await WeatherUtils.build_forecast_embed(data, interaction, self, days)
-
-        if embed is None:
-            return
-        await interaction.response.send_message(embed=embed)
-
-    @commands.command(aliases=["place", "town"], description="Search a city.")
-    async def city(self, ctx, index: Optional[int] = 1, *, query):
+    async def city(self, ctx, index: Optional[int] = 1, *, query: str):
         data = await self.http.search(query)
 
         if data.get("error"):
@@ -294,25 +264,9 @@ class Weather(Cog, name="weather"):
             return
         await ctx.send(embed=embed)
 
-    @app_commands.command(name="city", description="Search a city.")
-    @app_commands.describe(query="The query")
-    async def _city(self, interaction, index: int = 1, *, query: str):
-        data = await self.http.search(query)
-
-        if data.get("error"):
-            error = discord.Embed(
-                title="Error", description=data.get("error").get("message")
-            )
-            await interaction.response.send_message(embed=error)
-            return
-
-        embed = await WeatherUtils.build_search_embed(data, interaction.response, index)
-        if embed is None:
-            return
-        await interaction.response.send_message(embed=embed)
-
-    @commands.command(aliases=["tz"], description="Get the timezone of a place.")
-    async def timezone(self, ctx, *, location):
+    @commands.hybrid_command(aliases=["tz"], description="Get the timezone of a place.")
+    @app_commands.describe(location="The place")
+    async def timezone(self, ctx, *, location: str):
         data = await self.http.timezone(location)
 
         if data.get("error"):
@@ -324,21 +278,6 @@ class Weather(Cog, name="weather"):
 
         embed = await WeatherUtils.build_tz_embed(data)
         await ctx.send(embed=embed)
-
-    @app_commands.command(name="timezone", description="Get the timezone of a location")
-    @app_commands.describe(location="The location")
-    async def _timezone(self, interaction, location: str):
-        data = await self.http.timezone(location)
-
-        if data.get("error"):
-            error = discord.Embed(
-                title="Error", description=data.get("error").get("message")
-            )
-            await interaction.response.send_message(embed=error)
-            return
-
-        embed = await WeatherUtils.build_tz_embed(data)
-        await interaction.response.send_message(embed=embed)
 
 
 async def setup(bot: MasterBot):

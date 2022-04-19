@@ -22,7 +22,7 @@ from static_embeds import (
     confirm_bed,
     cancel_bed,
 )
-from cogs.utils.app_and_cogs import Cog
+from cogs.utils.app_and_cogs import Cog, QuickObject
 
 
 class BlacklistView(View):
@@ -53,12 +53,6 @@ class BlacklistView(View):
         self.choice = False
         await self.disable_all(interaction.message)
         self.stop()
-
-
-class QuickObject:
-    def __init__(self, **attrs):
-        for k, v in attrs:
-            setattr(self, k, v)
 
 
 class CategorySelect(discord.ui.Select):
@@ -123,16 +117,11 @@ class JokeAPIHTTPClient(AsyncHTTPClient):
 
 
 def decode_sql_bool(data: tuple | list) -> list[bool]:
-    converted = []
-    for num in data:
-        if num == 1:
-            converted.append(True)
-        else:
-            converted.append(False)
-    return converted
+    return [True if num == 1 else False for num in data]
 
 
 class Jokes(Cog, name="jokes"):
+    # hybrid commands don't work here because *arguments and flag arguments.
     default_options = {
         "nsfw": True,
         "religious": True,
@@ -450,7 +439,7 @@ class Jokes(Cog, name="jokes"):
         racist: str = None,
         explicit: str = None,
     ):
-
+        ctx = await commands.Context.from_interaction(interaction)
         flags = QuickObject(
             nsfw=nsfw,
             religious=religious,
@@ -459,83 +448,7 @@ class Jokes(Cog, name="jokes"):
             racist=racist,
             explicit=explicit,
         )
-        for k, v in vars(flags).items():
-            if v is None:
-                guild = self.blacklist.get(interaction.guild.id)
-                if guild:
-                    setattr(flags, k, guild.get(k))
-                else:
-                    if k in ("religious", "sexist", "racist"):
-                        setattr(flags, k, False)
-                    else:
-                        setattr(flags, k, True)
-            else:
-                new = v.capitalize()
-                if new == "True":
-                    new = True
-                elif new == "False":
-                    new = False
-                setattr(flags, k, new)
-
-        options = vars(flags)
-        embed = discord.Embed(
-            title="New Joke Blacklist Settings",
-            description="**True = Turned on**\n"
-            + "\n".join(f"{k}: {v}" for k, v in options.items()),
-        )
-        embed.set_footer(text="Choose an option")
-        view = BlacklistView(interaction.user)
-        await interaction.response.send_message(embed=embed, view=view)
-        msg = interaction.message
-        secondary = False
-
-        if options.get("nsfw") is True:
-            await asyncio.sleep(0.25)
-            await msg.reply(embed=nsfw_embed)
-            secondary = True
-
-        if options.get("religious") is True:
-            await asyncio.sleep(0.25)
-            await msg.reply(embed=religious_embed)
-            secondary = True
-
-        if options.get("political") is True:
-            await asyncio.sleep(0.25)
-            await msg.reply(embed=political_embed)
-            secondary = True
-
-        if options.get("sexist") is True:
-            await asyncio.sleep(0.25)
-            await msg.reply(embed=sexist_embed)
-            secondary = True
-
-        if options.get("racist") is True:
-            await asyncio.sleep(0.25)
-            await msg.reply(embed=racist_embed)
-            secondary = True
-
-        if options.get("explicit") is True:
-            await asyncio.sleep(0.25)
-            await msg.reply(embed=explicit_embed)
-            secondary = True
-
-        if secondary is True:
-            await asyncio.sleep(0.25)
-            await msg.reply(embed=alert_bed)
-
-        await view.wait()
-
-        if view.choice is None:
-            await msg.reply(embed=discord.Embed(title="Cancelled"))
-            await view.disable_all(msg)
-
-        elif view.choice is True:
-            await msg.reply(emebed=confirm_bed)
-
-        elif view.choice is False:
-            await msg.reply(embed=cancel_bed)
-
-        self.blacklist[interaction.guild.id] = options
+        await self._blacklist(ctx, flags=flags)  # type: ignore
 
 
 async def setup(bot: MasterBot):

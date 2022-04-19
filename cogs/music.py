@@ -203,6 +203,8 @@ class WavelinkConverter(commands.Converter):
             ],
             timeout=10,
         )
+        for fut in pending:
+            fut.cancel()
 
         items = [item.result() for item in done]
         return cls(items)
@@ -279,7 +281,9 @@ class Music(Cog, name="music"):
         if before.channel.name.endswith("'s room") and len(before.channel.members) < 1:
             await before.channel.delete(reason="All members left")
 
-    @commands.command(aliases=["j"], description="I join your vc and you get happy!")
+    @commands.hybrid_command(
+        aliases=["j"], description="I join your vc and you get happy!"
+    )
     async def join(
         self, ctx: commands.Context, *, channel: discord.VoiceChannel = None
     ):
@@ -305,8 +309,8 @@ class Music(Cog, name="music"):
 
         await ctx.send(f"Joined {vc.channel.mention}")
 
-    @commands.command(aliases=["p"], description="Music is good.")
-    async def play(self, ctx: commands.Context, *, search: str):
+    @commands.hybrid_command(aliases=["p"], description="Music is good.")
+    async def play(self, ctx: commands.Context, *, query: str):
         if ctx.author.voice and ctx.author.voice.channel:
             if (
                 ctx.voice_client
@@ -327,19 +331,19 @@ class Music(Cog, name="music"):
             vc: Player = ctx.voice_client  # type: ignore
 
         async with ctx.typing():
-            search = await WavelinkConverter.convert(ctx, search)
+            query = await WavelinkConverter.convert(ctx, query)
 
         vc.start()  # if a user doesn't use `join`
 
-        if len(search) == 1:
-            track = search[0]
+        if len(query) == 1:
+            track = query[0]
         else:
-            view = SongSelectView(search, ctx.author)
+            view = SongSelectView(query, ctx.author)
             paginate = discord.Embed(title="Select a song")
             msg = await ctx.send(embed=paginate, view=view)
             await view.wait()
 
-            track = search[int(view.song)]
+            track = query[int(view.song)]
             await msg.delete()
 
         await self.queues[ctx.guild.id].put(track)

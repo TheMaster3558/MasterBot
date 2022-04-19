@@ -27,14 +27,15 @@ class Translator(Cog, name="translation"):
             return
         if isinstance(error, commands.CommandOnCooldown):
             await ctx.send(
-                "Patience! Try again in {:.1f} seconds.".format(error.retry_after)
+                f"Patience! Try again in {round(error.retry_after, 1)} seconds."
             )
         else:
             await self.bot.on_command_error(ctx, error)
 
-    @commands.command(description="I can translate text because im cool")
+    @commands.hybrid_command(description="I can translate text because im cool")
+    @app_commands.describe(lang="The language", text="The text to translate")
     @commands.cooldown(1, 30, commands.BucketType.user)
-    async def translate(self, ctx, lang="", *, text=""):
+    async def translate(self, ctx, lang: str = "", *, text: str = ""):
         if lang in LANGUAGES.keys() or lang in LANGUAGES.values():
             if lang in LANGUAGES.values():
                 lang = {v: k for k, v in LANGUAGES.items()}
@@ -53,9 +54,10 @@ class Translator(Cog, name="translation"):
         embed.set_footer(text=f"Text successfully translated to {LANGUAGES.get(lang)}")
         await ctx.send(embed=embed)
 
-    @commands.command(description="What language is that text?")
+    @commands.hybrid_command(description="What language is that text?")
+    @app_commands.describe(text="The text to translate")
     @commands.cooldown(1, 30, commands.BucketType.user)
-    async def detect(self, ctx, *, text):
+    async def detect(self, ctx, *, text: str):
         result = await self.translator.detect(text)
 
         embed = discord.Embed(
@@ -69,55 +71,18 @@ class Translator(Cog, name="translation"):
         if isinstance(error, commands.MissingRequiredArgument):
             await ctx.send("Give me text.")
         else:
-            raise error
+            await self.bot.on_command_error(ctx, error)
 
-    @commands.command(
+    @commands.hybrid_command(
         aliases=["codes", "langs"],
         description="Get a list of languages for language commands.",
     )
     async def languages(self, ctx):
         await ctx.author.send(embed=lang_bed)
-
-    @app_commands.command(
-        name="translate", description="Translate using google translate!"
-    )
-    @app_commands.describe(
-        lang="The language to translate to. Use /languages for a list."
-    )
-    async def _translate(self, interaction, lang: str, text: str):
-        if lang in LANGUAGES.keys() or lang in LANGUAGES.values():
-            if lang in LANGUAGES.values():
-                lang = {v: k for k, v in LANGUAGES.items()}
-        else:
-            await interaction.response.send_message(
-                "Use /languages for a valid list of languages."
+        if ctx.interaction:
+            await ctx.interaction.response.send_message(
+                "Check your DMs", ephemeral=True
             )
-            return
-
-        result = await self.translator.translate(text=text, lang_tgt=lang)
-        embed = discord.Embed(description=f"Original: {text}\nTranslated: {result}")
-        embed.set_footer(text=f"Text successfully translated to {LANGUAGES.get(lang)}")
-        await interaction.response.send_message(embed=embed)
-
-    @app_commands.command(
-        name="languages", description="Get a valid list of languages."
-    )
-    async def _languages(self, interaction):
-        await self.languages(interaction)
-        await interaction.response.send_message("Check ur DMs")
-
-    @app_commands.command(
-        name="detect", description="Detect the language of your text."
-    )
-    @app_commands.describe(text="The text to detect the language of.")
-    async def _detect(self, interaction, text: str):
-        result = await self.translator.detect(text)
-
-        embed = discord.Embed(
-            title=f"I detected the language as {result[1]}", description=f"Text: {text}"
-        )
-        embed.set_footer(text="Google translate did its best")
-        await interaction.response.send_message(embed=embed)
 
 
 @app_commands.context_menu()

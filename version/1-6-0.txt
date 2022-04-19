@@ -1,8 +1,10 @@
 New Music cog!
 New F1 Cog!
+More f1 commands coming in minor releases
 
 Code Changes:
 - Help command rework phase 2
 - More typing and PEP8
 - More optimization
 - Format code with black
+- Implement discord.py's hybrid commands

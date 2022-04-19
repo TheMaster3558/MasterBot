@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import asyncio
 from concurrent.futures import TimeoutError
-from typing import Optional, TYPE_CHECKING
+from typing import Optional
 import os as __os__
 import sys as __sys__
 import builtins
@@ -15,11 +15,7 @@ from discord.ext import commands
 import aiofiles
 
 from cogs.utils.app_and_cogs import Cog
-
-if TYPE_CHECKING:
-    from bot import MasterBot
-
-    # bot.py uses EventLoopThread
+from bot import MasterBot
 
 
 class EventLoopThread(threading.Thread):
@@ -141,7 +137,7 @@ class Code(Cog, name="code"):
 
     @commands.cooldown(1, 60, commands.BucketType.user)
     @commands.command(name="eval", description="Evaluate some python code.")
-    async def _eval(self, ctx, *, code: CodeBlock | SlashCodeBlock):
+    async def _eval(self, ctx, *, code: CodeBlock):
         """
         This command will need lots of working on.
         """
@@ -219,7 +215,7 @@ class Code(Cog, name="code"):
         elif isinstance(error, (commands.MemberNotFound, commands.UserNotFound)):
             await ctx.send("I couldn't find that person =(")
         else:
-            raise error
+            await self.bot.on_command_error(ctx, error)
 
     @commands.command(hidden=True)
     @commands.is_owner()
@@ -301,8 +297,8 @@ class Code(Cog, name="code"):
         await asyncio.to_thread(__os__.system, _command)
         await ctx.send("Files pushed. Force push = {}.".format(force == "force"))
 
-    @commands.command(name="code", description="Get some code of the bot.")
-    async def _code(self, ctx, file_path, lines=None):
+    @commands.hybrid_command(name="code", description="Get some code of the bot.")
+    async def _code(self, ctx, file_path: str, lines: str = None):
         if any(name in file_path for name in ("main.py", "databases/", "venv/")):
             return
 
@@ -340,123 +336,50 @@ class Code(Cog, name="code"):
         if isinstance(error, commands.MissingRequiredArgument):
             await ctx.send('You forgot "{}"'.format(error.param))
         else:
-            raise error
-
-    @app_commands.command(name="eval", description="Run a Python file")
-    async def __eval(self, interaction: discord.Interaction, file: discord.Attachment):
-        if not file.filename.endswith(".py"):
-            await interaction.response.send_message("It must be a `python` file.")
-            return
-
-        code = await file.read()
-        code = SlashCodeBlock(code.decode("utf-8"))
-
-        if len(code.source.split("\n")) > 300:
-            await interaction.response.send_message("You can't eval over 300 lines.")
-            return
-        if any([word in code.source for word in self.forbidden_words]):
-            await interaction.response.send_message(
-                "Your code has a word that would be risky to eval."
-            )
-            return
-        if any(
-            [
-                f"import {word}" in code.source
-                or f'__import__("{word}")' in code.source
-                or f"__import__('{word}')" in code.source
-                for word in self.forbidden_imports
-            ]
-        ):
-            await interaction.response.send_message("You can't import that.")
-            return
-
-        await interaction.response.defer(thinking=True)
-
-        temp_out = io.StringIO()
-
-        try:
-            try:
-                with EventLoopThread() as thr:
-                    await asyncio.to_thread(
-                        thr.run_coro, aexec(code.source, temp_out), 60
-                    )
-                    # to prevent blocking event loop if they use time.sleep etc
-            except TimeoutError:
-                await interaction.followup.send("Your code took too long to run.")
-                return
-        except Exception as e:
-            await interaction.followup.send(
-                f"Your code raised an exception\n```\n{e.__class__.__name__!r}: {e}\n```"
-            )
-            return
-
-        value = temp_out.getvalue()
-        value = value or "No output"
-        await interaction.followup.send(f"```\n{value}\n```")
-
-        temp_out.close()
+            await ctx.bot.on_command_error(ctx, error)
 
     @commands.command(hidden=True)
+    @commands.is_owner()
     async def sync(self, ctx, guild: bool = None):
         if guild:
             guild = self.bot.test_guild
         data = await self.bot.tree.sync(guild=guild)
         await ctx.send(data)
 
-    @commands.command(description="Check when a user was created at.")
-    async def created(self, ctx, user: discord.User | int):
-        user = user.id if isinstance(user, discord.User) else user
+    @commands.hybrid_command(description="Check when a user was created at.")
+    async def created(self, ctx, user: Optional[discord.User] = None, id: int = None):
+        if not user and not id:
+            await ctx.send("Give me a user or a id", ephemeral=True)
+
+        user = user if user else id
         created_at = discord.utils.snowflake_time(user)
         timestamp = discord.utils.format_dt(created_at, "R")
-        await ctx.reply(timestamp, mention_author=False)
+        await ctx.send(
+            timestamp, mention_author=False, allowed_mentions=self.created_mentions
+        )
 
     @created.error
     async def error(self, ctx, error):
         if isinstance(error, commands.MissingRequiredArgument):
             await ctx.send("You need to give me a `user` or `id`")
-        elif isinstance(error, commands.BadArgument):
+        elif isinstance(error, (commands.BadArgument, commands.UserNotFound)):
             await ctx.send(f"I couldn't make that into a user or id")
         else:
-            raise error
+            raise ctx.bot.on_command_error()
 
-    @app_commands.command(
-        name="created",
-        description="See when a discord user or snowflake was created at",
-    )
-    @app_commands.describe(user="A discord user", snowflake="A discord ID")
-    async def _created(
-        self, interaction, user: discord.User = None, snowflake: int = None
-    ):
-        if not user and not snowflake:
-            await interaction.response.send_message(
-                "You must give a user or snowflake", ephemeral=True
-            )
-            return
-
-        if not snowflake:
-            snowflake = user.id
-
-        created_at = discord.utils.snowflake_time(snowflake)
-        timestamp = discord.utils.format_dt(created_at, "R")
-
-        if user:
-            timestamp = f"{user.mention} was created " + timestamp
-        elif snowflake:
-            timestamp = f"{snowflake} was created " + timestamp
-
-        await interaction.response.send_message(
-            timestamp, allowed_mentions=self.created_mentions
-        )
-
-    @commands.command(description="Get the binary of a number.")
+    @commands.hybrid_command(description="Get the binary of a number.")
     async def binaryint(self, ctx, integer: int):
         await ctx.send(f"{integer:b}")
 
-    @commands.command(aliases=["hexadecimal"], description="Get the hex of a number.")
+    @commands.hybrid_command(
+        aliases=["hexadecimal"], description="Get the hex of a number."
+    )
     async def hexint(self, ctx, integer: int):
         await ctx.send(str(hex(integer)))
 
-    @commands.command(aliases=["octal"], description="Get the octal of a number.")
+    @commands.hybrid_command(
+        aliases=["octal"], description="Get the octal of a number."
+    )
     async def octint(self, ctx, integer: int):
         await ctx.send(str(oct(integer)))
 

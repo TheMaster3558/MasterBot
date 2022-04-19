@@ -9,7 +9,7 @@ from discord.ext import commands
 import aiosqlite
 
 from bot import MasterBot
-from cogs.utils.app_and_cogs import Cog
+from cogs.utils.app_and_cogs import Cog, QuickObject
 from cogs.utils.view import View
 
 
@@ -116,6 +116,9 @@ class ReactionRoles(Cog, name="reactions"):
 
     @commands.Cog.listener()
     async def on_interaction(self, interaction: discord.Interaction):
+        if interaction.command:
+            return
+
         if interaction.message.id not in self.pending:
             return
 
@@ -248,6 +251,55 @@ class ReactionRoles(Cog, name="reactions"):
             )
         else:
             await self.insert_into_db(flags.roles, flags.emojis, msg.id)
+
+    @app_commands.command()
+    async def _role(
+        self,
+        interaction: discord.Interaction,
+        roles: str,
+        emojis: str = None,
+        title: str = None,
+        description: str = None,
+        image: str = None,
+        color: str = None,
+        channel: discord.TextChannel = None,
+    ):
+        if not interaction.guild:
+            return
+        if not interaction.user.guild_permissions.manage_roles:
+            await interaction.response.send_message(
+                "You need `manage_roles`", ephemeral=True
+            )
+            return
+
+        ctx = await commands.Context.from_interaction(interaction)
+        channel = channel or ctx.channel
+
+        roles = [
+            await commands.RoleConverter().convert(ctx, role)
+            for role in roles.split(" ")
+        ]
+        real_emojis = []
+        for emoji in emojis:
+            try:
+                emoji = await commands.EmojiConverter().convert(ctx, emoji)
+            except commands.EmojiNotFound:
+                try:
+                    emoji = await commands.PartialEmojiConverter().convert(ctx, emoji)
+                except commands.PartialEmojiConversionFailure:
+                    pass
+            real_emojis.append(emoji)
+        color = await commands.ColorConverter().convert(ctx, color)
+        flags = QuickObject(
+            channel=channel,
+            roles=roles,
+            emojis=emojis,
+            title=title,
+            description=description,
+            image=image,
+            color=color,
+        )
+        await self.role(ctx, flags=flags)  # type: ignore
 
 
 async def setup(bot: MasterBot):

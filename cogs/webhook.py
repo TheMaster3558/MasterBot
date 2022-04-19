@@ -42,6 +42,7 @@ class ConfirmView(View):
 
 
 class WebhookGroup(app_commands.Group):
+    # can't use hybrid commands because flags
     def __init__(self, cog: Webhooks):
         self.cog = cog
         super().__init__(

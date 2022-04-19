@@ -30,10 +30,7 @@ with warnings.catch_warnings():
 
 class MasterBotCommandTree(app_commands.CommandTree):
     async def on_error(
-        self,
-        interaction: discord.Interaction,
-        command: app_commands.ContextMenu | app_commands.Command[Any, ..., Any] | None,
-        error: app_commands.AppCommandError,
+        self, interaction: discord.Interaction, error: app_commands.AppCommandError
     ) -> None:
         if isinstance(error, NoPrivateMessage):
             await interaction.response.send_message("Try this in a server.")

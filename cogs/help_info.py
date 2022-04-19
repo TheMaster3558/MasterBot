@@ -137,28 +137,16 @@ class Help(Cog):
             prefix = (await self.bot.get_prefix(message))[2]
             await message.reply(f"My prefix is `{prefix}`", mention_author=False)
 
-    @commands.command()
+    @commands.hybrid_command(description="Get the ws latency")
     async def ping(self, ctx):
         await ctx.send(f"Pong! `{str(round(self.bot.latency * 1000))}ms`")
 
-    @app_commands.command(name="ping", description="Pong!")
-    async def _ping(self, interaction):
-        await interaction.response.send_message(
-            f"Pong! `{str(round(self.bot.latency * 1000))}ms`"
-        )
-
-    @commands.command()
+    @commands.hybrid_command(description="Invite me!")
     async def invite(self, ctx):
         embed = discord.Embed(title=f"{self.bot.user.name} Invite")
         await ctx.author.send(embed=embed, view=InviteView(self.bot))
 
-    @app_commands.command(name="invite", description="Invite me!")
-    async def _invite(self, interaction):
-        await interaction.response.send_message("Check ur DMs.")
-        embed = discord.Embed(title=f"{self.bot.user.name} Invite")
-        await interaction.user.send(embed=embed, view=InviteView(self.bot))
-
-    @commands.command()
+    @commands.hybrid_command(description="Some info about me.")
     async def info(self, ctx):
         embed = discord.Embed(title=f"{self.bot.user.name} Info")
         embed.add_field(
@@ -176,25 +164,6 @@ class Help(Cog):
             value=f"Servers: {len(self.bot.guilds)}\nMembers: {sum(guild.member_count for guild in self.bot.guilds)}",
         )
         await ctx.send(embed=embed)
-
-    @app_commands.command(name="info", description="Get info about the bot")
-    async def _info(self, interaction):
-        embed = discord.Embed(title=f"{self.bot.user.name} Info")
-        embed.add_field(
-            name="Version Info",
-            value=f"{self.bot.user.name} version {self.bot.__version__}\n"
-            f'[Python {sys.version.split(" ")[0]}](https://www.python.org)\n'
-            f"[discord.py {discord.__version__}](https://github.com/Rapptz/discord.py)\n"
-            f"[async-google-trans-new {agtn_version}](https://github.com/Theelx/async-google-trans-new)\n"
-            f"[aiohttp {aiohttp.__version__}](https://docs.aiohttp.org/en/stable/)\n"
-            f"[fuzzywuzzy {fuzzywuzzy.__version__}](https://github.com/seatgeek/thefuzz)\n"
-            f"Platform {sys.platform}",
-        )
-        embed.add_field(
-            name="Stats",
-            value=f"Servers: {len(self.bot.guilds)}\nMembers: {sum(guild.member_count for guild in self.bot.guilds)}",
-        )
-        await interaction.response.send_message(embed=embed)
 
 
 async def setup(bot: MasterBot):

@@ -23,38 +23,12 @@ def evaluate(
     return result
 
 
-class StateGroup(app_commands.Group):
-    def __init__(self, cog):
-        self.cog = cog
-        super().__init__(name="state", description="Modify a state to save variables.")
-
-    @app_commands.command(description="Create the state")
-    async def create(self, interaction, variables: str):
-        variables, _ = self.cog.parse_for_vars(variables)
-        self.cog.states[interaction.user.id] = variables
-
-    @app_commands.command(description="Delete the state")
-    async def delete(self, interaction):
-        try:
-            del self.cog.states[interaction.user.id]
-        except KeyError:
-            pass
-
-
 class Math(Cog, name="botmath"):
     def __init__(self, bot: MasterBot):
         super().__init__(bot)
-        self.parse_regex = re.compile(r"\w+ *= *\d+")
+        self.parse_regex = re.compile(r"\w+ *= *[\d.]+")
         self.states: dict[int, dict[str, N]] = {}
         print("Math cog loaded")
-
-    async def cog_load(self):
-        await super().cog_load()
-        self.bot.tree.add_command(StateGroup(self))
-
-    async def cog_unload(self):
-        await super().cog_unload()
-        self.bot.tree.remove_command("state")
 
     def parse_for_vars(self, expression):
         finds = self.parse_regex.findall(expression)
@@ -70,7 +44,7 @@ class Math(Cog, name="botmath"):
             expression = expression.replace(find, "")
         return variables, expression
 
-    @commands.command(description="I can do some math for you.")
+    @commands.hybrid_command(description="I can do some math for you.")
     async def math(self, ctx, *, expression: str):
         variables, expression = self.remove_vars(expression)
         if ctx.author.id in self.states:
@@ -80,17 +54,6 @@ class Math(Cog, name="botmath"):
         result = evaluate(expression, variables=variables)
         await ctx.reply(result, mention_author=False)
 
-    @app_commands.command(name="domath", description="I'll do some math for you!")
-    @app_commands.describe(expression="The math expression")
-    async def _math(self, interaction, expression: str):
-        variables, expression = self.remove_vars(expression)
-        if interaction.user.id in self.states:
-            self.states[interaction.user].update(variables)
-            variables = self.states[interaction.user.id]
-
-        result = evaluate(expression, variables=variables)
-        await interaction.response.send_message(result)
-
     @math.error
     async def error(self, ctx, error):
         if isinstance(error, commands.MissingRequiredArgument):
@@ -98,7 +61,9 @@ class Math(Cog, name="botmath"):
             return
         raise error
 
-    @commands.group(description="Create a `state` to save variables across commands.")
+    @commands.hybrid_group(
+        description="Create a `state` to save variables across commands."
+    )
     async def state(self, ctx: commands.Context):
         if ctx.invoked_subcommand is None:
             await ctx.send(
@@ -106,26 +71,29 @@ class Math(Cog, name="botmath"):
             )
 
     @state.command(description="Create the state.")
-    async def create(self, ctx, *, variables=""):
+    @app_commands.describe(variables="The variables to start with")
+    async def create(self, ctx, *, variables: str = ""):
         variables, _ = self.parse_for_vars(variables)
         self.states[ctx.author.id] = variables
+        await ctx.send("Your state was created.", ephemeral=True)
 
-    @state.command(aliases=["del", "destroy"], description="Destory that state")
+    @state.command(aliases=["del", "destroy"], description="Destroy that state")
     async def delete(self, ctx):
         try:
             del self.states[ctx.author.id]
         except KeyError:
             pass
+        await ctx.send("Your state was deleted", ephemeral=True)
 
-    @commands.command(description="3.14")
+    @commands.hybrid_command(description="3.14")
     async def pi(self, ctx):
         await ctx.send(expr.pi)
 
-    @commands.command(description="Get the value of **phi**")
+    @commands.hybrid_command(description="Get the value of phi")
     async def phi(self, ctx):
         await ctx.send(expr.phi)
 
-    @commands.command(description="Get the value of **e**")
+    @commands.hybrid_command(description="Get the value of e")
     async def e(self, ctx):
         await ctx.send(expr.e)
 

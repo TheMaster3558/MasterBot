@@ -1,6 +1,7 @@
 from typing import Optional
 
 import discord
+from discord import app_commands
 from discord.ext import commands
 
 from cogs.utils.app_and_cogs import Cog
@@ -61,7 +62,10 @@ class Formula1(Cog, name="formula one"):
         self.http = ErgastHTTPClient(self.bot.loop)
         print("Formula One cog loaded")
 
-    @commands.command()
+    @commands.hybrid_command(description="Get the qualifying results.")
+    @app_commands.describe(
+        year="The year of the season", race="The race in the reason."
+    )
     async def qualifying(
         self, ctx, year: Optional[YearConverter] = None, race: int = current_year
     ):
@@ -71,7 +75,8 @@ class Formula1(Cog, name="formula one"):
         view = Paginator(embeds)
         await view.send(ctx.channel)
 
-    @commands.command()
+    @commands.hybrid_command(description="Get a list of teams.")
+    @app_commands.describe(year="The year of the season")
     async def constructors(self, ctx, year: int = current_year):
         data = await self.http.constructors(year)
         embeds = await F1Utils.build_teams_embed(data["Constructors"])
@@ -79,12 +84,15 @@ class Formula1(Cog, name="formula one"):
         view = Paginator(embeds)
         await view.send(ctx.channel)
 
-    @commands.group()
+    @commands.hybrid_group(description="Get the standings.")
     async def standings(self, ctx: commands.Context):
         if ctx.invoked_subcommand is None:
             await ctx.send_help(ctx.command)
 
-    @standings.command()
+    @standings.command(description="Constructors standings")
+    @app_commands.describe(
+        year="The year of the season", race="The race in the reason."
+    )
     async def constructors(
         self, ctx, year: Optional[YearConverter] = None, race: int = None
     ):
@@ -93,7 +101,10 @@ class Formula1(Cog, name="formula one"):
 
         await ctx.send(embed=embed)
 
-    @standings.command()
+    @standings.command(description="Drivers standings")
+    @app_commands.describe(
+        year="The year of the season", race="The race in the reason."
+    )
     async def drivers(
         self, ctx, year: Optional[YearConverter] = None, race: int = None
     ):
@@ -102,7 +113,8 @@ class Formula1(Cog, name="formula one"):
 
         await ctx.send(embed=embed)
 
-    @commands.command()
+    @commands.command(descriptions="Get all the circuits")
+    @app_commands.describe(year="The year of the season")
     async def circuits(self, ctx, year: Optional[YearConverter] = current_year):
         data = await self.http.circuits(year)  # type: ignore
         embeds = await F1Utils.build_circuits_embed(data)

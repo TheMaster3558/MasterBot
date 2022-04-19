@@ -34,10 +34,15 @@ class NoPrivateMessage(app_commands.CheckFailure):
         super().__init__(message)
 
 
-def app_guild_only():
-    async def predicate(interaction):
-        if interaction.guild:
-            return True
-        raise NoPrivateMessage()
+class QuickObject:
+    def __init__(self, **attrs):
+        self.__attrs = attrs
 
-    return app_commands.check(predicate)
+        for k, v in attrs.items():
+            setattr(self, k, v)
+
+    def __str__(self):
+        # need to turn into message command flags for flag parser
+        return " ".join(
+            f"{k}: {v}" for k, v in self.__attrs.items() if v not in (None, "")
+        )
