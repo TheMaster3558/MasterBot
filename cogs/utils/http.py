@@ -1,3 +1,5 @@
+import asyncio
+
 import requests
 import aiohttp
 
@@ -7,42 +9,39 @@ def cleanup_params(params: dict) -> dict:
 
 
 class AsyncHTTPClient:
+    session: aiohttp.ClientSession | None = None
+
     def __init__(
-        self,
-        base_url,
-        *,
-        connector: aiohttp.BaseConnector = None,
-        headers=None,
-        loop=None,
-        session: aiohttp.ClientSession = None,
-        suffix: str = ""
+            self,
+            base_url,
+            *,
+            headers=None,
+            loop=None,
+            suffix: str = ""
     ):
         self.base = base_url
-        self.connector = connector
         self.loop = loop
         self.headers = headers
-        self.session = session
         self.suffix = suffix
 
-    async def create(self):
-        if self.session:
-            if not self.session.closed:
-                await self.session.close()
-        self.session = aiohttp.ClientSession(
-            connector=self.connector, headers=self.headers, loop=self.loop
-        )
+    @classmethod
+    async def create(cls, loop: asyncio.AbstractEventLoop = None):
+        if cls.session is not None:
+            return
+        cls.session = aiohttp.ClientSession(loop=loop)
 
-    async def request(self, route, json=True, **params):
+    async def request(self, route, json=True, method: str = 'GET', **params):
         params = cleanup_params(params)
-        async with self.session.get(
-            self.base + route + self.suffix, params=params
-        ) as resp:
+        async with self.session.request(method,
+                                        self.base + route + self.suffix, params=params, headers=self.headers
+                                        ) as resp:
             if json:
                 return await resp.json()
             return await resp.text()
 
-    async def close(self):
-        if not self.session:
+    @classmethod
+    async def close(cls):
+        if not cls.session:
             return
-        if not self.session.closed:
-            await self.session.close()
+        if not cls.session.closed:
+            await cls.session.close()
