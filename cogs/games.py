@@ -472,7 +472,7 @@ class Games(Cog, name="games"):
             )
             return
 
-        background = Image.new(mode="RGB", size=(185, 200), color="white")
+        background = await asyncio.to_thread(Image.new(mode="RGB", size=(185, 200), color="white"))
         results = {}
 
         attempt = 1
@@ -509,7 +509,7 @@ class Games(Cog, name="games"):
             x = 10
 
             for letter, color in results.values():
-                background.paste(Image.new("RGB", size=(25, 25), color=color), (x, y))
+                await asyncio.to_thread(background.paste(Image.new("RGB", size=(25, 25), color=color), (x, y)))
                 x += 35
 
             img = ImageDraw.Draw(background)
@@ -520,7 +520,7 @@ class Games(Cog, name="games"):
                 x += 35
 
             with BytesIO() as image_binary:
-                background.save(image_binary, "PNG")
+                await asyncio.to_thread(background.save(image_binary, "PNG"))
                 image_binary.seek(0)
                 file = discord.File(image_binary, "image.png")
             await interaction.followup.send(file=file)
