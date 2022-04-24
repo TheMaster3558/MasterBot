@@ -27,7 +27,7 @@ class Translator(Cog, name="translation"):
             return
         if isinstance(error, commands.CommandOnCooldown):
             await ctx.send(
-                f"Patience! Try again in {round(error.retry_after, 1)} seconds."
+                f"Patience! Try again in {error.retry_after:.1f} seconds."
             )
         else:
             await self.bot.on_command_error(ctx, error)

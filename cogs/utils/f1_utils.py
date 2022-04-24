@@ -109,18 +109,5 @@ class F1Utils:
         return embed
 
     @staticmethod
-    async def build_circuits_embed(data) -> list[discord.Embed]:
-        embeds = []
-
-        for circuit in data:
-            location = (
-                f"{circuit['Location']['locality']}, {circuit['Location']['country']}"
-            )
-            embed = discord.Embed(
-                title=circuit["circuitName"],
-                description=f"Located in {location}.",
-                url=circuit["url"],
-            )
-
-            embeds.append(embed)
-        return embeds
+    async def build_schedule_embed(data) -> list[discord.Embed]:
+        print(data)

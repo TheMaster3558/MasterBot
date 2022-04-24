@@ -85,7 +85,7 @@ class ClashRoyale(Cog, name="clashroyale"):
     @commands.Cog.listener()
     async def on_command_error(self, ctx, error):
         if isinstance(error, commands.CommandOnCooldown):
-            await ctx.send(f"Try again in {round(error.retry_after)} seconds.")
+            await ctx.send(f"Try again in {error.retry_after:.2f} seconds.")
         elif isinstance(error, commands.CommandInvokeError) and isinstance(
             error.original, AttributeError
         ):

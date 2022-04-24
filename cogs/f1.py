@@ -46,16 +46,16 @@ class ErgastHTTPClient(AsyncHTTPClient):
             "StandingsTable"
         ]["StandingsLists"][0]["DriverStandings"]
 
-    async def circuits(self, year: int):
-        url = f"/{year}"
-        return (await self.request(f"{url}/circuits"))["MRData"]["CircuitTable"][
-            "Circuits"
-        ]
+    async def schedule(self, year: int | None = None):
+        year = year or 'current'
+        return (await self.request(str(year)))['MRdata']
 
 
 class Formula1(Cog, name="formula one"):
     current_year = 2022
-    current_race = 3
+    current_race = 4
+
+    year_param = commands.parameter(converter=YearConverter, default=current_year)
 
     def __init__(self, bot: MasterBot):
         super().__init__(bot)
@@ -67,22 +67,15 @@ class Formula1(Cog, name="formula one"):
         year="The year of the season", race="The race in the reason."
     )
     async def qualifying(
-        self, ctx, year: Optional[YearConverter] = None, race: int = current_year
+        self, ctx, year: Optional[YearConverter] = None, race: int = current_race
     ):
+        year = year or self.current_year
+
         data = await self.http.qualifying_results(year, race)
         embeds = await F1Utils.build_qualifying_embeds(data)
 
         view = Paginator(embeds)
-        await view.send(ctx.channel)
-
-    @commands.hybrid_command(description="Get a list of teams.")
-    @app_commands.describe(year="The year of the season")
-    async def constructors(self, ctx, year: int = current_year):
-        data = await self.http.constructors(year)
-        embeds = await F1Utils.build_teams_embed(data["Constructors"])
-
-        view = Paginator(embeds)
-        await view.send(ctx.channel)
+        await view.send(ctx)
 
     @commands.hybrid_group(description="Get the standings.")
     async def standings(self, ctx: commands.Context):
@@ -94,7 +87,7 @@ class Formula1(Cog, name="formula one"):
         year="The year of the season", race="The race in the reason."
     )
     async def constructors(
-        self, ctx, year: Optional[YearConverter] = None, race: int = None
+        self, ctx, year: Optional[YearConverter] = None, race: int = current_race
     ):
         data = await self.http.constructors_standings(year, race)
         embed = await F1Utils.build_constructors_standings_embed(data)
@@ -106,21 +99,16 @@ class Formula1(Cog, name="formula one"):
         year="The year of the season", race="The race in the reason."
     )
     async def drivers(
-        self, ctx, year: Optional[YearConverter] = None, race: int = None
+        self, ctx, year: Optional[YearConverter] = None, race: int = current_race
     ):
         data = await self.http.drivers_standings(year, race)
         embed = await F1Utils.build_drivers_standings_embed(data)
 
         await ctx.send(embed=embed)
 
-    @commands.command(descriptions="Get all the circuits")
-    @app_commands.describe(year="The year of the season")
-    async def circuits(self, ctx, year: Optional[YearConverter] = current_year):
-        data = await self.http.circuits(year)  # type: ignore
-        embeds = await F1Utils.build_circuits_embed(data)
-
-        view = Paginator(embeds, starting_page=self.current_race)
-        await view.send(ctx.channel)
+    @commands.hybrid_command()
+    async def schedule(self, ctx, year: YearConverter = None):
+        data = await self.http.schedule(year)
 
 
 async def setup(bot: MasterBot):

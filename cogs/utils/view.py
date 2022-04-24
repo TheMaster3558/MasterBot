@@ -3,6 +3,7 @@
 from typing import TypeVar
 
 import discord
+from discord.ext import commands
 
 
 ItemT = TypeVar("ItemT", bound=discord.ui.Item)
@@ -61,9 +62,9 @@ class Paginator(View):
         self.message = message
         self.embed = embed
 
-    async def send(self, channel: discord.TextChannel):
+    async def send(self, ctx: commands.Context):
         self.embed = self.pages[self.current_page]
-        self.message = await channel.send(embed=self.embed, view=self)
+        self.message = await ctx.send(embed=self.embed, view=self)
 
         await self.wait()
         await self.disable_all(self.message)

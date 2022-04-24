@@ -180,11 +180,11 @@ class Code(Cog, name="code"):
             if await self.bot.is_owner(ctx.author):
                 await ctx.reinvoke()
                 return
-            await ctx.send("Patience. Wait {:.1f} seconds".format(error.retry_after))
+            await ctx.send(f"Patience. Wait {error.retry_after:.1f} seconds")
         elif isinstance(error, commands.BadArgument):
             await ctx.send(str(error))
         else:
-            await ctx.send("Command raised an exception\n```\n{}\n```".format(error))
+            await ctx.send(f"Command raised an exception\n```\n{error}\n```")
 
     @commands.command(description="Check if a user can run a command")
     async def canrun(self, ctx, user: Optional[discord.User], *, command_name):
@@ -227,7 +227,7 @@ class Code(Cog, name="code"):
         full = [log[i] for i in range(1, last)]
         legnth = [i for i in range(len(log) - last, len(log))]
         lined = "\n".join(f"Line {legnth[i]}: {full[i]}" for i in range(len(full)))
-        await ctx.send("```\n{}\n```".format(lined))
+        await ctx.send(f"```\n{lined}\n```")
 
     @commands.command(name="os", hidden=True)
     @commands.is_owner()
@@ -277,15 +277,15 @@ class Code(Cog, name="code"):
     @git.command(hidden=True)
     @commands.is_owner()
     async def add(self, ctx, path):
-        await asyncio.to_thread(__os__.system, "git add {}".format(path))
-        await ctx.send("Files in {} were added to the next commit.".format(path))
+        await asyncio.to_thread(__os__.system, f"git add {path}")
+        await ctx.send(f"Files in {path} were added to the next commit.")
 
     @git.command(hidden=True)
     @commands.is_owner()
     async def commit(self, ctx, *, message):
-        await asyncio.to_thread(__os__.system, 'git commit -m "{}"'.format(message))
+        await asyncio.to_thread(__os__.system, f'git commit -m "{message}"')
         await ctx.send(
-            "Changes have been committed with the messageg {}".format(message)
+            f"Changes have been committed with the message {message}"
         )
 
     @git.command(hidden=True)
@@ -295,7 +295,7 @@ class Code(Cog, name="code"):
         if force == "force":
             _command += " -f"
         await asyncio.to_thread(__os__.system, _command)
-        await ctx.send("Files pushed. Force push = {}.".format(force == "force"))
+        await ctx.send(f"Files pushed. Force push = {force == 'force'}.")
 
     @commands.hybrid_command(name="code", description="Get some code of the bot.")
     async def _code(self, ctx, file_path: str, lines: str = None):
@@ -334,7 +334,7 @@ class Code(Cog, name="code"):
     @_code.error
     async def error(self, ctx, error):
         if isinstance(error, commands.MissingRequiredArgument):
-            await ctx.send('You forgot "{}"'.format(error.param))
+            await ctx.send(f'You forgot "{error.param}"')
         else:
             await ctx.bot.on_command_error(ctx, error)
 
