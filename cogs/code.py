@@ -284,9 +284,7 @@ class Code(Cog, name="code"):
     @commands.is_owner()
     async def commit(self, ctx, *, message):
         await asyncio.to_thread(__os__.system, f'git commit -m "{message}"')
-        await ctx.send(
-            f"Changes have been committed with the message {message}"
-        )
+        await ctx.send(f"Changes have been committed with the message {message}")
 
     @git.command(hidden=True)
     @commands.is_owner()

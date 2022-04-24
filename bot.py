@@ -161,7 +161,9 @@ class MasterBot(commands.Bot):
         ]
 
     async def on_command_error(
-        self, context: commands.Context, exception: commands.errors.CommandError | app_commands.AppCommandError
+        self,
+        context: commands.Context,
+        exception: commands.errors.CommandError | app_commands.AppCommandError,
     ) -> None:
         if isinstance(exception, commands.CommandNotFound):
             possibles = self.possible_commands(context)

@@ -47,8 +47,8 @@ class ErgastHTTPClient(AsyncHTTPClient):
         ]["StandingsLists"][0]["DriverStandings"]
 
     async def schedule(self, year: int | None = None):
-        year = year or 'current'
-        return (await self.request(str(year)))['MRdata']
+        year = year or "current"
+        return (await self.request(str(year)))["MRdata"]
 
 
 class Formula1(Cog, name="formula one"):
