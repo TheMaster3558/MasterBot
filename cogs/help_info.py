@@ -38,18 +38,18 @@ class HelpCommand(commands.HelpCommand):
             await self.context.author.send(embeds=embeds[last:i])
             last = i
 
-    async def send_command_help(
-        self, _command: commands.Command, /, *, send: bool = True
+    async def sendcommand_help(
+        self, command: commands.Command, /, *, send: bool = True
     ) -> discord.Embed | None:
-        if not await _command.can_run(self.context):
+        if not await command.can_run(self.context):
             return
 
         embed = discord.Embed(
-            title=f"{_command.qualified_name.capitalize()} Help",
-            description=_command.description or "No description",
+            title=f"{command.qualified_name.capitalize()} Help",
+            description=command.description or "No description",
         )
         embed.add_field(
-            name="Syntax", value=f"```{self.get_command_signature(_command)}```"
+            name="Syntax", value=f"```{self.get_command_signature(command)}```"
         )
 
         if send:
@@ -72,7 +72,7 @@ class HelpCommand(commands.HelpCommand):
         for sub in group.walk_commands():
             embed.add_field(
                 name=sub.name,
-                value=f"`{self.get_command_signature(sub)}`" + sub.description
+                value=f"`{self.get_command_signature(sub)}`\n " + sub.description
                 or "No " "description",
             )
 
