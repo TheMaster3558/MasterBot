@@ -472,7 +472,9 @@ class Games(Cog, name="games"):
             )
             return
 
-        background = await asyncio.to_thread(Image.new(mode="RGB", size=(185, 200), color="white"))
+        background = await asyncio.to_thread(
+            Image.new(mode="RGB", size=(185, 200), color="white")
+        )
         results = {}
 
         attempt = 1
@@ -509,7 +511,11 @@ class Games(Cog, name="games"):
             x = 10
 
             for letter, color in results.values():
-                await asyncio.to_thread(background.paste(Image.new("RGB", size=(25, 25), color=color), (x, y)))
+                await asyncio.to_thread(
+                    background.paste(
+                        Image.new("RGB", size=(25, 25), color=color), (x, y)
+                    )
+                )
                 x += 35
 
             img = ImageDraw.Draw(background)

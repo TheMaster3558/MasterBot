@@ -252,14 +252,16 @@ class ReactionRoles(Cog, name="reactions"):
         else:
             await self.insert_into_db(flags.roles, flags.emojis, msg.id)
 
-    @app_commands.command(description='Setup a message to get roles')
-    @app_commands.describe(roles='Separate roles with a space',
-                           emojis='Separate emojis with a space',
-                           title='Give your embed a title',
-                           description='Give your embed a description',
-                           image='GIve your embed an image',
-                           color='Set the color of the embed',
-                           channel='What channel to send it in.')
+    @app_commands.command(description="Setup a message to get roles")
+    @app_commands.describe(
+        roles="Separate roles with a space",
+        emojis="Separate emojis with a space",
+        title="Give your embed a title",
+        description="Give your embed a description",
+        image="GIve your embed an image",
+        color="Set the color of the embed",
+        channel="What channel to send it in.",
+    )
     async def _role(
         self,
         interaction: discord.Interaction,

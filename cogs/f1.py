@@ -8,7 +8,7 @@ from cogs.utils.app_and_cogs import Cog
 from cogs.utils.http import AsyncHTTPClient
 from cogs.utils.view import Paginator
 from bot import MasterBot
-from cogs.utils.f1_utils import F1Utils, YearConverter
+from cogs.utils.f1_utils import F1Utils, DriverResultsView
 
 
 class ErgastHTTPClient(AsyncHTTPClient):
@@ -48,26 +48,43 @@ class ErgastHTTPClient(AsyncHTTPClient):
 
     async def schedule(self, year: int | None = None):
         year = year or "current"
-        return (await self.request(str(year)))["MRdata"]
+        return (await self.request(f"/{year}"))["MRData"]["RaceTable"]["Races"]
+
+    async def race_results(self, year: int | None = None, race: int | None = None):
+        year, race = year or "current", race or "current"
+        return (await self.request(f"/{year}/{race}/results"))["MRData"]["RaceTable"][
+            "Races"
+        ][0]
 
 
 class Formula1(Cog, name="formula one"):
     current_year = 2022
     current_race = 4
+    current_image = (
+        "https://th.bing.com/th/id/OIF.CZKE3ftwq7y1L52CTwPkkg?pid=ImgDet&rs=1"
+    )
 
-    year_param = commands.parameter(converter=YearConverter, default=current_year)
+    year_param = commands.Range[int, 1950, current_year]
 
     def __init__(self, bot: MasterBot):
         super().__init__(bot)
         self.http = ErgastHTTPClient(self.bot.loop)
         print("Formula One cog loaded")
 
+    async def cog_command_error(self, ctx, error) -> None:
+        if isinstance(error, commands.RangeError):
+            await ctx.send(str(error))
+        elif isinstance(error, commands.CommandInvokeError) and isinstance(
+            error.original, IndexError
+        ):
+            await ctx.send("That race was not found.")
+
     @commands.hybrid_command(description="Get the qualifying results.")
     @app_commands.describe(
         year="The year of the season", race="The race in the reason."
     )
     async def qualifying(
-        self, ctx, year: Optional[YearConverter] = None, race: int = current_race
+        self, ctx, year: Optional[year_param] = None, race: int = current_race
     ):
         year = year or self.current_year
 
@@ -82,33 +99,48 @@ class Formula1(Cog, name="formula one"):
         if ctx.invoked_subcommand is None:
             await ctx.send_help(ctx.command)
 
-    @standings.command(description="Constructors standings")
+    @standings.command(description="The constructors standings")
     @app_commands.describe(
         year="The year of the season", race="The race in the reason."
     )
     async def constructors(
-        self, ctx, year: Optional[YearConverter] = None, race: int = current_race
+        self, ctx, year: Optional[year_param] = None, race: int = current_race
     ):
         data = await self.http.constructors_standings(year, race)
         embed = await F1Utils.build_constructors_standings_embed(data)
 
         await ctx.send(embed=embed)
 
-    @standings.command(description="Drivers standings")
+    @standings.command(description="The drivers standings")
     @app_commands.describe(
         year="The year of the season", race="The race in the reason."
     )
     async def drivers(
-        self, ctx, year: Optional[YearConverter] = None, race: int = current_race
+        self, ctx, year: Optional[year_param] = None, race: int = current_race
     ):
         data = await self.http.drivers_standings(year, race)
         embed = await F1Utils.build_drivers_standings_embed(data)
 
         await ctx.send(embed=embed)
 
-    @commands.hybrid_command()
-    async def schedule(self, ctx, year: YearConverter = None):
+    @commands.hybrid_command(description="Get schedule of a f1 season")
+    @app_commands.describe(year="The year of the season")
+    async def schedule(self, ctx, year: year_param = None):
         data = await self.http.schedule(year)
+        embeds = await F1Utils.build_schedule_embed(data)
+
+        view = Paginator(embeds, starting_page=self.current_race - 1)
+        await view.send(ctx)
+
+    @commands.hybrid_command(description="Get the results of a race")
+    async def results(self, ctx, year: year_param = None, race: int = current_race):
+        data = await self.http.race_results(year, race)
+
+        embed = await F1Utils.build_race_result_main_embed(data, self.current_image)
+        drivers = await F1Utils.build_driver_results_embed(data)
+
+        view = DriverResultsView(drivers, embed)
+        await ctx.send(embed=embed, view=view)
 
 
 async def setup(bot: MasterBot):

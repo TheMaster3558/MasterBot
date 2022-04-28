@@ -11,14 +11,7 @@ def cleanup_params(params: dict) -> dict:
 class AsyncHTTPClient:
     session: aiohttp.ClientSession | None = None
 
-    def __init__(
-            self,
-            base_url,
-            *,
-            headers=None,
-            loop=None,
-            suffix: str = ""
-    ):
+    def __init__(self, base_url, *, headers=None, loop=None, suffix: str = ""):
         self.base = base_url
         self.loop = loop
         self.headers = headers
@@ -30,11 +23,11 @@ class AsyncHTTPClient:
             return
         cls.session = aiohttp.ClientSession(loop=loop)
 
-    async def request(self, route, json=True, method: str = 'GET', **params):
+    async def request(self, route, json=True, method: str = "GET", **params):
         params = cleanup_params(params)
-        async with self.session.request(method,
-                                        self.base + route + self.suffix, params=params, headers=self.headers
-                                        ) as resp:
+        async with self.session.request(
+            method, self.base + route + self.suffix, params=params, headers=self.headers
+        ) as resp:
             if json:
                 return await resp.json()
             return await resp.text()
