@@ -145,8 +145,8 @@ class Player(wavelink.Player):
         self._event.clear()
 
     async def force_next(self):
-        self._event.set()
         await self.stop()
+        self._event.set()
 
     async def _consume_queue(self):
         self.queue = self.cog.queues[self.channel.guild.id]
