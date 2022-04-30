@@ -216,16 +216,7 @@ class WavelinkConverter(commands.Converter):
         return self.tracks[item]
 
     def __iter__(self):
-        self.__iter_count = 0
-        return self
-
-    def __next__(self) -> wavelink.YouTubeTrack | wavelink.SoundCloudTrack:
-        self.__iter_count += 1
-
-        try:
-            return self.tracks[self.__iter_count]
-        except IndexError:
-            raise StopIteration
+        return self.tracks.__iter__()
 
     def __str__(self):
         return str(self.tracks)
@@ -249,9 +240,9 @@ class Music(Cog, name="music"):
         await self.bot.wait_until_ready()
         self.node_pool = await wavelink.NodePool.create_node(
             bot=self.bot,
-            host="node2.lavalink.chiquicalris.me",
-            port=2392,
-            password="lavalink_is_cool",
+            host="lavalink.darrenofficial.com",
+            port=80,
+            password="MasterBotIsCool",
         )
 
     @commands.Cog.listener()

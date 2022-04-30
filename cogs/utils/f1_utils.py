@@ -1,7 +1,16 @@
+# -*- coding: utf-8 -*-
+
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 import discord
 from discord.ext import commands
 
 from cogs.utils.view import View
+
+if TYPE_CHECKING:
+    from cogs.f1 import Formula1
 
 
 MISSING = discord.utils.MISSING
@@ -50,29 +59,62 @@ class DriverSelect(discord.ui.Select["DriverResultsView"]):
 
     async def callback(self, interaction: discord.Interaction):
         await interaction.response.defer()
-        self.view.message = interaction.message
-        await self.view.edit_message(self.values[0])
+        try:
+            driver = self.values[0]
+        except KeyError:
+            driver = None
+
+        await self.view.set(driver)
 
 
 class DriverResultsView(View):
-    def __init__(self, drivers: dict[str, discord.Embed], home: discord.Embed):
+    def __init__(self, drivers: dict[str, discord.Embed], home: discord.Embed, *, author: discord.User, cog: Formula1,
+                 lap_times: dict):
         super().__init__(timeout=600)
+        self.cog = cog
+        self.author = author
 
+        self.home = home
         self.message: discord.Message = MISSING
         self.drivers = drivers
-        self.home = home
 
-        select = DriverSelect(list(drivers.keys()))
+        self.current_driver: str | None = None
+        self.current_embed: discord.Embed | None = None
+
+        select = DriverSelect(list(drivers))
         self.add_item(select)
 
-    async def edit_message(self, driver: str = None, embed: discord.Embed = None):
-        embed = embed if embed is not None else self.drivers.get(driver)
-        await self.message.edit(embed=embed)
+        self.lap_data = [lap['Timings'] for lap in lap_times]
 
-    @discord.ui.button(label="Home", style=discord.ButtonStyle.blurple)
-    async def home(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await self.edit_message(embed=self.home)
+    async def set(self, driver: str | None = None, embed: discord.Embed = None):
+        embed = embed if embed else self.drivers.get(driver)
+
+        self.current_driver = driver
+        self.current_embed = embed
+
+        if driver:
+            for child in self.children:
+                if child.custom_id == 'lap_times':  # type: ignore
+                    child.disabled = False
+                    break
+
+        await self.message.edit(embed=embed, view=self)
+
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        return interaction.user == self.author
+
+    @discord.ui.button(label='Home', style=discord.ButtonStyle.blurple)
+    async def home(self, interaction, button):
         await interaction.response.defer()
+        if self.current_embed is self.drivers.get(self.current_driver):
+            await self.set(embed=self.home)
+            return
+        await self.set(self.current_driver)
+
+    @discord.ui.button(label='Lap Times', style=discord.ButtonStyle.gray, disabled=True, custom_id='lap_times')
+    async def lap_times(self, interaction, button):
+        await interaction.response.defer()
+        embed = await F1Utils.build_single_lap_times_embed(self.lap_data, self.current_driver)
 
 
 class F1Utils:
@@ -88,6 +130,7 @@ class F1Utils:
         "williams": (55, 190, 221),
         "aston_martin": (45, 130, 109),
     }
+    driver_ids = {'max_verstappen': 'Max Verstappen', 'perez': 'Sergio Pérez', 'norris': 'Lando Norris', 'russell': 'George Russell', 'bottas': 'Valtteri Bottas', 'leclerc': 'Charles Leclerc', 'tsunoda': 'Yuki Tsunoda', 'vettel': 'Sebastian Vettel', 'kevin_magnussen': 'Kevin Magnussen', 'stroll': 'Lance Stroll', 'albon': 'Alexander Albon', 'gasly': 'Pierre Gasly', 'hamilton': 'Lewis Hamilton', 'ocon': 'Esteban Ocon', 'zhou': 'Guanyu Zhou', 'latifi': 'Nicholas Latifi', 'mick_schumacher': 'Mick Schumacher', 'ricciardo': 'Daniel Ricciardo', 'alonso': 'Fernando Alonso', 'sainz': 'Carlos Sainz'}
 
     @classmethod
     def get_color(cls, constructor: dict) -> discord.Color | None:
@@ -237,7 +280,7 @@ class F1Utils:
             embed.add_field(name="Status", value=driver["status"])
             try:
                 time = humanize_time(driver["Time"]["millis"])
-                embed.add_field(name="Time Taken", value=time, inline=False)
+                embed.add_field(name="Time Taken", value=time)
             except KeyError:
                 pass
 
@@ -247,14 +290,14 @@ class F1Utils:
                 )
             except KeyError:
                 pass
-            try:
-                embed.add_field(
-                    name="Average Speed",
-                    value=f"{driver['AverageSpeed']['speed']} {driver['AverageSpeed']['units']}",
-                )
-            except KeyError:
-                pass
-            print(driver.keys())
             embeds[name] = embed
-
         return embeds
+
+    @classmethod
+    async def build_single_lap_times_embed(cls, lap_data, driver):
+        data = []
+        for lap in lap_data:
+            for d in lap:
+                if cls.driver_ids[d['driverId']] == driver:
+
+                    data.append(d)
