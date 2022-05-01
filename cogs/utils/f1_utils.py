@@ -2,9 +2,13 @@
 
 from __future__ import annotations
 
+import asyncio
 from typing import TYPE_CHECKING
+from io import BytesIO
 
 import discord
+import matplotlib as mlt
+import matplotlib.pyplot as plt
 from discord.ext import commands
 
 from cogs.utils.view import View
@@ -16,7 +20,7 @@ if TYPE_CHECKING:
 MISSING = discord.utils.MISSING
 
 
-def humanize_time(millis: float) -> str:
+def humanize_time(millis: float, *_) -> str:
     millis = float(millis)
     time = ""
 
@@ -27,7 +31,10 @@ def humanize_time(millis: float) -> str:
 
     minutes = int(millis // 60000)
     if minutes > 0:
-        time += f":{minutes}"
+        if time:
+            time += ':'
+        time += str(minutes)
+
     millis -= minutes * 60000
 
     seconds = int(millis // 1000)
@@ -35,9 +42,18 @@ def humanize_time(millis: float) -> str:
         time += f":{seconds}"
     millis -= seconds // 1000
 
-    time += f".{str(int(millis))[-3:]}"
+    if millis != 0:
+        time += f".{str(int(millis))[-3:]}"
 
     return time
+
+
+def time_to_millis(time: str) -> int:
+    time = time.replace('.', ':')
+    minutes, seconds, millis = time.split(':')
+
+    total = (int(minutes) * 60000) + (int(seconds) * 1000) + int(millis)
+    return total
 
 
 class YearConverter(commands.Converter):
@@ -114,10 +130,14 @@ class DriverResultsView(View):
     @discord.ui.button(label='Lap Times', style=discord.ButtonStyle.gray, disabled=True, custom_id='lap_times')
     async def lap_times(self, interaction, button):
         await interaction.response.defer()
-        embed = await F1Utils.build_single_lap_times_embed(self.lap_data, self.current_driver)
+        times = await F1Utils.process_lap_times(self.lap_data, self.current_driver)
+        plot = await F1Utils.build_lap_times_plot([times], self.current_driver)
+        await interaction.followup.send(file=plot)
 
 
 class F1Utils:
+    plot_lock = asyncio.Lock()
+
     team_colors: dict[str, tuple[int, int, int]] = {
         "ferrari": (237, 28, 36),
         "red_bull": (30, 91, 198),
@@ -294,10 +314,44 @@ class F1Utils:
         return embeds
 
     @classmethod
-    async def build_single_lap_times_embed(cls, lap_data, driver):
+    async def process_lap_times(cls, lap_data, driver) -> list[int]:
         data = []
         for lap in lap_data:
             for d in lap:
-                if cls.driver_ids[d['driverId']] == driver:
+                try:
+                    if cls.driver_ids[d['driverId']] == driver:
+                        data.append(d['time'])
+                except KeyError:
+                    pass
 
-                    data.append(d)
+        return [time_to_millis(time) for time in data]
+
+    @classmethod
+    async def build_lap_times_plot(cls, data: list[list[int]], driver) -> discord.File:
+        def blocking_build() -> discord.File:
+            fig, ax = plt.subplots()
+            ax.yaxis.set_major_formatter(mlt.ticker.FuncFormatter(humanize_time))
+
+            for d in data:
+                x = [i for i in range(1, len(d) + 1)]
+                y = d
+                y.extend(0 for _ in range(len(x) - len(y)))  # in case of DNF
+
+                ax.plot(x, y, label=driver)
+
+            plt.xlabel('Lap')
+            plt.ylabel('Time')
+            plt.title('Driver Lap Times')
+            plt.legend()
+
+            with BytesIO() as image_binary:
+                fig.savefig(image_binary, format='png')
+                image_binary.seek(0)
+                file = discord.File(image_binary, 'lap_times.png')
+            return file
+
+        async with cls.plot_lock:
+            return await asyncio.to_thread(blocking_build)
+
+
+
