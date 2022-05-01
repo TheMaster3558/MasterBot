@@ -38,7 +38,7 @@ class MasterBotCommandTree(app_commands.CommandTree):
 
 
 class MasterBot(commands.Bot):
-    __version__ = "1.6.0"
+    __version__ = "1.6.1"
     test_guild = discord.Object(id=878431847162466354)
 
     def __init__(

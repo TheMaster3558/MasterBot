@@ -131,11 +131,14 @@ class DriverResultsView(View):
     async def lap_times(self, interaction, button):
         await interaction.response.defer()
         times = await F1Utils.process_lap_times(self.lap_data, self.current_driver)
-        plot = await F1Utils.build_lap_times_plot([times], self.current_driver)
+        plot = await F1Utils.build_lap_times_plot([times], self.current_driver, [self.current_embed.color])
         await interaction.followup.send(file=plot)
 
 
 class F1Utils:
+    import warnings
+    warnings.filterwarnings('ignore', category=UserWarning)
+
     plot_lock = asyncio.Lock()
 
     team_colors: dict[str, tuple[int, int, int]] = {
@@ -327,17 +330,17 @@ class F1Utils:
         return [time_to_millis(time) for time in data]
 
     @classmethod
-    async def build_lap_times_plot(cls, data: list[list[int]], driver) -> discord.File:
+    async def build_lap_times_plot(cls, data: list[list[int]], driver, colors: list) -> discord.File:
         def blocking_build() -> discord.File:
             fig, ax = plt.subplots()
             ax.yaxis.set_major_formatter(mlt.ticker.FuncFormatter(humanize_time))
 
-            for d in data:
+            for i, d in enumerate(data):
                 x = [i for i in range(1, len(d) + 1)]
                 y = d
                 y.extend(0 for _ in range(len(x) - len(y)))  # in case of DNF
 
-                ax.plot(x, y, label=driver)
+                ax.plot(x, y, label=driver, color=str(colors[i]))
 
             plt.xlabel('Lap')
             plt.ylabel('Time')
@@ -352,6 +355,3 @@ class F1Utils:
 
         async with cls.plot_lock:
             return await asyncio.to_thread(blocking_build)
-
-
-
