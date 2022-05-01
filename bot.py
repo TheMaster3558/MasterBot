@@ -23,9 +23,8 @@ from discord import app_commands
 from discord.ext import commands
 from cogs.utils.app_and_cogs import Cog, NoPrivateMessage
 
-with warnings.catch_warnings():
-    warnings.filterwarnings("ignore", category=UserWarning, module="fuzzywuzzy")
-    from fuzzywuzzy import fuzz
+warnings.filterwarnings("ignore", category=UserWarning, module="fuzzywuzzy")
+from fuzzywuzzy import fuzz
 
 
 class MasterBotCommandTree(app_commands.CommandTree):
