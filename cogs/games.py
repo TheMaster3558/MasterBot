@@ -208,7 +208,7 @@ class Games(Cog, name="games"):
 
     @tasks.loop(time=time(0, 0, 0))
     async def new_word(self):
-        self.word = random.choice(words)
+        self.__class__.word = random.choice(words)
         self.done.clear()
 
     @commands.command(description="Play tic tac toe against someone.")
@@ -368,7 +368,7 @@ class Games(Cog, name="games"):
         loser = interaction.user if winner is not interaction.user else member
         embed = discord.Embed(
             title=f"The winner is {winner.display_name}!",
-            description=f"{view.get_value(winner)} beats {view.get_value(loser)}",
+            description=f"{view.get_value(winner)} beats {view.get_value(loser)}",  # type: ignore
         )  # type: ignore
         await interaction.followup.send(embed=embed)
 
@@ -400,6 +400,7 @@ class Games(Cog, name="games"):
         y = 17
 
         success = False
+        word = self.__class__.word
 
         sent = await ctx.send(
             "Type a 5 letter word to guess.",
@@ -420,9 +421,9 @@ class Games(Cog, name="games"):
                 continue
 
             for index, letter in enumerate(content):
-                if letter == self.word[index]:
+                if letter == word[index]:
                     results[index] = (letter, "green")
-                elif letter in self.word:
+                elif letter in word:
                     results[index] = (letter, "#FFD700")
                 else:
                     results[index] = (letter, "gray")
@@ -446,7 +447,7 @@ class Games(Cog, name="games"):
                 file = discord.File(image_binary, "image.png")
             await msg.reply(file=file, mention_author=False)
 
-            if content == self.word:
+            if content == word:
                 success = True
                 break
 
@@ -454,7 +455,7 @@ class Games(Cog, name="games"):
             y += 29
 
         if not success:
-            await sent.reply(f"You didn't guess it. The word is ||{self.word}||")
+            await sent.reply(f"You didn't guess it. The word is ||{word}||")
             return
 
         await sent.reply(f"It took you {attempt} tries.")

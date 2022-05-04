@@ -110,9 +110,13 @@ class DriverResultsView(View):
 
         if driver:
             for child in self.children:
-                if child.custom_id == 'lap_times':  # type: ignore
+                if child.label == 'Lap Times':  # type: ignore
                     child.disabled = False
                     break
+        else:
+            for child in self.children:
+                if child.label == 'Compare':  # type: ignore
+                    child.disabled = True
 
         await self.message.edit(embed=embed, view=self)
 
@@ -127,7 +131,11 @@ class DriverResultsView(View):
             return
         await self.set(self.current_driver)
 
-    @discord.ui.button(label='Lap Times', style=discord.ButtonStyle.gray, disabled=True, custom_id='lap_times')
+    @discord.ui.button(label='Compare', style=discord.ButtonStyle.gray)
+    async def compare(self, interaction, button):
+        pass
+
+    @discord.ui.button(label='Lap Times', style=discord.ButtonStyle.gray, disabled=True)
     async def lap_times(self, interaction, button):
         await interaction.response.defer()
         times = await F1Utils.process_lap_times(self.lap_data, self.current_driver)
