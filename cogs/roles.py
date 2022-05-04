@@ -252,7 +252,7 @@ class ReactionRoles(Cog, name="reactions"):
         else:
             await self.insert_into_db(flags.roles, flags.emojis, msg.id)
 
-    @app_commands.command(description="Setup a message to get roles")
+    @app_commands.command(name='role', description="Setup a message to get roles")
     @app_commands.describe(
         roles="Separate roles with a space",
         emojis="Separate emojis with a space",
