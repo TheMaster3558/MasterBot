@@ -108,7 +108,7 @@ class ClashRoyale(Cog, name="clashroyale"):
     @app_commands.describe(player_tag="The players tag")
     @commands.cooldown(1, 30, commands.BucketType.user)
     async def stats(self, ctx: commands.Context, *, player_tag: str):
-        await ctx.trigger_typing()
+        await ctx.typing()
         if player_tag.startswith("#"):
             player_tag = player_tag[1:]
 
@@ -132,7 +132,7 @@ class ClashRoyale(Cog, name="clashroyale"):
     @app_commands.describe(name="The card name")
     @commands.cooldown(1, 30, commands.BucketType.user)
     async def card(self, ctx: commands.Context, *, name: str):
-        await ctx.trigger_typing()
+        await ctx.typing()
         cards = await self.http.cards_request()
 
         card = ClashRoyaleUtils.search_for_card(cards, name)
@@ -143,7 +143,7 @@ class ClashRoyale(Cog, name="clashroyale"):
     @app_commands.describe(clan_tag="The clan tag")
     @commands.cooldown(1, 30, commands.BucketType.user)
     async def clan(self, ctx: commands.Context, clan_tag: str):
-        await ctx.trigger_typing()
+        await ctx.typing()
         if clan_tag.startswith("#"):
             clan_tag = clan_tag[1:]
 
@@ -154,7 +154,7 @@ class ClashRoyale(Cog, name="clashroyale"):
     @commands.command(name="searchclan", description="Search up a clan in clash royale")
     @commands.cooldown(1, 30, commands.BucketType.user)
     async def search_clan(self, ctx: commands.Context, *, flags):
-        await ctx.trigger_typing()
+        await ctx.typing()
 
         flags = await ClanSearchFlags().convert(ctx, flags)
         if isinstance(flags.location, str):
