@@ -72,7 +72,7 @@ class MasterBot(commands.Bot):
         self.prefixes_db = None
         self.moderation_mongo = mongo_db
 
-        for name in ('discord', 'wavelink'):
+        for name in ("discord", "wavelink"):
             logger = logging.getLogger(name)
             logger.setLevel(logging.DEBUG)
             handler = logging.FileHandler(

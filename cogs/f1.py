@@ -28,7 +28,7 @@ class ErgastHTTPClient(AsyncHTTPClient):
         return (await self.request(url))["MRData"]["ConstructorTable"]
 
     async def constructors_standings(
-            self, year: int | None = None, race: int | None = None
+        self, year: int | None = None, race: int | None = None
     ):
         url = f"/{year or 'current'}"
         if race:
@@ -55,14 +55,18 @@ class ErgastHTTPClient(AsyncHTTPClient):
             "Races"
         ][0]
 
-    async def lap_times(self, year: int, race: int, driver: str = None, laps: int = None):
-        url = f'/{year}/{race}/'
+    async def lap_times(
+        self, year: int, race: int, driver: str = None, laps: int = None
+    ):
+        url = f"/{year}/{race}/"
         if driver:
-            url += f'drivers/{driver}/'
-        url += 'laps'
+            url += f"drivers/{driver}/"
+        url += "laps"
         if laps:
-            url += f'/{laps}'
-        return (await self.request(url, limit=100000000))['MRData']['RaceTable']['Races'][0]['Laps']
+            url += f"/{laps}"
+        return (await self.request(url, limit=100000000))["MRData"]["RaceTable"][
+            "Races"
+        ][0]["Laps"]
 
 
 class Formula1(Cog, name="formula one"):
@@ -83,7 +87,7 @@ class Formula1(Cog, name="formula one"):
         if isinstance(error, commands.RangeError):
             await ctx.send(str(error))
         elif isinstance(error, commands.CommandInvokeError) and isinstance(
-                error.original, IndexError
+            error.original, IndexError
         ):
             await ctx.send("That race was not found.")
 
@@ -92,7 +96,7 @@ class Formula1(Cog, name="formula one"):
         year="The year of the season", race="The race in the reason."
     )
     async def qualifying(
-            self, ctx, year: Optional[year_param] = None, race: int = current_race
+        self, ctx, year: Optional[year_param] = None, race: int = current_race
     ):
         year = year or self.current_year
 
@@ -112,7 +116,7 @@ class Formula1(Cog, name="formula one"):
         year="The year of the season", race="The race in the reason."
     )
     async def constructors(
-            self, ctx, year: Optional[year_param] = None, race: int = current_race
+        self, ctx, year: Optional[year_param] = None, race: int = current_race
     ):
         data = await self.http.constructors_standings(year, race)
         embed = await F1Utils.build_constructors_standings_embed(data)
@@ -124,7 +128,7 @@ class Formula1(Cog, name="formula one"):
         year="The year of the season", race="The race in the reason."
     )
     async def drivers(
-            self, ctx, year: Optional[year_param] = None, race: int = current_race
+        self, ctx, year: Optional[year_param] = None, race: int = current_race
     ):
         data = await self.http.drivers_standings(year, race)
         embed = await F1Utils.build_drivers_standings_embed(data)
@@ -141,14 +145,18 @@ class Formula1(Cog, name="formula one"):
         await view.send(ctx)
 
     @commands.hybrid_command(description="Get the results of a race")
-    async def results(self, ctx, year: year_param = current_year, race: int = current_race):
+    async def results(
+        self, ctx, year: year_param = current_year, race: int = current_race
+    ):
         data = await self.http.race_results(year, race)
 
         embed = await F1Utils.build_race_result_main_embed(data, self.current_image)
         drivers = await F1Utils.build_driver_results_embed(data)
         lap_times = await self.http.lap_times(year, race)
 
-        view = DriverResultsView(drivers, embed, author=ctx.author, cog=self, lap_times=lap_times)
+        view = DriverResultsView(
+            drivers, embed, author=ctx.author, cog=self, lap_times=lap_times
+        )
 
         view.message = await ctx.send(embed=embed, view=view)
 

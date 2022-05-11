@@ -32,7 +32,7 @@ def humanize_time(millis: float, *_) -> str:
     minutes = int(millis // 60000)
     if minutes > 0:
         if time:
-            time += ':'
+            time += ":"
         time += str(minutes)
 
     millis -= minutes * 60000
@@ -49,8 +49,8 @@ def humanize_time(millis: float, *_) -> str:
 
 
 def time_to_millis(time: str) -> int:
-    time = time.replace('.', ':')
-    minutes, seconds, millis = time.split(':')
+    time = time.replace(".", ":")
+    minutes, seconds, millis = time.split(":")
 
     total = (int(minutes) * 60000) + (int(seconds) * 1000) + int(millis)
     return total
@@ -70,7 +70,9 @@ class CompareDriverSelect(discord.ui.Select):
         options = [
             discord.SelectOption(label=name, value=driver_ids[name]) for name in drivers
         ]
-        super().__init__(placeholder='Select a driver', options=options, min_values=1, max_values=20)
+        super().__init__(
+            placeholder="Select a driver", options=options, min_values=1, max_values=20
+        )
 
     async def callback(self, interaction: discord.Interaction):
         await interaction.response.defer()
@@ -102,8 +104,15 @@ class DriverSelect(discord.ui.Select["DriverResultsView"]):
 
 
 class DriverResultsView(View):
-    def __init__(self, drivers: dict[str, discord.Embed], home: discord.Embed, *, author: discord.User, cog: Formula1,
-                 lap_times: dict):
+    def __init__(
+        self,
+        drivers: dict[str, discord.Embed],
+        home: discord.Embed,
+        *,
+        author: discord.User,
+        cog: Formula1,
+        lap_times: dict,
+    ):
         super().__init__(timeout=600)
         self.cog = cog
         self.author = author
@@ -118,7 +127,7 @@ class DriverResultsView(View):
         select = DriverSelect(list(drivers))
         self.add_item(select)
 
-        self.lap_data = [lap['Timings'] for lap in lap_times]
+        self.lap_data = [lap["Timings"] for lap in lap_times]
 
     async def set(self, driver: str | None = None, embed: discord.Embed = None):
         embed = embed if embed else self.drivers.get(driver)
@@ -128,12 +137,12 @@ class DriverResultsView(View):
 
         if driver:
             for child in self.children:
-                if child.label == 'Lap Times':  # type: ignore
+                if child.label == "Lap Times":  # type: ignore
                     child.disabled = False
                     break
         else:
             for child in self.children:
-                if child.label == 'Compare':  # type: ignore
+                if child.label == "Compare":  # type: ignore
                     child.disabled = True
 
         await self.message.edit(embed=embed, view=self)
@@ -141,7 +150,7 @@ class DriverResultsView(View):
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         return interaction.user == self.author
 
-    @discord.ui.button(label='Home', style=discord.ButtonStyle.blurple)
+    @discord.ui.button(label="Home", style=discord.ButtonStyle.blurple)
     async def home(self, interaction, button):
         await interaction.response.defer()
         if self.current_embed is self.drivers.get(self.current_driver):
@@ -149,7 +158,7 @@ class DriverResultsView(View):
             return
         await self.set(self.current_driver)
 
-    @discord.ui.button(label='Compare', style=discord.ButtonStyle.gray)
+    @discord.ui.button(label="Compare", style=discord.ButtonStyle.gray)
     async def compare(self, interaction, button):
         await interaction.response.defer()
 
@@ -170,23 +179,30 @@ class DriverResultsView(View):
             drivers.append(F1Utils.driver_ids[driver])
 
             color = F1Utils.team_colors.get(F1Utils.driver_teams.get(driver))
-            color = discord.Color.from_rgb(*color) if isinstance(color, tuple) else discord.Color.random()
+            color = (
+                discord.Color.from_rgb(*color)
+                if isinstance(color, tuple)
+                else discord.Color.random()
+            )
             colors.append(color)
 
         plot = await F1Utils.build_lap_times_plot(data, drivers, colors)
         await interaction.followup.send(file=plot)
 
-    @discord.ui.button(label='Lap Times', style=discord.ButtonStyle.gray, disabled=True)
+    @discord.ui.button(label="Lap Times", style=discord.ButtonStyle.gray, disabled=True)
     async def lap_times(self, interaction, button):
         await interaction.response.defer()
         times = await F1Utils.process_lap_times(self.lap_data, self.current_driver)
-        plot = await F1Utils.build_lap_times_plot([times], [self.current_driver], [self.current_embed.color])
+        plot = await F1Utils.build_lap_times_plot(
+            [times], [self.current_driver], [self.current_embed.color]
+        )
         await interaction.followup.send(file=plot)
 
 
 class F1Utils:
     import warnings
-    warnings.filterwarnings('ignore', category=UserWarning)
+
+    warnings.filterwarnings("ignore", category=UserWarning)
 
     plot_lock = asyncio.Lock()
 
@@ -203,29 +219,50 @@ class F1Utils:
         "aston_martin": (45, 130, 109),
     }
 
-    driver_ids = {'max_verstappen': 'Max Verstappen', 'perez': 'Sergio Pérez', 'norris': 'Lando Norris', 'russell': 'George Russell', 'bottas': 'Valtteri Bottas', 'leclerc': 'Charles Leclerc', 'tsunoda': 'Yuki Tsunoda', 'vettel': 'Sebastian Vettel', 'kevin_magnussen': 'Kevin Magnussen', 'stroll': 'Lance Stroll', 'albon': 'Alexander Albon', 'gasly': 'Pierre Gasly', 'hamilton': 'Lewis Hamilton', 'ocon': 'Esteban Ocon', 'zhou': 'Guanyu Zhou', 'latifi': 'Nicholas Latifi', 'mick_schumacher': 'Mick Schumacher', 'ricciardo': 'Daniel Ricciardo', 'alonso': 'Fernando Alonso', 'sainz': 'Carlos Sainz'}
+    driver_ids = {
+        "max_verstappen": "Max Verstappen",
+        "perez": "Sergio Pérez",
+        "norris": "Lando Norris",
+        "russell": "George Russell",
+        "bottas": "Valtteri Bottas",
+        "leclerc": "Charles Leclerc",
+        "tsunoda": "Yuki Tsunoda",
+        "vettel": "Sebastian Vettel",
+        "kevin_magnussen": "Kevin Magnussen",
+        "stroll": "Lance Stroll",
+        "albon": "Alexander Albon",
+        "gasly": "Pierre Gasly",
+        "hamilton": "Lewis Hamilton",
+        "ocon": "Esteban Ocon",
+        "zhou": "Guanyu Zhou",
+        "latifi": "Nicholas Latifi",
+        "mick_schumacher": "Mick Schumacher",
+        "ricciardo": "Daniel Ricciardo",
+        "alonso": "Fernando Alonso",
+        "sainz": "Carlos Sainz",
+    }
 
     driver_teams = {
-        'max_verstappen': 'red_bull',
-        'perez': 'red_bull',
-        'norris': 'mclaren',
-        'russell': 'mercedes',
-        'bottas': 'alfa',
-        'lecerlc': 'ferrari',
-        'tsunoda': 'alphatauri',
-        'vettel': 'aston_martin',
-        'kevin_magnussen': 'haas',
-        'stroll': 'aston_martin',
-        'albon': 'williams',
-        'gasly': 'alphatauri',
-        'hamilton': 'mercedes',
-        'ocon': 'alphine',
-        'zhou': 'alfa',
-        'latifi': 'williams',
-        'ricciardo': 'mclaren',
-        'mich_schumacher': 'haas',
-        'alonso': 'alpine',
-        'sainz': 'ferrari'
+        "max_verstappen": "red_bull",
+        "perez": "red_bull",
+        "norris": "mclaren",
+        "russell": "mercedes",
+        "bottas": "alfa",
+        "lecerlc": "ferrari",
+        "tsunoda": "alphatauri",
+        "vettel": "aston_martin",
+        "kevin_magnussen": "haas",
+        "stroll": "aston_martin",
+        "albon": "williams",
+        "gasly": "alphatauri",
+        "hamilton": "mercedes",
+        "ocon": "alphine",
+        "zhou": "alfa",
+        "latifi": "williams",
+        "ricciardo": "mclaren",
+        "mich_schumacher": "haas",
+        "alonso": "alpine",
+        "sainz": "ferrari",
     }
 
     @classmethod
@@ -395,15 +432,17 @@ class F1Utils:
         for lap in lap_data:
             for d in lap:
                 try:
-                    if driver in (cls.driver_ids[d['driverId']], d['driverId']):
-                        data.append(d['time'])
+                    if driver in (cls.driver_ids[d["driverId"]], d["driverId"]):
+                        data.append(d["time"])
                 except KeyError:
                     pass
 
         return [time_to_millis(time) for time in data]
 
     @classmethod
-    async def build_lap_times_plot(cls, data: list[list[int]], drivers, colors: list) -> discord.File:
+    async def build_lap_times_plot(
+        cls, data: list[list[int]], drivers, colors: list
+    ) -> discord.File:
         def blocking_build() -> discord.File:
             fig, ax = plt.subplots()
             ax.yaxis.set_major_formatter(mlt.ticker.FuncFormatter(humanize_time))
@@ -415,15 +454,15 @@ class F1Utils:
 
                 ax.plot(x, y, label=drivers[i], color=str(colors[i]))
 
-            plt.xlabel('Lap')
-            plt.ylabel('Time')
-            plt.title('Driver Lap Times')
+            plt.xlabel("Lap")
+            plt.ylabel("Time")
+            plt.title("Driver Lap Times")
             plt.legend()
 
             with BytesIO() as image_binary:
-                fig.savefig(image_binary, format='png')
+                fig.savefig(image_binary, format="png")
                 image_binary.seek(0)
-                file = discord.File(image_binary, 'lap_times.png')
+                file = discord.File(image_binary, "lap_times.png")
             return file
 
         async with cls.plot_lock:

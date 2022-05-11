@@ -58,4 +58,3 @@ def hybrid_has_permissions(**perms):
         return func
 
     return inner
-
