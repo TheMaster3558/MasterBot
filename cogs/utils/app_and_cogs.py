@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, final
+from typing import TYPE_CHECKING
 
 import discord
 from discord.ext import commands
@@ -46,3 +46,16 @@ class QuickObject:
         return " ".join(
             f"{k}: {v}" for k, v in self.__attrs.items() if v not in (None, "")
         )
+
+
+def hybrid_has_permissions(**perms):
+    async def predicate(ctx: commands.Context):
+        return await commands.has_permissions(**perms).predicate(ctx)
+
+    async def inner(func):
+        func = app_commands.default_permissions(**perms)
+        func = commands.check(predicate)(func)
+        return func
+
+    return inner
+

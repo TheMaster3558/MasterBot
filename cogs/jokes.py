@@ -428,7 +428,7 @@ class Jokes(Cog, name="jokes"):
         racist="Racist jokes",
         explicit="Explicit jokes",
     )
-    @app_commands.checks.has_permissions(administrator=True)
+    @app_commands.default_permissions(administrator=True)
     async def __blacklist(
         self,
         interaction: discord.Interaction,
