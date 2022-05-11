@@ -72,15 +72,16 @@ class MasterBot(commands.Bot):
         self.prefixes_db = None
         self.moderation_mongo = mongo_db
 
-        logger = logging.getLogger("discord")
-        logger.setLevel(logging.DEBUG)
-        handler = logging.FileHandler(
-            filename="logs/discord.log", encoding="utf-8", mode="w"
-        )
-        handler.setFormatter(
-            logging.Formatter("%(asctime)s:%(levelname)s:%(name)s: %(message)s")
-        )
-        logger.addHandler(handler)
+        for name in ('discord', 'wavelink'):
+            logger = logging.getLogger(name)
+            logger.setLevel(logging.DEBUG)
+            handler = logging.FileHandler(
+                filename=f"logs/{name}.log", encoding="utf-8", mode="w"
+            )
+            handler.setFormatter(
+                logging.Formatter("%(asctime)s:%(levelname)s:%(name)s: %(message)s")
+            )
+            logger.addHandler(handler)
 
         self.locks: dict[Cog, asyncio.Lock] = {}
 
