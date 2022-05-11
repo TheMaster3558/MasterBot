@@ -67,9 +67,9 @@ class ErgastHTTPClient(AsyncHTTPClient):
 
 class Formula1(Cog, name="formula one"):
     current_year = 2022
-    current_race = 4
+    current_race = 5
     current_image = (
-        "https://th.bing.com/th/id/OIF.CZKE3ftwq7y1L52CTwPkkg?pid=ImgDet&rs=1"
+        "https://th.bing.com/th/id/OIF.L4vadA9A3KkLkled0d2E1g?pid=ImgDet&rs=1"
     )
 
     year_param = commands.Range[int, 1950, current_year]
